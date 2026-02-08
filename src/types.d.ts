@@ -1,3 +1,5 @@
+import type { z } from "zod";
+
 type MaybePromise<T> = T | Promise<T>;
 
 export type Middleware = () => void;

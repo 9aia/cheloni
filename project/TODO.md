@@ -14,6 +14,7 @@
 - Ensure that schema validation inside the handler is not interpreted as argument validation errors
 
 - Add linter and formatter to the repo
+- Add changelog
 - Add test utils package
 - Add tests
 - Add and publish agent skills

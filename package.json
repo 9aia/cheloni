@@ -1,14 +1,53 @@
 {
   "name": "cheloni",
-  "module": "src/index.ts",
+  "version": "0.1.0",
+  "description": "A type-safe, schema-based framework for building CLI with full TypeScript inference",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm --minify --outfile ./dist/index.js && tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
+  },
+  "keywords": [
+    "cli",
+    "typescript",
+    "zod",
+    "schema",
+    "command-line",
+    "type-safe"
+  ],
+  "author": "Luis Emidio",
+  "license": "MIT",
+  "homepage": "https://github.com/9aia/cheloni#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/9aia/cheloni.git"
+  },
+  "bugs": {
+    "url": "https://github.com/9aia/cheloni/issues"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "release-it": "^17.0.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "mri": "^1.2.0",
     "zod": "^4.3.6"
   }
 }

@@ -1,6 +1,9 @@
 # Cheloni
 
-A type-safe, schema-based CLI framework for building CLI with full TypeScript inference.
+> [!IMPORTANT]
+> This project is a work in progress and is not yet ready for production.
+
+A type-safe, schema-based framework for building CLI with full TypeScript inference.
 
 ## Quick Start
 
