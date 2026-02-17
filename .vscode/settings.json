@@ -1,0 +1,14 @@
+{
+    "files.exclude": {
+        "**/dist": true,
+        "**/node_modules": true
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "README.md": "LICENSE",
+        "package.json": ".release-it.json, bun.lock, tsconfig.json, tsconfig.build.json"
+    },
+    "files.associations": {
+        "*.md": "markdown"
+    }
+}
