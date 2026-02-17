@@ -16,45 +16,49 @@ describe('createCli', () => {
 
     expect(cli.manifest.name).toBe('test-cli');
     expect(cli.manifest.version).toBe('1.0.0');
-    expect(cli.rootCommands.size).toBe(0);
+    expect(cli.command).toBeUndefined();
     expect(cli.plugins.size).toBe(0);
     expect(cli.globalOptions.size).toBe(0);
   });
 
-  it('creates commands from definitions', async () => {
+  it('creates root command from definition', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    expect(cli.rootCommands.size).toBe(1);
-    const command = [...cli.rootCommands][0];
-    expect(command?.manifest.name).toBe('test');
+    expect(cli.command).toBeDefined();
+    expect(cli.command?.manifest.name).toBe('root');
   });
 
-  it('creates multiple commands', async () => {
+  it('creates root command with nested subcommands', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        command: [
-          defineCommand({
-            name: 'cmd1',
-            handler: async () => {},
-          }),
-          defineCommand({
-            name: 'cmd2',
-            handler: async () => {},
-          }),
-        ],
+        command: defineCommand({
+          name: 'root',
+          command: [
+            defineCommand({
+              name: 'cmd1',
+              handler: async () => {},
+            }),
+            defineCommand({
+              name: 'cmd2',
+              handler: async () => {},
+            }),
+          ],
+          handler: async () => {},
+        }),
       })
     );
 
-    expect(cli.rootCommands.size).toBe(2);
+    expect(cli.command).toBeDefined();
+    expect(cli.command?.commands.size).toBe(2);
   });
 
   it('creates global options', async () => {
@@ -162,19 +166,16 @@ describe('createCli', () => {
           name: 'test-plugin',
           onInit: async ({ cli }) => {
             const { createCommand } = await import('~/core/creation/command');
-            cli.rootCommands.add(
-              createCommand({
-                name: 'dynamic',
-                handler: async () => {},
-              })
-            );
+            cli.command = createCommand({
+              name: 'dynamic',
+              handler: async () => {},
+            });
           },
         }),
       })
     );
 
-    expect(cli.rootCommands.size).toBe(1);
-    const command = [...cli.rootCommands][0];
-    expect(command?.manifest.name).toBe('dynamic');
+    expect(cli.command).toBeDefined();
+    expect(cli.command?.manifest.name).toBe('dynamic');
   });
 });

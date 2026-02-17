@@ -21,6 +21,7 @@ export interface CommandDefinition<
     details?: string;
     throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
     plugin?: MaybeArray<PluginDefinition>;
+    command?: MaybeArray<CommandDefinition>;
     handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition>;
 }
 

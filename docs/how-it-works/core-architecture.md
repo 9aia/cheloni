@@ -41,7 +41,7 @@ Cheloni is a CLI framework with a layered architecture separating **Definition**
 - **`plugin/`**: Creates `Plugin` instances
 
 **Key Types**:
-- `Cli`: Runtime CLI with rootCommands, globalOptions, plugins
+- `Cli`: Runtime CLI with command (root), globalOptions, plugins
 - `Command`: Runtime command with definition, manifest, paths, deprecated flag
 - `CommandHandler`: Function receiving parsed args and executing logic
 
@@ -57,7 +57,6 @@ Cheloni is a CLI framework with a layered architecture separating **Definition**
   - **`handle-error.ts`**: Error handling and formatting (structured validation errors)
   - **`errors.ts`**: Error types (`InvalidOptionsError`, `InvalidPositionalError`)
 - **`parser/`**: Argument parsing (mri-based, extracts positional + options with alias support)
-- **`cli/help.ts`**: Help text generation
 
 **Key Functions**:
 - `executeCli()`: Main entry point, resolves command, handles errors, calls `onDestroy` hooks

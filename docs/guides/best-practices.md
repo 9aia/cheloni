@@ -11,9 +11,14 @@ import { createCli, defineCommand, executeCli } from 'cheloni';
 import command1 from './command1';
 import command2 from './command2';
 
+const rootCommand = defineCommand({
+  name: 'root',
+  command: [command1, command2],
+});
+
 const cli = await createCli({
   name: 'my-cli',
-  command: [command1, command2],
+  command: rootCommand,
 });
 
 await executeCli({ cli });

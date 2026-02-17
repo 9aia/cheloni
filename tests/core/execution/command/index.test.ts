@@ -13,7 +13,7 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           positional: z.string(),
           options: z.object({
             verbose: z.boolean().optional(),
@@ -23,7 +23,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: ['input', '--verbose'],
@@ -41,14 +41,14 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           positional: z.string().min(5),
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await expect(
       executeCommand({
         command,
@@ -63,7 +63,7 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           options: z.object({
             count: z.number(),
           }),
@@ -72,7 +72,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await expect(
       executeCommand({
         command,
@@ -87,7 +87,7 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           options: z.object({
             verbose: z.boolean(),
           }),
@@ -97,7 +97,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await expect(
       executeCommand({
         command,
@@ -113,7 +113,7 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           options: z.object({
             verbose: z.boolean().optional(),
           }),
@@ -123,7 +123,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: ['--verbose', '--unknown'],
@@ -141,7 +141,7 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           options: z.object({
             verbose: z.boolean().optional(),
           }),
@@ -151,7 +151,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: ['--verbose', '--unknown', 'value'],
@@ -173,7 +173,7 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           middleware: async ({ next }) => {
             order.push('middleware');
             await next();
@@ -183,7 +183,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: [],
@@ -205,13 +205,13 @@ describe('executeCommand', () => {
           onBeforeCommand: onBefore,
         },
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler,
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: [],
@@ -236,13 +236,13 @@ describe('executeCommand', () => {
           onAfterCommand: onAfter,
         },
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler,
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await expect(
       executeCommand({
         command,
@@ -266,7 +266,7 @@ describe('executeCommand', () => {
           onBeforeCommand: globalHook,
         },
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           plugin: {
             name: 'command-plugin',
             onBeforeCommand: commandHook,
@@ -276,7 +276,7 @@ describe('executeCommand', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: [],
@@ -292,12 +292,12 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await expect(
       executeCommand({
         command,
@@ -313,13 +313,13 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler,
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: [],
@@ -337,13 +337,13 @@ describe('executeCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler,
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     await executeCommand({
       command,
       args: [],

@@ -3,9 +3,7 @@ import type { OptionHandler } from "~/core/creation/command/option";
 
 export interface GlobalOptionDefinition<TSchema extends z.ZodTypeAny = any> {
     name: string;
-    schema: TSchema;
-    /** Whether to validate the option value against the schema. Defaults to true. */
-    validate?: boolean;
+    schema?: TSchema;
     handler?: OptionHandler<TSchema>;
 }
 

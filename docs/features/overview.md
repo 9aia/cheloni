@@ -6,7 +6,7 @@ Type-safe, ESM-only, opinionated, schema-based CLI framework with full TypeScrip
 
 ```typescript
 import { defineCommand, createCli, executeCli } from 'cheloni';
-import { standard } from 'cheloni/plugins';
+import { standardPlugin } from 'cheloni/plugins';
 import z from 'zod';
 
 const convert = defineCommand({
@@ -30,7 +30,7 @@ const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
   command: convert,
-  plugin: standard // Adds built-in help & version commands
+  plugin: standardPlugin // Adds built-in help & version commands
 });
 
 await executeCli({ cli });

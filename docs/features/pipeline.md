@@ -16,7 +16,7 @@ Middleware functions receive a `next` function to continue the chain and can mod
 ```typescript
 import { type Middleware, defineCommand } from 'cheloni';
 
-const auth: Middleware = async ({ data, next }) => {
+const auth: Middleware = async ({ command, data, next }) => {
   const user = await authenticate();
   data.user = user;
   return await next({ 
@@ -24,15 +24,15 @@ const auth: Middleware = async ({ data, next }) => {
   });
 };
 
-const logger: Middleware = async ({ data, next }) => {
-  console.log(`Executing: ${data.command.name}`);
+const logger: Middleware = async ({ command, data, next }) => {
+  console.log(`Executing: ${command.manifest.name}`);
   return await next();
 };
 
 const command = defineCommand({
   middleware: [auth, logger], // Executes in order
-  handler: async ({ options, context }) => {
-    // context.user is available here
+  handler: async ({ data }) => {
+    // data.user is available here
   },
 });
 ```

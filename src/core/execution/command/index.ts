@@ -5,7 +5,7 @@ import type { InferOptionsType } from "~/core/creation/command/option";
 import type { InferPositionalType } from "~/core/creation/command/positional";
 import { createPlugin } from "~/core/creation/plugin";
 import { extractPositionalValue, parseArgs } from "../parser";
-import { InvalidPositionalError } from "./errors";
+import { InvalidOptionsError, InvalidPositionalError } from "./errors";
 import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
 import { getAliasMap, getSchemaAlias, getSchemaDeprecated, getSchemaObject } from "~/lib/zod";
@@ -58,6 +58,47 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         extrageousOptionsBehavior,
         globalOptionNames
     );
+
+    // Execute global option handlers early (before validation)
+    // Global options like --help and --version need to short-circuit
+    for (const globalOpt of cli.globalOptions) {
+        const optName = globalOpt.definition.name;
+        const optValue = validatedOptions[optName];
+        
+        // Check if option is present (including via aliases)
+        if (optValue !== undefined) {
+            // Validate the option value against the schema (if provided)
+            let parsedValue: any = optValue;
+            if (globalOpt.definition.schema) {
+                try {
+                    parsedValue = globalOpt.definition.schema.parse(optValue);
+                } catch (error) {
+                    const zodError = error as z.ZodError;
+                    throw new InvalidOptionsError(
+                        `Invalid value for --${optName}: ${zodError.message}`,
+                        zodError.issues
+                    );
+                }
+            }
+            
+            // Execute the handler if it exists
+            if (globalOpt.definition.handler) {
+                await globalOpt.definition.handler({
+                    value: parsedValue,
+                    option: {
+                        name: optName,
+                        schema: globalOpt.definition.schema,
+                        handler: globalOpt.definition.handler,
+                    },
+                    command,
+                    cli,
+                });
+                
+                // Global options that have handlers short-circuit (like help/version)
+                return;
+            }
+        }
+    }
 
     // Extract and validate positional argument
     // Use the definition's positional type directly to avoid repeated typeof evaluation
@@ -162,44 +203,6 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         
         // No options schema defined, return all options as-is
         options_ = validatedOptions as OptionsType;
-    }
-
-    // Execute global option handlers (before command handler)
-    for (const globalOpt of cli.globalOptions) {
-        const optName = globalOpt.definition.name;
-        const optValue = validatedOptions[optName];
-        
-        // Check if option is present (including via aliases)
-        if (optValue !== undefined) {
-            // Validate the option value if needed
-            let parsedValue: any = optValue;
-            if (globalOpt.definition.validate !== false) {
-                try {
-                    parsedValue = globalOpt.definition.schema.parse(optValue);
-                } catch (error) {
-                    // If validation fails, use the raw value (some options like help/version are boolean)
-                    parsedValue = optValue;
-                }
-            }
-            
-            // Execute the handler if it exists
-            if (globalOpt.definition.handler) {
-                await globalOpt.definition.handler({
-                    value: parsedValue,
-                    option: {
-                        name: optName,
-                        schema: globalOpt.definition.schema,
-                        handler: globalOpt.definition.handler,
-                    },
-                    command,
-                    cli,
-                });
-                
-                // Global options that have handlers typically exit early (like help/version)
-                // So we return after executing them
-                return;
-            }
-        }
     }
 
     // Collect global and command plugins

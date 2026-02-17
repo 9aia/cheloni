@@ -1,5 +1,6 @@
-import type z from "zod";
+import z from "zod";
 import type { Cli } from "~/core/creation/cli";
+import type { Command } from "~/core/creation/command";
 import type { CommandManifest } from "~/core/manifest/command";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
 import { getSchemaAlias, getSchemaDeprecated, getSchemaDescription, getSchemaObject } from "~/lib/zod";
@@ -26,6 +27,21 @@ function renderOption(name: string, schema: z.ZodTypeAny): void {
     }
 }
 
+/**
+ * Find a command in the tree by name or path, starting from a given command's subcommands.
+ */
+function findCommandInTree(command: Command, name: string): Command | undefined {
+    for (const child of command.commands) {
+        if (child.manifest.name === name) return child;
+        if (child.paths?.includes(name)) return child;
+    }
+    // Deep search
+    for (const child of command.commands) {
+        const found = findCommandInTree(child, name);
+        if (found) return found;
+    }
+    return undefined;
+}
 
 /**
  * Render command-specific help
@@ -33,28 +49,23 @@ function renderOption(name: string, schema: z.ZodTypeAny): void {
 export function renderCommandHelp(cli: Cli, commandName: string): void {
     const cliName = cli.manifest.name;
     
-    // Find command by name or path
-    let command: CommandManifest | undefined;
-    let actualCommand = Array.from(cli.rootCommands).find(c => c.manifest.name === commandName);
-    
-    if (actualCommand) {
-        command = actualCommand.manifest;
-    } else {
-        // Try to find by path
-        for (const cmd of cli.rootCommands) {
-            if (cmd.paths?.includes(commandName)) {
-                command = cmd.manifest;
-                actualCommand = cmd;
-                break;
-            }
+    // Find command by name or path in the command tree
+    let actualCommand: Command | undefined;
+
+    if (cli.command) {
+        if (cli.command.manifest.name === commandName || cli.command.paths?.includes(commandName)) {
+            actualCommand = cli.command;
+        } else {
+            actualCommand = findCommandInTree(cli.command, commandName);
         }
     }
     
-    if (!command || !actualCommand) {
+    if (!actualCommand) {
         console.error(`Command "${commandName}" not found`);
         process.exit(1);
     }
     
+    const command: CommandManifest = actualCommand.manifest;
     const name = command.name;
     const description = command.description || '';
     const paths = command.paths || [];
@@ -78,20 +89,33 @@ export function renderCommandHelp(cli: Cli, commandName: string): void {
     
     // Render positional argument
     if (actualCommand.definition.positional) {
-        const posDesc = getPositionalManifest(actualCommand.definition.positional)?.description;
-        const posDeprecated = getPositionalManifest(actualCommand.definition.positional)?.deprecated;
+        const posManifest = getPositionalManifest(actualCommand.definition.positional);
+        const posDesc = posManifest?.description;
+        const posDeprecated = posManifest?.deprecated;
         console.log(`\nPositional:`);
-        console.log(`  <positional>    ${posDesc || 'Positional argument'}`);
+        console.log(`  <positional>    ${posDesc || '(any)'}`);
         if (posDeprecated) {
             const message = typeof posDeprecated === 'string' ? posDeprecated : 'This argument is deprecated';
             console.log(`    Deprecated: ${message}`);
         }
     }
     
+    // Render subcommands if any
+    if (actualCommand.commands.size > 0) {
+        console.log(`\nCommands:`);
+        for (const cmd of actualCommand.commands) {
+            const sub = cmd.manifest;
+            let cmdLine = `  ${sub.name}`;
+            if (sub.paths && sub.paths.length > 0) {
+                cmdLine += ` (${sub.paths.join(', ')})`;
+            }
+            cmdLine += `    ${sub.description || ''}`;
+            console.log(cmdLine);
+        }
+    }
+    
     // Render command options (merged with global options)
-    const commandOptions = actualCommand.definition.options 
-        ? getSchemaObject(actualCommand.definition.options) 
-        : {};
+    const commandOptions = getSchemaObject(actualCommand.definition.options ?? z.object({}));
     
     const hasCommandOptions = commandOptions && Object.keys(commandOptions).length > 0;
     const hasGlobalOptions = cli.globalOptions.size > 0;
@@ -108,7 +132,7 @@ export function renderCommandHelp(cli: Cli, commandName: string): void {
         
         // Render global options (automatically available to all commands)
         for (const globalOpt of cli.globalOptions) {
-            renderOption(globalOpt.definition.name, globalOpt.definition.schema);
+            renderOption(globalOpt.definition.name, globalOpt.definition.schema ?? z.any());
         }
     }
     
@@ -148,15 +172,16 @@ export function renderRootHelp(cli: Cli): void {
         console.log('');
     }
     
-    const commands = Array.from(cli.rootCommands);
-    if (commands.length > 0) {
+    // Show subcommands from the root command
+    const rootCommand = cli.command;
+    if (rootCommand && rootCommand.commands.size > 0) {
         console.log(`Commands:`);
-        for (const cmd of commands) {
+        for (const cmd of rootCommand.commands) {
             const command = cmd.manifest;
             const name = command.name;
             const commandDescription = command.description || '';
             const paths = command.paths || [];
-            const deprecated = command.deprecated;
+            const cmdDeprecated = command.deprecated;
             
             let cmdLine = `  ${name}`;
             if (paths.length > 0) {
@@ -165,8 +190,8 @@ export function renderRootHelp(cli: Cli): void {
             cmdLine += `    ${commandDescription}`;
             console.log(cmdLine);
             
-            if (deprecated) {
-                const message = typeof deprecated === 'string' ? deprecated : 'This command is deprecated';
+            if (cmdDeprecated) {
+                const message = typeof cmdDeprecated === 'string' ? cmdDeprecated : 'This command is deprecated';
                 console.log(`    Deprecated: ${message}`);
             }
         }

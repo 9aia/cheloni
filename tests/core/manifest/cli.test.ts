@@ -30,38 +30,42 @@ describe('getCliManifest', () => {
     expect(manifest.deprecated).toBe('Use new-cli instead');
   });
 
-  it('includes command manifests', () => {
+  it('includes root command manifest', () => {
     const definition = defineCli({
       name: 'test-cli',
       command: defineCommand({
-        name: 'test',
+        name: 'root',
         handler: async () => {},
       }),
     });
 
     const manifest = getCliManifest(definition);
-    expect(manifest.rootCommands).toHaveLength(1);
-    expect(manifest.rootCommands?.[0]?.name).toBe('test');
+    expect(manifest.command).toBeDefined();
+    expect(manifest.command?.name).toBe('root');
   });
 
-  it('handles multiple commands', () => {
+  it('includes nested command manifests', () => {
     const definition = defineCli({
       name: 'test-cli',
-      command: [
-        defineCommand({
-          name: 'cmd1',
-          handler: async () => {},
-        }),
-        defineCommand({
-          name: 'cmd2',
-          handler: async () => {},
-        }),
-      ],
+      command: defineCommand({
+        name: 'root',
+        command: [
+          defineCommand({
+            name: 'cmd1',
+            handler: async () => {},
+          }),
+          defineCommand({
+            name: 'cmd2',
+            handler: async () => {},
+          }),
+        ],
+      }),
     });
 
     const manifest = getCliManifest(definition);
-    expect(manifest.rootCommands).toHaveLength(2);
-    expect(manifest.rootCommands?.map(c => c.name)).toEqual(['cmd1', 'cmd2']);
+    expect(manifest.command).toBeDefined();
+    expect(manifest.command?.commands).toHaveLength(2);
+    expect(manifest.command?.commands?.map(c => c.name)).toEqual(['cmd1', 'cmd2']);
   });
 
   it('includes global options', () => {
@@ -98,13 +102,13 @@ describe('getCliManifest', () => {
     expect(manifest.globalOptions?.map(o => o.name)).toEqual(['verbose', 'output']);
   });
 
-  it('handles empty commands and options', () => {
+  it('handles no command and no options', () => {
     const definition = defineCli({
       name: 'test-cli',
     });
 
     const manifest = getCliManifest(definition);
-    expect(manifest.rootCommands).toEqual([]);
+    expect(manifest.command).toBeUndefined();
     expect(manifest.globalOptions).toEqual([]);
   });
 });

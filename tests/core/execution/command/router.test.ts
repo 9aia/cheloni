@@ -2,90 +2,95 @@ import { describe, it, expect } from 'vitest';
 import { defineCli } from '~/core/definition/cli';
 import { defineCommand } from '~/core/definition/command';
 import { createCli } from '~/core/creation/cli';
+import { createCommand } from '~/core/creation/command';
 import { findCommandByPath, resolveCommand } from '~/core/execution/command/router';
 
 describe('findCommandByPath', () => {
-  it('finds command by path', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test',
-        command: defineCommand({
-          name: 'test',
-          paths: ['t', 'test'],
-          handler: async () => {},
-        }),
-      })
-    );
+  it('finds command by path', () => {
+    const cmd = createCommand(defineCommand({
+      name: 'test',
+      paths: ['t', 'test'],
+      handler: async () => {},
+    }));
 
-    const command = findCommandByPath(cli, 't');
-    expect(command).toBeDefined();
-    expect(command?.manifest.name).toBe('test');
+    const found = findCommandByPath([cmd], 't');
+    expect(found).toBeDefined();
+    expect(found?.manifest.name).toBe('test');
   });
 
-  it('returns null when path not found', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test',
-        command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          handler: async () => {},
-        }),
-      })
-    );
+  it('returns null when path not found', () => {
+    const cmd = createCommand(defineCommand({
+      name: 'test',
+      paths: ['test'],
+      handler: async () => {},
+    }));
 
-    expect(findCommandByPath(cli, 'unknown')).toBeNull();
+    expect(findCommandByPath([cmd], 'unknown')).toBeNull();
   });
 
-  it('handles multiple commands with different paths', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test',
-        command: [
-          defineCommand({
-            name: 'cmd1',
-            paths: ['a', 'alpha'],
-            handler: async () => {},
-          }),
-          defineCommand({
-            name: 'cmd2',
-            paths: ['b', 'beta'],
-            handler: async () => {},
-          }),
-        ],
-      })
-    );
+  it('handles multiple commands with different paths', () => {
+    const cmd1 = createCommand(defineCommand({
+      name: 'cmd1',
+      paths: ['a', 'alpha'],
+      handler: async () => {},
+    }));
+    const cmd2 = createCommand(defineCommand({
+      name: 'cmd2',
+      paths: ['b', 'beta'],
+      handler: async () => {},
+    }));
 
-    expect(findCommandByPath(cli, 'a')?.manifest.name).toBe('cmd1');
-    expect(findCommandByPath(cli, 'beta')?.manifest.name).toBe('cmd2');
+    expect(findCommandByPath([cmd1, cmd2], 'a')?.manifest.name).toBe('cmd1');
+    expect(findCommandByPath([cmd1, cmd2], 'beta')?.manifest.name).toBe('cmd2');
   });
 });
 
 describe('resolveCommand', () => {
-  it('resolves command by path', async () => {
+  it('resolves to root command when no args', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
-          paths: ['t'],
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    const match = resolveCommand(cli, ['t', 'arg1']);
+    const match = resolveCommand(cli, []);
     expect(match).toBeDefined();
-    expect(match?.command.manifest.name).toBe('test');
-    expect(match?.remainingArgv).toEqual(['arg1']);
+    expect(match?.command.manifest.name).toBe('root');
+    expect(match?.remainingArgv).toEqual([]);
   });
 
-  it('resolves default command when no path matches', async () => {
+  it('resolves nested subcommand by path', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'default',
+          name: 'root',
+          command: defineCommand({
+            name: 'sub',
+            paths: ['s', 'sub'],
+            handler: async () => {},
+          }),
+          handler: async () => {},
+        }),
+      })
+    );
+
+    const match = resolveCommand(cli, ['s', 'arg1']);
+    expect(match).toBeDefined();
+    expect(match?.command.manifest.name).toBe('sub');
+    expect(match?.remainingArgv).toEqual(['arg1']);
+  });
+
+  it('resolves root command when arg is an option', async () => {
+    const cli = await createCli(
+      defineCli({
+        name: 'test',
+        command: defineCommand({
+          name: 'root',
           handler: async () => {},
         }),
       })
@@ -93,11 +98,11 @@ describe('resolveCommand', () => {
 
     const match = resolveCommand(cli, ['--flag']);
     expect(match).toBeDefined();
-    expect(match?.command.manifest.name).toBe('default');
+    expect(match?.command.manifest.name).toBe('root');
     expect(match?.remainingArgv).toEqual(['--flag']);
   });
 
-  it('returns null when no commands exist', async () => {
+  it('returns null when no root command', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test',
@@ -107,57 +112,52 @@ describe('resolveCommand', () => {
     expect(resolveCommand(cli, ['arg'])).toBeNull();
   });
 
-  it('returns null when argv is empty', async () => {
+  it('stays at root when no matching subcommand', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
+          command: defineCommand({
+            name: 'known',
+            paths: ['known'],
+            handler: async () => {},
+          }),
           handler: async () => {},
         }),
       })
     );
 
-    expect(resolveCommand(cli, [])).toBeNull();
-  });
-
-  it('returns null when path provided but not found', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test',
-        command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          handler: async () => {},
-        }),
-      })
-    );
-
-    expect(resolveCommand(cli, ['unknown'])).toBeNull();
-  });
-
-  it('uses first command as default when no default exists', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test',
-        command: [
-          defineCommand({
-            name: 'cmd1',
-            paths: ['a'],
-            handler: async () => {},
-          }),
-          defineCommand({
-            name: 'cmd2',
-            paths: ['b'],
-            handler: async () => {},
-          }),
-        ],
-      })
-    );
-
-    const match = resolveCommand(cli, ['--flag']);
+    // "unknown" doesn't match any subcommand, so it stays at root
+    const match = resolveCommand(cli, ['unknown']);
     expect(match).toBeDefined();
-    expect(match?.command.manifest.name).toBe('cmd1');
+    expect(match?.command.manifest.name).toBe('root');
+    expect(match?.remainingArgv).toEqual(['unknown']);
+  });
+
+  it('resolves deeply nested commands', async () => {
+    const cli = await createCli(
+      defineCli({
+        name: 'test',
+        command: defineCommand({
+          name: 'root',
+          command: defineCommand({
+            name: 'level1',
+            paths: ['l1'],
+            command: defineCommand({
+              name: 'level2',
+              paths: ['l2'],
+              handler: async () => {},
+            }),
+          }),
+        }),
+      })
+    );
+
+    const match = resolveCommand(cli, ['l1', 'l2', '--flag']);
+    expect(match).toBeDefined();
+    expect(match?.command.manifest.name).toBe('level2');
+    expect(match?.remainingArgv).toEqual(['--flag']);
   });
 
   it('does not treat option-like args as commands', async () => {
@@ -165,7 +165,7 @@ describe('resolveCommand', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'default',
+          name: 'root',
           handler: async () => {},
         }),
       })
@@ -173,6 +173,6 @@ describe('resolveCommand', () => {
 
     const match = resolveCommand(cli, ['--help']);
     expect(match).toBeDefined();
-    expect(match?.command.manifest.name).toBe('default');
+    expect(match?.command.manifest.name).toBe('root');
   });
 });

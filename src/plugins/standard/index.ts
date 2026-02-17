@@ -1,4 +1,5 @@
 import { createCommand, createGlobalOption } from "~/core";
+import { normalizeMaybeArray } from "~/lib/js";
 import { definePlugin } from "~/core/definition/plugin";
 import helpCommand from "./commands/help";
 import versionCommand from "./commands/version";
@@ -8,27 +9,30 @@ import { mergeOptionsWithVersion } from "./utils/option";
 export default definePlugin({
     name: "standard",
     onInit: ({ cli }) => {
-        const rootCommand = cli.rootCommands.get("root");
-
-        // If root command is not registered, set help as default
-        if (!rootCommand) {
+        if (!cli.command) {
+            // No root command registered — create one with help as default handler
             const options = helpCommand.options;
-            cli.rootCommands.add(createCommand({
+            cli.command = createCommand({
                 ...helpCommand,
                 name: "root",
                 options: mergeOptionsWithVersion(options),
-            }));
+                command: [helpCommand, versionCommand],
+            });
         } else {
-            // Add version flag to root command
-            const options = rootCommand.definition.options;
-            cli.rootCommands.add(createCommand({
-                ...rootCommand.definition,
+            // Root command exists — add version flag and inject help/version subcommands
+            const existingDef = cli.command.definition;
+            const options = existingDef.options;
+            const existingCommands = normalizeMaybeArray(existingDef.command);
+            cli.command = createCommand({
+                ...existingDef,
                 options: mergeOptionsWithVersion(options),
-            }));
+                command: [
+                    ...existingCommands,
+                    helpCommand,
+                    versionCommand,
+                ],
+            });
         }
-
-        cli.rootCommands.add(createCommand(helpCommand));
-        cli.rootCommands.add(createCommand(versionCommand));
 
         cli.globalOptions.add(createGlobalOption(helpOption));
     },

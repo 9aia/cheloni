@@ -4,8 +4,7 @@ import { renderCommandHelp } from "~/plugins/standard/services/help";
 
 export default defineGlobalOption({
     name: "help",
-    schema: z.boolean(),
-    validate: false,
+    schema: z.boolean().meta({ alias: "h" }),
     handler: ({ command, cli }) => {
         renderCommandHelp(cli, command.manifest.name);
     },

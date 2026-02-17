@@ -30,146 +30,35 @@ describe('executeCli', () => {
     process.argv = originalArgv;
   });
 
-  it.skip('shows help when no args provided', async () => {
+  it('executes root command with no args', async () => {
+    const handler = vi.fn();
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
         command: defineCommand({
-          name: 'test',
-          handler: async () => {},
+          name: 'root',
+          handler,
         }),
       })
     );
 
     await executeCli({ cli, args: [] });
 
-    expect(consoleLogSpy).toHaveBeenCalled();
+    expect(handler).toHaveBeenCalledOnce();
   });
 
-  it.skip('shows help for help command', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['help'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it.skip('shows help for --help flag', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['--help'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it.skip('shows help for -h flag', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['-h'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it.skip('shows help for specific command', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['help', 'test'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it.skip('shows version for version command', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        version: '1.0.0',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['version'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it.skip('shows version for --version flag', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        version: '1.0.0',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['--version'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it.skip('shows version for -v flag', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        version: '1.0.0',
-        command: defineCommand({
-          name: 'test',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['-v'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
-  it('executes command by path', async () => {
+  it('executes subcommand by path', async () => {
     const handler = vi.fn();
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
         command: defineCommand({
-          name: 'test',
-          paths: ['t'],
-          handler,
+          name: 'root',
+          command: defineCommand({
+            name: 'test',
+            paths: ['t'],
+            handler,
+          }),
         }),
       })
     );
@@ -179,43 +68,7 @@ describe('executeCli', () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it.skip('executes default command when no path matches', async () => {
-    const handler = vi.fn();
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'default',
-          handler,
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['--flag'] });
-
-    expect(handler).toHaveBeenCalledOnce();
-  });
-
-  it('shows error for unknown command', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await expect(
-      executeCli({ cli, args: ['unknown'] })
-    ).rejects.toThrow('process.exit called');
-
-    expect(consoleErrorSpy).toHaveBeenCalled();
-  });
-
-  it('shows error when no command found', async () => {
+  it('shows error when no root command', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
@@ -229,33 +82,19 @@ describe('executeCli', () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  it.skip('shows help when command has --help flag', async () => {
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          handler: async () => {},
-        }),
-      })
-    );
-
-    await executeCli({ cli, args: ['test', '--help'] });
-
-    expect(consoleLogSpy).toHaveBeenCalled();
-  });
-
   it('shows deprecation warning for deprecated command', async () => {
     const handler = vi.fn();
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
         command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          deprecated: true,
-          handler,
+          name: 'root',
+          command: defineCommand({
+            name: 'test',
+            paths: ['test'],
+            deprecated: true,
+            handler,
+          }),
         }),
       })
     );
@@ -272,10 +111,13 @@ describe('executeCli', () => {
       defineCli({
         name: 'test-cli',
         command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          deprecated: 'Use new command instead',
-          handler,
+          name: 'root',
+          command: defineCommand({
+            name: 'test',
+            paths: ['test'],
+            deprecated: 'Use new command instead',
+            handler,
+          }),
         }),
       })
     );
@@ -295,9 +137,12 @@ describe('executeCli', () => {
           onDestroy,
         },
         command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          handler: async () => {},
+          name: 'root',
+          command: defineCommand({
+            name: 'test',
+            paths: ['test'],
+            handler: async () => {},
+          }),
         }),
       })
     );
@@ -317,7 +162,7 @@ describe('executeCli', () => {
           onDestroy,
         },
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {
             throw new Error('Handler error');
           },
@@ -326,7 +171,7 @@ describe('executeCli', () => {
     );
 
     await expect(
-      executeCli({ cli, args: ['test'] })
+      executeCli({ cli, args: [] })
     ).rejects.toThrow('process.exit called');
 
     expect(onDestroy).toHaveBeenCalledOnce();
@@ -343,9 +188,12 @@ describe('executeCli', () => {
           },
         },
         command: defineCommand({
-          name: 'test',
-          paths: ['test'],
-          handler: async () => {},
+          name: 'root',
+          command: defineCommand({
+            name: 'test',
+            paths: ['test'],
+            handler: async () => {},
+          }),
         }),
       })
     );

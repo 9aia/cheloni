@@ -21,18 +21,11 @@ export async function executeCli(options: ExecuteCliOptions): Promise<void> {
             console.warn(`Deprecated: ${message}`);
         }
         
-        // Resolve command (handles empty args via "root" command from standard plugin)
+        // Resolve command (walks the nested command tree)
         const match = resolveCommand(cli, args);
         
         if (!match) {
-            const firstArg = args.length > 0 ? args[0] : undefined;
-            if (firstArg && !firstArg.startsWith('-')) {
-                console.error(`Unknown command: ${firstArg}`);
-                const commandNames = Array.from(cli.rootCommands).map(c => c.manifest.name);
-                console.error(`Available commands: ${commandNames.join(', ')}`);
-            } else {
-                console.error("No command found");
-            }
+            console.error("No command found");
             process.exit(1);
         }
 

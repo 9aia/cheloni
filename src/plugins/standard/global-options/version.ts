@@ -4,9 +4,8 @@ import { showVersion } from "~/plugins/standard/services/version";
 
 export default defineGlobalOption({
     name: "version",
-    schema: z.boolean(),
-    validate: false,
-    handler: ({ command }) => {
-        showVersion(command.manifest);
+    schema: z.boolean().meta({ alias: "v" }),
+    handler: ({ cli }) => {
+        showVersion(cli.manifest);
     },
 });

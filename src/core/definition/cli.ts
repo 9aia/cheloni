@@ -9,9 +9,9 @@ export interface CliDefinition {
     description?: string;
     details?: string;
     deprecated?: boolean | string;
-    command?: MaybeArray<CommandDefinition>;
-    // TODO: add lazy commands
-    //command?: (CommandDefinition | LazyCommandDefinition)[];
+    command?: CommandDefinition;
+    // TODO: add lazy command
+    //command?: (CommandDefinition | LazyCommandDefinition);
     globalOption?: MaybeArray<GlobalOptionDefinition>;
     // TODO: add global positional
     //globalPositional?: PositionalDefinition;

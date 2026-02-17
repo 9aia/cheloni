@@ -67,7 +67,7 @@ const cli = await createCli({
   name: 'my-cli',
   globalOption: verboseOption,
   plugin: analyticsPlugin,
-  command: [/* ... */],
+  command: rootCommand,
 });
 ```
 

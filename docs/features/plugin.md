@@ -5,23 +5,23 @@ Plugins extend CLI functionality with lifecycle hooks. Perfect for analytics, te
 ## Lifecycle Hooks
 
 ```typescript
-import { type Plugin } from 'cheloni';
+import { definePlugin } from 'cheloni';
 
-const analyticsPlugin: Plugin = {
+const analyticsPlugin = definePlugin({
   name: 'analytics',
-  onInit: async ({ cliManifest }) => {
+  onInit: async ({ cli, plugin }) => {
     // Called when CLI is initialized (before any commands run)
   },
-  onBeforeCommand: async ({ cli, commandManifest }) => {
+  onBeforeCommand: async ({ cli, plugin, command }) => {
     // Called before each command execution
   },
-  onAfterCommand: async ({ cli, commandManifest }) => {
+  onAfterCommand: async ({ cli, plugin, command }) => {
     // Called after each command execution (even if it fails)
   },
-  onDestroy: async ({ cliManifest }) => {
+  onDestroy: async ({ cli, plugin }) => {
     // Called when CLI is shutting down
   },
-};
+});
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ const analyticsPlugin: Plugin = {
 const cli = await createCli({
   name: 'my-cli',
   plugin: [analyticsPlugin, loggingPlugin], // Applied to all commands
-  command: [/* ... */],
+  command: rootCommand,
 });
 ```
 

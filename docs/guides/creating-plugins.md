@@ -109,7 +109,7 @@ const analyticsPlugin = definePlugin({
 const cli = await createCli({
   name: 'my-cli',
   plugin: analyticsPlugin,
-  command: [/* ... */],
+  command: rootCommand,
 });
 ```
 
@@ -175,18 +175,27 @@ const loggingPlugin = definePlugin({
 
 ```typescript
 import { createCommand, defineCommand } from 'cheloni';
+import { normalizeMaybeArray } from 'cheloni';
 
 const customHelpPlugin = definePlugin({
   name: 'custom-help',
   onInit: async ({ cli }) => {
-    // Add a custom command
+    if (!cli.command) return;
+
+    // Add a custom subcommand to the root command
     const customHelpCommand = defineCommand({
       name: 'custom-help',
       handler: async () => {
         console.log('Custom help text');
       },
     });
-    cli.rootCommands.add(createCommand(customHelpCommand));
+
+    const existingDef = cli.command.definition;
+    const existingCommands = normalizeMaybeArray(existingDef.command);
+    cli.command = createCommand({
+      ...existingDef,
+      command: [...existingCommands, customHelpCommand],
+    });
   },
 });
 ```

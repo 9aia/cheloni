@@ -6,6 +6,7 @@ import type { CommandDefinition } from "~/core/definition/command";
 import type { OptionDefinition } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import { getCommandManifest, type CommandManifest } from "~/core/manifest/command";
+import { KeyedSet, normalizeMaybeArray } from "~/lib/js";
 import type { MaybePromise } from "~/lib/ts-utils";
 
 export interface Command<
@@ -14,7 +15,8 @@ export interface Command<
 > {
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
     manifest: CommandManifest;
-    paths?: string[];
+    commands: KeyedSet<Command>;
+    paths: string[];
     deprecated?: boolean | string;
 }
 
@@ -40,10 +42,17 @@ export function createCommand<
 >(
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>
 ): Command<TPositionalDefinition, TOptionsDefinition> {
+    const commands = new KeyedSet<Command>(cmd => cmd.manifest.name);
+    const childDefinitions = normalizeMaybeArray(definition.command);
+    for (const childDef of childDefinitions) {
+        commands.add(createCommand(childDef));
+    }
+
     return {
         definition,
         manifest: getCommandManifest(definition),
-        paths: definition.paths,
+        commands,
+        paths: definition.paths ?? [definition.name],
         deprecated: definition.deprecated,
     };
 }

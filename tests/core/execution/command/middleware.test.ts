@@ -10,13 +10,13 @@ describe('executeMiddleware', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     const data = await executeMiddleware({
       middlewares: [],
       command,
@@ -30,13 +30,13 @@ describe('executeMiddleware', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     let executed = false;
 
     const data = await executeMiddleware({
@@ -58,13 +58,13 @@ describe('executeMiddleware', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     const order: number[] = [];
 
     await executeMiddleware({
@@ -93,13 +93,13 @@ describe('executeMiddleware', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
 
     const data = await executeMiddleware({
       middlewares: [
@@ -123,13 +123,13 @@ describe('executeMiddleware', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     let secondExecuted = false;
 
     await executeMiddleware({

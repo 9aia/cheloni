@@ -22,14 +22,14 @@ describe('handleError', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           positional: z.string().describe('input file'),
           handler: async () => {},
         }),
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     const error = new InvalidPositionalError('Invalid positional', [
       {
         code: 'invalid_type',
@@ -51,7 +51,7 @@ describe('handleError', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           options: z.object({
             verbose: z.boolean().describe('verbose output'),
           }),
@@ -60,7 +60,7 @@ describe('handleError', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     const error = new InvalidOptionsError('Invalid options', [
       {
         code: 'invalid_type',
@@ -114,7 +114,7 @@ describe('handleError', () => {
       defineCli({
         name: 'test',
         command: defineCommand({
-          name: 'test',
+          name: 'root',
           options: z.object({
             verbose: z.boolean().describe('Enable verbose output'),
           }),
@@ -123,7 +123,7 @@ describe('handleError', () => {
       })
     );
 
-    const command = [...cli.rootCommands][0]!;
+    const command = cli.command!;
     const error = new InvalidOptionsError('Invalid options', [
       {
         code: 'invalid_type',

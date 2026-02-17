@@ -6,68 +6,60 @@ export interface CommandMatch {
     remainingArgv: string[];
 }
 
-export function findCommandByPath(cli: Cli, path: string): Command | null {
-    const pathMap = new Map<string, Command>();
-    
-    for (const command of cli.rootCommands) {
+export function findCommandByPath(commands: Iterable<Command>, path: string): Command | null {
+    for (const command of commands) {
         if (command.paths) {
             for (const commandPath of command.paths) {
-                pathMap.set(commandPath, command);
+                if (commandPath === path) {
+                    return command;
+                }
             }
         }
     }
     
-    return pathMap.get(path) || null;
+    return null;
 }
 
 export function resolveCommand(cli: Cli, argv: string[]): CommandMatch | null {
-    if (cli.rootCommands.size === 0) {
+    const command = cli.command;
+
+    if (!command) {
         return null;
     }
 
     if (argv.length === 0) {
-        return null;
+        // No args: run the root command itself
+        return {
+            command,
+            remainingArgv: [],
+        };
     }
 
-    const firstArg = argv[0];
-    const isCommandPath = firstArg && !firstArg.startsWith('-');
-    
-    if (isCommandPath) {
-        const found = findCommandByPath(cli, firstArg);
-        if (found) {
-            return {
-                command: found,
-                remainingArgv: argv.slice(1),
-            };
+    // Walk the command tree consuming path segments
+    let current = command;
+    let remaining = argv;
+
+    while (remaining.length > 0) {
+        const firstArg = remaining[0]!;
+        const isCommandPath = !firstArg.startsWith('-');
+
+        if (!isCommandPath) {
+            break;
         }
-    }
-    
-    // Find default command (one without paths)
-    let defaultCommand: Command | null = null;
-    
-    for (const command of cli.rootCommands) {
-        if (!command.paths || command.paths.length === 0) {
-            defaultCommand = command;
+
+        // Try to find a matching subcommand
+        const found = findCommandByPath(current.commands, firstArg);
+        if (found) {
+            current = found;
+            remaining = remaining.slice(1);
+        } else {
+            // No matching subcommand - stop traversal
             break;
         }
     }
-    
-    // If no default command, use first command
-    if (!defaultCommand && cli.rootCommands.size > 0) {
-        defaultCommand = [...cli.rootCommands][0] ?? null;
-    }
-    
-    // If a path was provided but not found, return null
-    if (isCommandPath) {
-        return null;
-    }
-    
-    if (!defaultCommand) {
-        return null;
-    }
-    
+
     return {
-        command: defaultCommand,
-        remainingArgv: argv,
+        command: current,
+        remainingArgv: remaining,
     };
 }
