@@ -6,7 +6,6 @@
       "name": "cheloni",
       "dependencies": {
         "mri": "^1.2.0",
-        "zod": "^4.3.6",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -14,9 +13,11 @@
         "vite": "^7.3.1",
         "vite-plugin-dts": "^4.5.4",
         "vitest": "^4.0.18",
+        "zod": "^4.3.6",
       },
       "peerDependencies": {
         "typescript": "^5",
+        "zod": "^4.0.0",
       },
     },
   },
