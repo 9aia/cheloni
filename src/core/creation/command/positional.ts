@@ -12,7 +12,7 @@ export type PositionalHandler<TSchema extends z.ZodTypeAny> = (context: Position
 
 export interface Positional<TSchema extends z.ZodTypeAny> {
     schema: TSchema;
-    handler: PositionalHandler<TSchema>;
+    handler?: PositionalHandler<TSchema>;
 };
 
 export type InferPositionalType<TSchema extends z.ZodTypeAny | undefined> = TSchema extends z.ZodTypeAny ? z.infer<TSchema> : undefined;

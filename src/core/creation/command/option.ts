@@ -15,7 +15,7 @@ export type OptionHandler<TSchema extends z.ZodTypeAny> = (context: OptionHandle
 export interface Option<TSchema extends z.ZodTypeAny> {
     name: string;
     schema: TSchema;
-    handler: OptionHandler<TSchema>;
+    handler?: OptionHandler<TSchema>;
 }
 
 export type InferOptionsType<TSchema extends z.ZodTypeAny | undefined> = TSchema extends z.ZodTypeAny ? z.infer<TSchema> : {};

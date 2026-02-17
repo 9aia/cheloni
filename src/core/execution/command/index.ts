@@ -176,21 +176,23 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
                 }
             }
             
-            // Execute the handler
-            await globalOpt.definition.handler({
-                value: parsedValue,
-                option: {
-                    name: optName,
-                    schema: globalOpt.definition.schema,
-                    handler: globalOpt.definition.handler,
-                },
-                command,
-                cli,
-            });
-            
-            // Global options that have handlers typically exit early (like help/version)
-            // So we return after executing them
-            return;
+            // Execute the handler if it exists
+            if (globalOpt.definition.handler) {
+                await globalOpt.definition.handler({
+                    value: parsedValue,
+                    option: {
+                        name: optName,
+                        schema: globalOpt.definition.schema,
+                        handler: globalOpt.definition.handler,
+                    },
+                    command,
+                    cli,
+                });
+                
+                // Global options that have handlers typically exit early (like help/version)
+                // So we return after executing them
+                return;
+            }
         }
     }
 
@@ -203,7 +205,18 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     // Call onBeforeCommand hooks
     for (const plugin of allPlugins) {
         if (plugin.definition.onBeforeCommand) {
-            await plugin.definition.onBeforeCommand({ cli, plugin, command: def });
+            try {
+                await plugin.definition.onBeforeCommand({ cli, plugin, command: def });
+            } catch (error) {
+                // Log hook errors and rethrow - command execution should fail if onBeforeCommand fails
+                console.error(`Plugin ${plugin.manifest.name} onBeforeCommand hook failed:`, error);
+                // Ensure we throw a proper error if the caught value is not an Error instance
+                if (error instanceof Error) {
+                    throw error;
+                } else {
+                    throw new Error(`Plugin ${plugin.manifest.name} onBeforeCommand hook failed: ${error}`);
+                }
+            }
         }
     }
 

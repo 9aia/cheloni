@@ -6,7 +6,7 @@ export interface GlobalOptionDefinition<TSchema extends z.ZodTypeAny = any> {
     schema: TSchema;
     /** Whether to validate the option value against the schema. Defaults to true. */
     validate?: boolean;
-    handler: OptionHandler<TSchema>;
+    handler?: OptionHandler<TSchema>;
 }
 
 export function defineGlobalOption<

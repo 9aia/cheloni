@@ -1,10 +1,11 @@
 import type { Command } from "~/core/creation/command";
+import type { MaybePromise } from "~/lib/ts-utils";
 
 export type MiddlewareData = {
     [key: string]: any;
 };
 
-export type NextFunction = (args: { data: MiddlewareData }) => Promise<void>;
+export type NextFunction = (args?: { data: MiddlewareData }) => Promise<void>;
 
 export interface MiddlewareContext {
     command: Command;
@@ -12,4 +13,4 @@ export interface MiddlewareContext {
     next: NextFunction;
 }
 
-export type Middleware = (context: MiddlewareContext) => Promise<void>;
+export type Middleware = (context: MiddlewareContext) => MaybePromise<void>;

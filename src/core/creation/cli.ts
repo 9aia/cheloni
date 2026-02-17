@@ -63,7 +63,18 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
     // Call onInit hooks for all plugins
     for (const plugin of pluginSet) {
         if (plugin.definition.onInit) {
-            await plugin.definition.onInit({ cli, plugin });
+            try {
+                await plugin.definition.onInit({ cli, plugin });
+            } catch (error) {
+                // Log hook errors and rethrow - CLI initialization should fail if onInit fails
+                console.error(`Plugin ${plugin.manifest.name} onInit hook failed:`, error);
+                // Ensure we throw a proper error if the caught value is not an Error instance
+                if (error instanceof Error) {
+                    throw error;
+                } else {
+                    throw new Error(`Plugin ${plugin.manifest.name} onInit hook failed: ${error}`);
+                }
+            }
         }
     }
 
