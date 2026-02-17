@@ -12,9 +12,11 @@ import { normalizeMaybeArray } from "~/lib/js";
 export interface Cli {
     manifest: CliManifest;
     rootCommands: KeyedSet<Command>;
-    // NOTE: how to handle infinite recursion of commands?
+    // NOTE: Nested commands are intentionally not supported to prevent infinite recursion
+    // If subcommands are needed, they should be defined as separate root commands
+    // with different paths, or use a plugin system for command composition
     /** Subcommands available to all commands */
-    // TODO
+    // TODO: Consider lazy command loading if nested commands are needed
     //globalCommands: KeyedSet<Command>;
     /** Plugins applied to all commands */
     plugins: KeyedSet<Plugin>;

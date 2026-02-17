@@ -60,13 +60,16 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     );
 
     // Extract and validate positional argument
-    let positional: InferPositionalType<typeof def.positional>;
-    if (def.positional) {
-        const positionalValue = extractPositionalValue(def.positional, positionalArgs, 0);
+    // Use the definition's positional type directly to avoid repeated typeof evaluation
+    const positionalSchema = def.positional;
+    type PositionalType = InferPositionalType<typeof positionalSchema>;
+    let positional: PositionalType;
+    if (positionalSchema) {
+        const positionalValue = extractPositionalValue(positionalSchema, positionalArgs, 0);
         
         // Show deprecation warning if positional is deprecated and is being used
         if (positionalValue !== undefined) {
-            const posDeprecated = getPositionalManifest(def.positional)?.deprecated;
+            const posDeprecated = getPositionalManifest(positionalSchema)?.deprecated;
             if (posDeprecated) {
                 const message = typeof posDeprecated === 'string' 
                     ? posDeprecated 
@@ -76,20 +79,23 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         }
         
         try {
-            positional = def.positional.parse(positionalValue) as InferPositionalType<typeof def.positional>;
+            positional = positionalSchema.parse(positionalValue) as PositionalType;
         } catch (error) {
             const zodError = error as z.ZodError;
             throw new InvalidPositionalError(zodError.message, zodError.issues);
         }
     } else {
-        positional = undefined as InferPositionalType<typeof def.positional>;
+        positional = undefined as PositionalType;
     }
 
     // Validate options with Zod
-    let options_: InferOptionsType<typeof def.options>;
-    if (def.options) {
-        const validOptionNames = getValidOptionNames(def.options);
-        const commandOptions = getSchemaObject(def.options);
+    // Use the definition's options type directly to avoid repeated typeof evaluation
+    const optionsSchema = def.options;
+    type OptionsType = InferOptionsType<typeof optionsSchema>;
+    let options_: OptionsType;
+    if (optionsSchema) {
+        const validOptionNames = getValidOptionNames(optionsSchema);
+        const commandOptions = getSchemaObject(optionsSchema);
         
         // Show deprecation warnings for deprecated options that are being used
         if (commandOptions) {
@@ -131,11 +137,11 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             }
         }
         
-        const parsed = def.options.parse(optionsForZod) as InferOptionsType<typeof def.options>;
+        const parsed = optionsSchema.parse(optionsForZod) as OptionsType;
         
         // If behavior is 'pass-through', merge in the extra options
         if (extrageousOptionsBehavior === 'pass-through') {
-            options_ = Object.assign({}, parsed, extraOptions) as InferOptionsType<typeof def.options>;
+            options_ = Object.assign({}, parsed, extraOptions) as OptionsType;
         } else {
             // For 'throw' and 'filter-out', only use parsed options
             options_ = parsed;
@@ -155,7 +161,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         }
         
         // No options schema defined, return all options as-is
-        options_ = validatedOptions as InferOptionsType<typeof def.options>;
+        options_ = validatedOptions as OptionsType;
     }
 
     // Execute global option handlers (before command handler)
@@ -221,7 +227,8 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     }
 
     // Create handler context
-    const handlerContext: CommandHandlerContext<typeof def.positional, typeof def.options> = {
+    // Use the cached schema types to avoid repeated typeof evaluation
+    const handlerContext: CommandHandlerContext<typeof positionalSchema, typeof optionsSchema> = {
         positional,
         options: options_,
         data: middlewareData,

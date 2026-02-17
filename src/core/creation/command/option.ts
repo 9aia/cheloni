@@ -18,6 +18,7 @@ export interface Option<TSchema extends z.ZodTypeAny> {
     handler?: OptionHandler<TSchema>;
 }
 
-export type InferOptionsType<TSchema extends z.ZodTypeAny | undefined> = TSchema extends z.ZodTypeAny ? z.infer<TSchema> : {};
+export type InferOptionsType<TSchema extends z.ZodTypeAny | undefined> =
+    [TSchema] extends [z.ZodTypeAny] ? z.infer<TSchema> : {};
 
 export type ExtrageousOptionsBehavior = 'throw' | 'filter-out' | 'pass-through';

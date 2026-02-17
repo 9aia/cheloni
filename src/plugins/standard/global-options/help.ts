@@ -1,6 +1,6 @@
 import z from "zod";
 import { defineGlobalOption } from "~/core/definition/command/global-option";
-import { renderCommandHelp } from "~/core/execution/cli/help";
+import { renderCommandHelp } from "~/plugins/standard/services/help";
 
 export default defineGlobalOption({
     name: "help",

@@ -1,5 +1,3 @@
-import type { ObjectKey } from "./ts-utils";
-
 export const NOOP = () => {};
 
 export function normalizeMaybeArray<T>(value: T | T[] | undefined): T[] {
@@ -11,7 +9,7 @@ export type KeyedSetAddOptions = {
   replace?: boolean;
 };
 
-export class KeyedSet<TItem, TKey = ObjectKey> {
+export class KeyedSet<TItem, TKey = PropertyKey> {
   private readonly map: Map<TKey, TItem>;
 
   constructor(
