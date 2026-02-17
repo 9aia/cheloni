@@ -7,9 +7,9 @@
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
   "exports": {
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./plugins": {
       "types": "./dist/plugins/index.d.ts",
@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/core/index.ts --outdir ./dist/core --target node --format esm --minify --outfile ./dist/core/index.js && bun build ./src/plugins/index.ts --outdir ./dist/plugins --target node --format esm --minify --outfile ./dist/plugins/index.js && tsc -p tsconfig.build.json",
+    "build": "bun build ./src/core/index.ts --outdir ./dist --target node --format esm --minify --outfile ./dist/index.js && bun build ./src/plugins/index.ts --outdir ./dist/plugins --target node --format esm --minify --outfile ./dist/plugins/index.js && tsc -p tsconfig.build.json && mv ./dist/core/index.d.ts ./dist/index.d.ts 2>/dev/null || true && mv ./dist/core/index.d.ts.map ./dist/index.d.ts.map 2>/dev/null || true",
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",
     "release": "release-it",
