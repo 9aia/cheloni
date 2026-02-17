@@ -46,7 +46,7 @@ describe('KeyedSet', () => {
     set.add({ id: 1, name: 'a' });
     set.add({ id: 1, name: 'b' }, { replace: true });
     expect(set.size).toBe(1);
-    expect([...set][0].name).toBe('b');
+    expect([...set][0]!.name).toBe('b');
   });
 
   it('checks if item exists', () => {

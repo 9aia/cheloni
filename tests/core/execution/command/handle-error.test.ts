@@ -34,17 +34,16 @@ describe('handleError', () => {
       {
         code: 'invalid_type',
         expected: 'string',
-        received: 'number',
         path: [],
         message: 'Expected string',
-      },
+      } as z.core.$ZodIssue,
     ]);
 
     handleError({ error, command });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     const calls = consoleErrorSpy.mock.calls;
-    expect(calls.some(call => call[0]?.toString().includes('positional argument'))).toBe(true);
+    expect(calls.some((call: unknown[]) => call[0]?.toString().includes('positional argument'))).toBe(true);
   });
 
   it('handles InvalidOptionsError', async () => {
@@ -66,17 +65,16 @@ describe('handleError', () => {
       {
         code: 'invalid_type',
         expected: 'boolean',
-        received: 'string',
         path: ['verbose'],
         message: 'Expected boolean',
-      },
+      } as z.core.$ZodIssue,
     ]);
 
     handleError({ error, command });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     const calls = consoleErrorSpy.mock.calls;
-    expect(calls.some(call => call[0]?.toString().includes('option --verbose'))).toBe(true);
+    expect(calls.some((call: unknown[]) => call[0]?.toString().includes('option --verbose'))).toBe(true);
   });
 
   it('handles generic Error', () => {
@@ -130,16 +128,15 @@ describe('handleError', () => {
       {
         code: 'invalid_type',
         expected: 'boolean',
-        received: 'string',
         path: ['verbose'],
         message: 'Expected boolean',
-      },
+      } as z.core.$ZodIssue,
     ]);
 
     handleError({ error, command });
 
     const calls = consoleErrorSpy.mock.calls;
-    const errorOutput = calls.map(c => c[0]).join(' ');
+    const errorOutput = calls.map((c: unknown[]) => c[0]).join(' ');
     expect(errorOutput).toContain('verbose output');
   });
 });

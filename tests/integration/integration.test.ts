@@ -41,8 +41,10 @@ describe('Integration Tests', () => {
 
   it('handles middleware chain', async () => {
     const order: string[] = [];
-    const handler = vi.fn(() => {
+    let capturedContext: any;
+    const handler = vi.fn((context: any) => {
       order.push('handler');
+      capturedContext = context;
     });
 
     const cli = await createCli(
@@ -70,8 +72,9 @@ describe('Integration Tests', () => {
     await executeCli({ cli, args: ['test'] });
 
     expect(order).toEqual(['middleware1', 'middleware2', 'handler']);
-    const context = handler.mock.calls[0]![0];
-    expect(context.data.value).toBe('test');
+    expect(handler).toHaveBeenCalledOnce();
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext?.data.value).toBe('test');
   });
 
   it('handles plugin lifecycle', async () => {

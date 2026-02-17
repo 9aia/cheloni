@@ -13,10 +13,9 @@ describe('InvalidSchemaError', () => {
       {
         code: 'invalid_type',
         expected: 'string',
-        received: 'number',
         path: [],
         message: 'Expected string',
-      },
+      } as z.core.$ZodIssue,
     ];
 
     const error = new InvalidSchemaError('Test error', issues);
