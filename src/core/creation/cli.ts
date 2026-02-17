@@ -1,18 +1,17 @@
-import type { CliDefinition } from "~/core/definition/cli";
-import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
-import type { Command } from "~/core/creation/command";
-import { createCommand } from "~/core/creation/command";
+import type { RootCommand } from "~/core/creation/command";
+import { createRootCommand } from "~/core/creation/command";
 import type { GlobalOption } from "~/core/creation/command/global-option";
 import { createGlobalOption } from "~/core/creation/command/global-option";
 import type { Plugin } from "~/core/creation/plugin";
 import { createPlugin } from "~/core/creation/plugin";
-import { KeyedSet } from "~/lib/js";
-import { normalizeMaybeArray } from "~/lib/js";
+import type { CliDefinition } from "~/core/definition/cli";
+import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
+import { KeyedSet, normalizeMaybeArray } from "~/lib/js";
 
 export interface Cli {
     manifest: CliManifest;
     /** The root command of the CLI */
-    command?: Command;
+    command?: RootCommand;
     // TODO: Consider lazy command
     //command?: Command | LazyCommand;
     /** Plugins applied to all commands */
@@ -33,7 +32,7 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
     const globalOptionsSet = new KeyedSet<GlobalOption>(globalOption => globalOption.definition.name);
 
     // Create root command from definition (if provided)
-    const command = definition.command ? createCommand(definition.command) : undefined;
+    const command = definition.command ? createRootCommand(definition.command) : undefined;
 
     // Create global options from definitions
     const globalOptionDefinitions = normalizeMaybeArray(definition.globalOption);

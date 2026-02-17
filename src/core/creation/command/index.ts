@@ -2,7 +2,7 @@ import type { Cli } from "~/core/creation/cli";
 import type { MiddlewareData } from "~/core/creation/command/middleware";
 import type { InferOptionsType } from "~/core/creation/command/option";
 import type { InferPositionalType } from "~/core/creation/command/positional";
-import type { CommandDefinition } from "~/core/definition/command";
+import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
 import type { OptionDefinition } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import { getCommandManifest, type CommandManifest } from "~/core/manifest/command";
@@ -19,6 +19,11 @@ export interface Command<
     paths: string[];
     deprecated?: boolean | string;
 }
+
+export type RootCommand<
+    TPositionalDefinition extends PositionalDefinition = any,
+    TOptionsDefinition extends OptionDefinition = any
+> = Command<TPositionalDefinition, TOptionsDefinition>;
 
 export interface CommandHandlerContext<
     TPositionalDefinition extends PositionalDefinition,
@@ -55,6 +60,15 @@ export function createCommand<
         paths: definition.paths ?? [definition.name],
         deprecated: definition.deprecated,
     };
+}
+
+export function createRootCommand<
+    TPositionalDefinition extends PositionalDefinition,
+    TOptionsDefinition extends OptionDefinition
+>(
+    definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>
+): RootCommand<TPositionalDefinition, TOptionsDefinition> {
+    return createCommand({ ...definition, name: "root" });
 }
 
 // TODO: Add support for lazy commands

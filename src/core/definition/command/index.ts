@@ -25,6 +25,11 @@ export interface CommandDefinition<
     handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition>;
 }
 
+export type RootCommandDefinition<
+TPositionalDefinition extends PositionalDefinition = any,
+TOptionsDefinition extends OptionDefinition = any
+> = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition>, "name">;
+
 // TODO: Add support for lazy commands
 // export type LazyCommandDefinition = () => Promise<CommandDefinition>;
 
@@ -35,4 +40,16 @@ export function defineCommand<
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>
 ): CommandDefinition<TPositionalDefinition, TOptionsDefinition> {
     return definition;
+}
+
+export function defineRootCommand<
+    TPositionalDefinition extends PositionalDefinition,
+    TOptionsDefinition extends OptionDefinition
+>(
+    definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>
+): CommandDefinition<TPositionalDefinition, TOptionsDefinition> {
+    return {
+        ...definition,
+        name: "root",
+    };
 }
