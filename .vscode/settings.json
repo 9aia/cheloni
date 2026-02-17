@@ -6,7 +6,7 @@
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "README.md": "LICENSE",
-        "package.json": ".release-it.json, bun.lock, tsconfig.json, tsconfig.build.json"
+        "package.json": ".release-it.json, bun.lock, tsconfig.json, tsconfig.build.json, vitest.config.ts"
     },
     "files.associations": {
         "*.md": "markdown"

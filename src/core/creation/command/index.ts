@@ -1,4 +1,3 @@
-import type z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { MiddlewareData } from "~/core/creation/command/middleware";
 import type { InferOptionsType } from "~/core/creation/command/option";
@@ -21,28 +20,9 @@ export type CommandHandlerContext<
 };
 
 export type CommandHandler<
-    TPositional extends z.ZodTypeAny | undefined,
-    TOptions extends z.ZodTypeAny | undefined
-> = (context: CommandHandlerContext<TPositional, TOptions>) => MaybePromise<void>;
-
-// export interface CreateHandlerContextOptions<
-//     TPositional extends z.ZodTypeAny | undefined,
-//     TOptions extends z.ZodTypeAny | undefined
-// > {
-//     command: Command;
-//     args: string[];
-//     data?: MiddlewareData;
-//     cliManifest: CliManifest;
-// }
-
-// export function createHandlerContext<
-//     TPositional extends z.ZodTypeAny | undefined,
-//     TOptions extends z.ZodTypeAny | undefined
-// >(options: CreateHandlerContextOptions<TPositional, TOptions>): CommandHandlerContext<TPositional, TOptions> {
-//     // This function is deprecated - use executeCommand from execution layer instead
-//     // Keeping for backwards compatibility
-//     throw new Error("createHandlerContext should not be called directly. Use executeCommand from execution layer.");
-// }
+    TPositionalDefinition extends PositionalDefinition,
+    TOptionsDefinition extends OptionDefinition
+> = (context: CommandHandlerContext<TPositionalDefinition, TOptionsDefinition>) => MaybePromise<void>;
 
 export interface Command<
     TPositionalDefinition extends PositionalDefinition = any,

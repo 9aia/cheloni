@@ -20,9 +20,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/core/index.ts --outdir ./dist --target node --format esm --minify --outfile ./dist/index.js && bun build ./src/plugins/index.ts --outdir ./dist/plugins --target node --format esm --minify --outfile ./dist/plugins/index.js && tsc -p tsconfig.build.json && mv ./dist/core/index.d.ts ./dist/index.d.ts 2>/dev/null || true && mv ./dist/core/index.d.ts.map ./dist/index.d.ts.map 2>/dev/null || true",
+    "build": "bun scripts/build.ts",
     "prepublishOnly": "bun run build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bunx tsc --noEmit",
     "release": "release-it",
     "release:dry": "release-it --dry-run",
     "test": "vitest run",
