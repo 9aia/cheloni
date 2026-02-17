@@ -1,6 +1,6 @@
 {
   "name": "cheloni",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A type-safe, schema-based framework for building CLI with full TypeScript inference",
   "type": "module",
   "main": "./dist/index.js",
