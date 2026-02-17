@@ -7,19 +7,28 @@
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./plugins": {
+      "types": "./dist/plugins/index.d.ts",
+      "import": "./dist/plugins/index.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm --minify --outfile ./dist/index.js && tsc -p tsconfig.build.json",
+    "build": "bun build ./src/core/index.ts --outdir ./dist/core --target node --format esm --minify --outfile ./dist/core/index.js && bun build ./src/plugins/index.ts --outdir ./dist/plugins --target node --format esm --minify --outfile ./dist/plugins/index.js && tsc -p tsconfig.build.json",
     "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit",
     "release": "release-it",
-    "release:dry": "release-it --dry-run"
+    "release:dry": "release-it --dry-run",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "keywords": [
     "cli",
@@ -41,7 +50,8 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "release-it": "^19.2.4"
+    "release-it": "^19.2.4",
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "typescript": "^5"
