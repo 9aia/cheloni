@@ -1,64 +1,38 @@
 # Getting Started
 
-## Basic Command
+1. Install the package
+    ```bash
+    bun add cheloni
+    ```
+
+2. Code your CLI
 
 ```typescript
-import { defineCommand, run } from 'cheloni';
+// main.ts
+import { createCli, defineCommand, executeCli } from 'cheloni';
 import z from 'zod';
 
-const convert = defineCommand({
-  positional: z.string().meta({ description: 'Input file path' }),
+const command = defineCommand({
+  name: 'process',
+  positional: z.string(),
   options: z.object({
-    output: z.string().optional().meta({ description: 'Output path', alias: 'o' }),
+    verbose: z.boolean().optional(),
   }),
   handler: async ({ positional, options }) => {
-    // Types are automatically inferred from schemas
-    // positional: string
-    // options: { output?: string }
-    console.log(`Converting ${positional}...`);
+    console.log(`Processing: ${positional}`);
+    if (options.verbose) console.log('Verbose mode');
   },
 });
 
-run({
-  manifest: { convert },
+const cli = await createCli({
+  name: 'my-cli',
+  command,
 });
+
+await executeCli({ cli });
 ```
 
-## Middleware
-
-You can use middleware to run code before the handler. It might be useful for authentication, logging, etc.
-
-```typescript
-import { type Manifest, type Middleware, run, defineCommand } from 'cheloni';
-
-const intro: Middleware = () => {
-  console.log('Starting...');
-};
-
-const command = defineCommand({
-  middleware: [intro],
-  handler: async ({ options }) => {
-    // Middleware runs before handler
-  },
-});
-```
-
-You can export the middleware function and use it in multiple commands.
-
-## Multiple Commands
-
-```typescript
-import { type Manifest, run, defineCommand } from 'cheloni';
-
-const command1 = defineCommand({ /* ... */ });
-const command2 = defineCommand({ /* ... */ });
-
-const manifest: Manifest = {
-  command1,
-  command2,
-};
-
-run({ manifest });
-```
-
-For bigger projects, we suggest organizing commands in separate files and import them into a single `manifest.ts`.
+3. Run your CLI
+    ```bash
+    bun run main.ts
+    ```

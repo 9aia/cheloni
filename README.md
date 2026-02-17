@@ -7,11 +7,20 @@ A type-safe, schema-based framework for building CLI with full TypeScript infere
 
 ## Quick Start
 
+1. Install the package
+    ```bash
+    bun add cheloni
+    ```
+
+2. Code your CLI
+
 ```typescript
-import { defineCommand, run } from 'cheloni';
+// main.ts
+import { createCli, defineCommand, executeCli } from 'cheloni';
 import z from 'zod';
 
 const command = defineCommand({
+  name: 'process',
   positional: z.string(),
   options: z.object({
     verbose: z.boolean().optional(),
@@ -22,26 +31,37 @@ const command = defineCommand({
   },
 });
 
-run({
-  manifest: { command },
+const cli = await createCli({
+  name: 'my-cli',
+  command,
 });
+
+await executeCli({ cli });
 ```
+
+3. Run your CLI
+    ```bash
+    bun run main.ts
+    ```
 
 ## Features
 
-- **Full Type Safety**: Types inferred from Zod schemas
-- **Flexible Options**: Support `z.object()` and `z.record()` for dynamic options
-- **Aliases**: Define multiple paths and option aliases per command
-- **Middleware**: Pre-handler execution hooks
-- **Smart Error Messages**: Context-aware validation errors
-- **Built-in Help Command**: Automatically generates help text from your command definitions
-- **Built-in Version Command**: Automatically generates version text from your command definitions
+- **Zero Manual Types**: Full TypeScript inference from Zod schemas—define once, get types everywhere
+- **One Schema, Three Benefits**: Define with Zod and get validation, type safety, and auto-generated documentation automatically
+- **Context-Aware Errors**: Intelligent error messages with field names, descriptions, and validation details—no configuration needed
+- **Plugin System**: Lifecycle hooks (`onInit`, `onBeforeCommand`, `onAfterCommand`, `onDestroy`) that can modify CLI structure at runtime
+- **Dynamic Options**: Support for arbitrary key-value options with `z.record()` for flexible CLI patterns
+- **Middleware Pipeline**: Pre-handler execution hooks for cross-cutting concerns like auth, logging, and telemetry
 
 ## Documentation
 
 ### Features
 
+- [Overview](./docs/features/overview.md)
 - [Error Handling](./docs/features/error-handling.md)
+- [Plugin System](./docs/features/plugin.md)
+- [Pipeline](./docs/features/pipeline.md)
+- [Advanced Features](./docs/features/advanced-features.md)
 
 ### Guides (How to Use)
 
@@ -54,7 +74,7 @@ run({
 
 ### How It Works
 
-// TODO
+- [Core Architecture](./docs/how-it-works/core-architecture.md)
 
 ### Design Explanations
 
@@ -63,4 +83,4 @@ run({
 
 ### Reference
 
-// TODO
+_Coming soon_

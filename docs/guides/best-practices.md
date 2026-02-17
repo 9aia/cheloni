@@ -1,5 +1,34 @@
 # Best Practices
 
+## Creating CLI
+
+For bigger projects, we suggest organizing commands in separate files and import them into a single `manifest.ts`.
+
+```typescript
+import { createCli, defineCommand, executeCli } from 'cheloni';
+
+// commands/manifest.ts
+import command1 from './command1';
+import command2 from './command2';
+
+const cli = await createCli({
+  name: 'my-cli',
+  command: [command1, command2],
+});
+
+await executeCli({ cli });
+```
+
+> **Note**: Lazy loading for commands and plugins is a planned feature but not yet implemented. For now, import commands directly.
+
+## Command Definition
+
+**Do**: `const command = defineCommand({ ... })` or `export default defineCommand({ ... })`
+
+**Don't**: `const command: Command = { ... }`  
+
+**Why**: Using `defineCommand` gives you type-safe access to values in your handler, making your code safer and developer experience better.
+
 ## Documentation
 
 1. **Be specific**: "Output file path" is better than "Output"
@@ -20,10 +49,6 @@ defineCommand({
     'my-cli convert ~/Downloads/photo.jpg --normalize',
   ],
 });
-
-run({
-  manifest
-});
 ```
 
 ### Provide Good Metadata
@@ -35,14 +60,16 @@ The framework includes a built-in help command (`my-cli help`, `my-cli <command?
 Add a `description` to help users understand what the positional argument expects:
 
 ```typescript
-positional: z.string().meta({ 
-  description: 'Path to the JPEG image to convert',
-  details: dedent`
-    Specify the path to the input JPEG file you wish to convert to PDF.
-    Relative and absolute paths are accepted.
-  `,
-  example: 'my-cli convert ./images/photo.jpg',
-}),
+{
+  positional: z.string().meta({ 
+    description: 'Path to the JPEG image to convert',
+    details: dedent`
+      Specify the path to the input JPEG file you wish to convert to PDF.
+      Relative and absolute paths are accepted.
+    `,
+    example: 'my-cli convert ./images/photo.jpg',
+  })
+}
 ```
 
 #### Options
@@ -50,26 +77,28 @@ positional: z.string().meta({
 Provide both `description` (short) and `details` (long) for better help output:
 
 ```typescript
-options: z.object({
-  output: z.string().optional().meta({
-    description: 'Output file path',
-    alias: 'o',
-    example: [
-      'my-cli convert ./images/photo.jpg -o ./images/photo.pdf',
-      'my-cli convert ~/Downloads/photo.jpg -o ~/Downloads/photo.pdf',
-    ]
-  }),
-  normalize: z.boolean().optional().meta({
-    description: 'Normalize the filename',
-    details: dedent`
-      Normalize the filename by removing diacritical marks,
-      replacing special characters with underscores, and
-      collapsing multiple underscores.
-    `,
-    alias: 'n',
-    example: 'my-cli convert ~/Downloads/photo.jpg -n',
-  }),
-}),
+{
+  options: z.object({
+    output: z.string().optional().meta({
+      description: 'Output file path',
+      alias: 'o',
+      example: [
+        'my-cli convert ./images/photo.jpg -o ./images/photo.pdf',
+        'my-cli convert ~/Downloads/photo.jpg -o ~/Downloads/photo.pdf',
+      ]
+    }),
+    normalize: z.boolean().optional().meta({
+      description: 'Normalize the filename',
+      details: dedent`
+        Normalize the filename by removing diacritical marks,
+        replacing special characters with underscores, and
+        collapsing multiple underscores.
+      `,
+      alias: 'n',
+      example: 'my-cli convert ~/Downloads/photo.jpg -n',
+    }),
+  })
+}
 ```
 
 ## Error Handling
@@ -81,21 +110,25 @@ options: z.object({
 **Why**: The framework automatically validates all inputs against your Zod schemas and provides detailed, context-aware error messages. Manual validation is redundant and can lead to inconsistent error messages.
 
 ```typescript
-// ❌ Don't do this
-handler: async ({ positional, options }) => {
-  if (!positional) {
-    throw new Error('Positional argument required');
+{
+  // ❌ Don't do this
+  handler: ({ positional, options }) => {
+    if (!positional) {
+      throw new Error('Positional argument required');
+    }
+    if (typeof options.output !== 'string') {
+      throw new Error('Output must be a string');
+    }
+    // ...
   }
-  if (typeof options.output !== 'string') {
-    throw new Error('Output must be a string');
-  }
-  // ...
-}
 
-// ✅ Do this - let Zod handle it
-handler: async ({ positional, options }) => {
-  // positional and options are already validated
-  // ...
+  // ✅ Do this - let the Zod handle it
+  positional: yourPositionalSchema,
+  options: yourOptionsSchema,
+  handler: ({ positional, options }) => {
+    // positional and options are already validated
+    // ...
+  }
 }
 ```
 

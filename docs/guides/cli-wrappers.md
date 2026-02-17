@@ -28,7 +28,7 @@ const build = defineCommand({
 });
 ```
 
-Usage: `my-cli build --dry-run --webpack-config=webpack.prod.js`
+Usage: `my-cli build --dry-run --webpack-config webpack.prod.js`
 
 ## Strict Wrapper (Block Unknown Options)
 
