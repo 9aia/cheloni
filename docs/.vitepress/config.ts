@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: '/cheloni/',
   title: "Cheloni",
   description: "A modern, type-safe CLI framework for TypeScript. Build command-line tools with full type inference, Zod validation, and a powerful plugin system.",
   themeConfig: {

@@ -35,7 +35,8 @@
     "test:ui": "vitest --ui",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:deploy": "bun run docs:build && gh-pages -d docs/.vitepress/dist"
   },
   "keywords": [
     "cli",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "gh-pages": "^6.1.1",
     "release-it": "^19.2.4",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
