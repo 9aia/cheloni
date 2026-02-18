@@ -1,4 +1,5 @@
 # Backlog
 
 - Improve error handling
-- Add scaffolding tool for creating
+- Add versioning to CLI, plugin, etc.
+- Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
