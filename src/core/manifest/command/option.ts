@@ -1,7 +1,7 @@
 import type z from "zod";
 import type { OptionDefinition } from "~/core/definition/command/option";
 import type { MaybeArray } from "~/lib/ts-utils";
-import { getSchemaDeprecated, getSchemaObject } from "~/lib/zod";
+import { getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
 
 export interface OptionManifest {
     name: string;

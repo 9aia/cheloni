@@ -1,5 +1,5 @@
 import type { Cli } from "~/core/creation/cli";
-import type { MiddlewareData } from "~/core/creation/command/middleware";
+import type { Context } from "~/core/execution/command";
 import type { InferOptionsType } from "~/core/creation/command/option";
 import type { InferPositionalType } from "~/core/creation/command/positional";
 import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
@@ -25,13 +25,13 @@ export type RootCommand<
     TOptionsDefinition extends OptionDefinition = any
 > = Command<TPositionalDefinition, TOptionsDefinition>;
 
-export interface CommandHandlerContext<
+export interface CommandHandlerParams<
     TPositionalDefinition extends PositionalDefinition,
     TOptionsDefinition extends OptionDefinition
 > {
     positional: InferPositionalType<TPositionalDefinition>;
     options: InferOptionsType<TOptionsDefinition>;
-    data: MiddlewareData;
+    context: Context;
     command: Command;
     cli: Cli;
 }
@@ -39,7 +39,7 @@ export interface CommandHandlerContext<
 export type CommandHandler<
     TPositionalDefinition extends PositionalDefinition,
     TOptionsDefinition extends OptionDefinition
-> = (context: CommandHandlerContext<TPositionalDefinition, TOptionsDefinition>) => MaybePromise<void>;
+> = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => MaybePromise<void>;
 
 export function createCommand<
     TPositionalDefinition extends PositionalDefinition,

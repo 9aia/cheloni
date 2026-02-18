@@ -7,6 +7,7 @@ import { createPlugin } from "~/core/creation/plugin";
 import type { CliDefinition } from "~/core/definition/cli";
 import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
 import { KeyedSet, normalizeMaybeArray } from "~/lib/js";
+import type { PluginDefinition } from "~/core/definition/plugin";
 
 export interface Cli {
     manifest: CliManifest;
@@ -41,8 +42,22 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
         globalOptionsSet.add(globalOption);
     }
 
-    // Create plugins from definitions
-    const pluginDefinitions = normalizeMaybeArray(definition.plugin);
+    // Create plugins from definitions and packs
+    const pluginDefinitions: PluginDefinition[] = [];
+    
+    // Add plugins from plugin field
+    if (definition.plugin) {
+        pluginDefinitions.push(...normalizeMaybeArray(definition.plugin));
+    }
+    
+    // Add plugins from pack field
+    if (definition.pack) {
+        const packDefinitions = normalizeMaybeArray(definition.pack);
+        for (const packDef of packDefinitions) {
+            pluginDefinitions.push(...normalizeMaybeArray(packDef.plugin));
+        }
+    }
+    
     for (const pluginDef of pluginDefinitions) {
         const plugin = createPlugin(pluginDef);
         pluginSet.add(plugin);

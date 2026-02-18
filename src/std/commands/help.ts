@@ -1,5 +1,5 @@
 import { defineCommand } from "~/core/definition/command";
-import { showHelp } from "~/plugins/standard/services/help";
+import { showHelp } from "~/std/services/help";
 import z from "zod";
 
 export default defineCommand({

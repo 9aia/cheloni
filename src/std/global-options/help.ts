@@ -1,11 +1,12 @@
 import z from "zod";
 import { defineGlobalOption } from "~/core/definition/command/global-option";
-import { renderCommandHelp } from "~/plugins/standard/services/help";
+import { showHelp } from "~/std/services/help";
 
 export default defineGlobalOption({
     name: "help",
     schema: z.boolean().optional().meta({ alias: "h" }),
-    handler: ({ command, cli }) => {
-        renderCommandHelp(cli, command.manifest.name);
+    handler: ({ command, cli, halt }) => {
+        showHelp(cli, command.manifest.name);
+        halt();
     },
 });

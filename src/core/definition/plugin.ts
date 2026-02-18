@@ -3,8 +3,8 @@ import type { PluginCommandHook, PluginHook } from "~/core/creation/plugin/hook"
 export interface PluginDefinition {
     name: string;
     onInit?: PluginHook;
-    onBeforeCommand?: PluginCommandHook;
-    onAfterCommand?: PluginCommandHook;
+    onPreCommandExecution?: PluginCommandHook;
+    onAfterCommandExecution?: PluginCommandHook;
     onDestroy?: PluginHook;
 }
 

@@ -26,3 +26,10 @@ export class InvalidPositionalError extends InvalidSchemaError {
         super(message, issues);
     }
 }
+
+export class HaltError extends Error {
+    constructor() {
+        super("Execution halted");
+        this.name = "HaltError";
+    }
+}

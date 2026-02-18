@@ -1,5 +1,6 @@
 import type { Command } from "~/core/creation/command";
-import type { Middleware, MiddlewareData, NextFunction } from "~/core/creation/command/middleware";
+import type { Middleware, NextFunction } from "~/core/creation/command/middleware";
+import { halt, type Context } from "~/core/execution/command";
 
 export interface ExecuteMiddlewareOptions {
     middlewares: Middleware[];
@@ -8,11 +9,11 @@ export interface ExecuteMiddlewareOptions {
 
 export async function executeMiddleware(
     options: ExecuteMiddlewareOptions
-): Promise<MiddlewareData> {
-    let data: MiddlewareData = {};
+): Promise<Context> {
+    let context: Context = {};
     
     if (options.middlewares.length === 0) {
-        return data;
+        return context;
     }
     
     let middlewareIndex = 0;
@@ -23,15 +24,16 @@ export async function executeMiddleware(
             if (middleware) {
                 await middleware({
                     command: options.command,
-                    data,
+                    context,
                     next,
+                    halt,
                 });
             }
         }
     };
     
     // Start middleware chain
-    await next({ data });
+    await next();
     
-    return data;
+    return context;
 }

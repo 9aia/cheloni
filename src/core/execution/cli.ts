@@ -1,6 +1,7 @@
 import process from "node:process";
 import type { Cli } from "~/core/creation/cli";
 import { handleError } from "~/core/execution/command/handle-error";
+import { HaltError } from "~/core/execution/command/errors";
 import { executeCommand } from "./command";
 import { resolveCommand } from "./command/router";
 
@@ -45,6 +46,10 @@ export async function executeCli(options: ExecuteCliOptions): Promise<void> {
                 cli,
             });
         } catch (error) {
+            // HaltError is not an error - it's a normal way to short-circuit execution
+            if (error instanceof HaltError) {
+                return;
+            }
             handleError({ error, command: match.command });
             process.exit(1);
         }

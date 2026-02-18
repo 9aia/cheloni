@@ -1,4 +1,4 @@
-import type { CommandDefinition } from "~/core/definition/command";
+import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
 import { getOptionsManifest, type OptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest, type PositionalManifest } from "~/core/manifest/command/positional";
 import { getPluginsManifest, type PluginManifest } from "~/core/manifest/plugin";
@@ -18,19 +18,33 @@ export interface CommandManifest {
     details?: string;
 }
 
-export function getCommandManifest(command: CommandDefinition): CommandManifest {
-    const childDefs = normalizeMaybeArray(command.command);
+export function getCommandManifest(definition: CommandDefinition): CommandManifest {
+    const childDefs = normalizeMaybeArray(definition.command);
 
     return {
-        name: command.name,
-        paths: command.paths ?? [command.name],
-        description: command.description,
-        details: command.details,
-        example: command.example,
-        deprecated: command.deprecated,
-        positional: command.positional ? getPositionalManifest(command.positional) : undefined,
-        options: command.options ? getOptionsManifest(command.options) : undefined,
-        plugins: command.plugin ? getPluginsManifest(command.plugin) : undefined,
+        name: definition.name,
+        paths: definition.paths ?? [definition.name],
+        description: definition.description,
+        details: definition.details,
+        example: definition.example,
+        deprecated: definition.deprecated,
+        positional: definition.positional ? getPositionalManifest(definition.positional) : undefined,
+        options: definition.options ? getOptionsManifest(definition.options) : undefined,
+        plugins: definition.plugin ? getPluginsManifest(definition.plugin) : undefined,
         commands: childDefs.map(c => getCommandManifest(c)),
+    };
+}
+
+export interface RootCommandManifest extends CommandManifest {
+    name: "root"
+}
+
+export function getRootCommandsManifest(command: RootCommandDefinition): RootCommandManifest {
+    return {
+        ...getCommandManifest({
+            ...command,
+            name: "root",
+        }),
+        name: "root" as const,
     };
 }

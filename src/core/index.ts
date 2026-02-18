@@ -6,6 +6,7 @@ export * from "./definition/command/middleware";
 export * from "./definition/command/option";
 export * from "./definition/command/positional";
 export * from "./definition/plugin";
+export * from "./definition/pack";
 
 // Creation
 export * from "./creation/cli";

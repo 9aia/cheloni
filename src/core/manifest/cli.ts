@@ -1,6 +1,6 @@
 import type { CliDefinition } from "~/core/definition/cli";
 import type { CommandManifest } from "~/core/manifest/command";
-import { getCommandManifest } from "~/core/manifest/command";
+import { getRootCommandsManifest } from "~/core/manifest/command";
 import type { OptionManifest } from "~/core/manifest/command/option";
 import { getOptionManifest } from "~/core/manifest/command/option";
 import { getPluginManifest, type PluginManifest } from "~/core/manifest/plugin";
@@ -33,7 +33,7 @@ export function getCliManifest(definition: CliDefinition): CliManifest {
         details: definition.details,
         deprecated: definition.deprecated,
         plugins: plugins.map(plugin => getPluginManifest(plugin)),
-        command: definition.command ? getCommandManifest(definition.command) : undefined,
+        command: definition.command ? getRootCommandsManifest(definition.command) : undefined,
         globalOptions: globalOptions.map(option => getOptionManifest(option.name, option.schema)),
         // TODO: add global commands
         //globalCommands: [...cli.globalCommands].map(command => getCommandManifest(command)),

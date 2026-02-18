@@ -1,5 +1,5 @@
 import type z from "zod";
-import { getSchemaDeprecated } from "~/lib/zod";
+import { getSchemaDeprecated } from "~/utils/definition";
 
 export interface PositionalManifest {
     description?: string;

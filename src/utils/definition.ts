@@ -1,4 +1,5 @@
 import type z from "zod";
+import type { MaybeArray } from "~/lib/ts-utils";
 
 export function getSchemaObject(schema: z.ZodTypeAny): Record<string, z.ZodTypeAny> | undefined {
     if (!schema) {
@@ -48,21 +49,25 @@ export function getSchemaDescription(schema: z.ZodTypeAny | undefined): string |
     return undefined;
 }
 
-export function getSchemaAlias(schema: z.ZodTypeAny | undefined): string | string[] | undefined {
+export function getSchemaMeta(schema: z.ZodTypeAny | undefined): Record<string, any> | undefined {
     if (!schema) return undefined;
     
-    // Try to access alias from Zod's internal structure
     try {
         const def = (schema as any)._def;
-        // Some Zod versions store it differently
-        if (def?.metadata?.alias !== undefined) {
-            return def.metadata.alias;
-        }
+        return def?.metadata;
     } catch {
         // Ignore errors when accessing internal structure
     }
     
     return undefined;
+}
+
+export function getSchemaDeprecated(schema: z.ZodTypeAny | undefined): boolean | string | undefined {
+    return getSchemaMeta(schema)?.deprecated;
+}
+
+export function getSchemaAlias(schema: z.ZodTypeAny | undefined): MaybeArray<string> | undefined {
+    return getSchemaMeta(schema)?.alias;
 }
 
 export function getAliasMap(optionsSchema: z.ZodTypeAny) {
@@ -81,22 +86,4 @@ export function getAliasMap(optionsSchema: z.ZodTypeAny) {
     }
 
     return aliasMap;
-}
-
-export function getSchemaDeprecated(schema: z.ZodTypeAny | undefined): boolean | string | undefined {
-    if (!schema) return undefined;
-    
-    try {
-        const def = (schema as any)._def;
-        if (def?.deprecated !== undefined) {
-            return def.deprecated;
-        }
-        if (def?.metadata?.deprecated !== undefined) {
-            return def.metadata.deprecated;
-        }
-    } catch {
-        // Ignore errors when accessing internal structure
-    }
-    
-    return undefined;
 }

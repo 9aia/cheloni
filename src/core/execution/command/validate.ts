@@ -1,7 +1,7 @@
 import type z from "zod";
 import { InvalidOptionsError } from "./errors";
 import { normalizeMaybeArray } from "~/lib/js";
-import { getSchemaAlias, getSchemaObject } from "~/lib/zod";
+import { getSchemaAlias, getSchemaObject } from "~/utils/definition";
 
 export function getValidOptionNames(optionsSchema: z.ZodTypeAny): Set<string> {
     const validOptionNames = new Set<string>();
