@@ -202,7 +202,7 @@ describe('executeCommand', () => {
         name: 'test',
         plugin: {
           name: 'test-plugin',
-          onBeforeCommand: onBefore,
+          onPreCommandExecution: onBefore,
         },
         command: defineCommand({
           name: 'root',
@@ -233,7 +233,7 @@ describe('executeCommand', () => {
         name: 'test',
         plugin: {
           name: 'test-plugin',
-          onAfterCommand: onAfter,
+          onAfterCommandExecution: onAfter,
         },
         command: defineCommand({
           name: 'root',
@@ -263,13 +263,13 @@ describe('executeCommand', () => {
         name: 'test',
         plugin: {
           name: 'global-plugin',
-          onBeforeCommand: globalHook,
+          onPreCommandExecution: globalHook,
         },
         command: defineCommand({
           name: 'root',
           plugin: {
             name: 'command-plugin',
-            onBeforeCommand: commandHook,
+            onPreCommandExecution: commandHook,
           },
           handler: async () => {},
         }),

@@ -6,7 +6,7 @@ import {
   getSchemaAlias,
   getAliasMap,
   getSchemaDeprecated,
-} from '~/lib/zod';
+} from '~/utils/definition';
 
 describe('getSchemaObject', () => {
   it('returns undefined for non-object schema', () => {

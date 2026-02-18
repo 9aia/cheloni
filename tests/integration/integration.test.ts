@@ -63,7 +63,7 @@ describe('Integration Tests', () => {
                 order.push('middleware1');
                 await next();
               },
-              async ({ data, next }) => {
+              async ({ context: data, next }) => {
                 data.value = 'test';
                 order.push('middleware2');
                 await next();
@@ -80,7 +80,7 @@ describe('Integration Tests', () => {
     expect(order).toEqual(['middleware1', 'middleware2', 'handler']);
     expect(handler).toHaveBeenCalledOnce();
     expect(capturedContext).toBeDefined();
-    expect(capturedContext?.data.value).toBe('test');
+    expect(capturedContext?.context.value).toBe('test');
   });
 
   it('handles plugin lifecycle', async () => {
@@ -97,10 +97,10 @@ describe('Integration Tests', () => {
           onInit: async () => {
             lifecycle.push('onInit');
           },
-          onBeforeCommand: async () => {
+          onPreCommandExecution: async () => {
             lifecycle.push('onBeforeCommand');
           },
-          onAfterCommand: async () => {
+          onAfterCommandExecution: async () => {
             lifecycle.push('onAfterCommand');
           },
           onDestroy: async () => {
@@ -258,7 +258,7 @@ describe('Integration Tests', () => {
         name: 'test-cli',
         plugin: {
           name: 'global',
-          onBeforeCommand: globalHook,
+          onPreCommandExecution: globalHook,
         },
         command: defineCommand({
           name: 'root',
@@ -267,7 +267,7 @@ describe('Integration Tests', () => {
             paths: ['test'],
             plugin: {
               name: 'command',
-              onBeforeCommand: commandHook,
+              onPreCommandExecution: commandHook,
             },
             handler,
           }),

@@ -103,11 +103,11 @@ describe('executeMiddleware', () => {
 
     const data = await executeMiddleware({
       middlewares: [
-        async ({ data, next }) => {
+        async ({ context: data, next }) => {
           data.set = 'value1';
           await next();
         },
-        async ({ data, next }) => {
+        async ({ context: data, next }) => {
           data.added = 'value2';
           await next();
         },
