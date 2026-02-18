@@ -1,4 +1,4 @@
-# extrageousOptionsBehavior Design
+# `extrageousOptionsBehavior` Design
 
 ## Why Three Behaviors
 

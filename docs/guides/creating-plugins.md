@@ -200,6 +200,70 @@ const customHelpPlugin = definePlugin({
 });
 ```
 
+## Example
+
+```typescript
+import { definePlugin, defineCommand, createCli } from 'cheloni';
+
+const timer = definePlugin({
+  name: 'timer',
+  onPreCommandExecution: async ({ command }) => {
+    console.time(command.name);
+  },
+  onAfterCommandExecution: async ({ command }) => {
+    console.timeEnd(command.name);
+  },
+});
+
+// Global — will run for every command
+const cli = await createCli({
+  name: 'my-cli',
+  plugin: timer,
+  command: rootCommand,
+});
+
+// Per-command — will run only for this command
+defineCommand({
+  name: 'deploy',
+  plugin: timer,
+  handler: async () => { /* ... */ },
+});
+```
+
+## Error Handling
+
+### Hook Error Behavior
+
+- **`onInit`**: Errors prevent CLI initialization and are thrown immediately
+- **`onBeforeCommand`**: Errors prevent command execution and are displayed to the user
+- **`onAfterCommand`**: Errors are logged but don't override the original handler error
+- **`onDestroy`**: Errors are logged during shutdown
+
+```typescript
+const plugin = definePlugin({
+  name: 'my-plugin',
+  onBeforeCommand: async ({ command }) => {
+    if (!hasPermission(command)) {
+      throw new Error(`Permission denied for command: ${command.manifest.name}`);
+    }
+  },
+  onAfterCommand: async ({ command }) => {
+    try {
+      await logCommandExecution(command);
+    } catch (error) {
+      // Log but don't throw - original error takes precedence
+      console.error('Failed to log execution:', error);
+    }
+  },
+});
+```
+
+**Key points:**
+- Throw errors in `onInit` and `onBeforeCommand` to stop execution
+- Don't throw in `onAfterCommand` or `onDestroy` - handle errors internally
+- Use try-catch in cleanup hooks to prevent masking original errors
+- Error messages are automatically displayed by the framework
+
 ## Best Practices
 
 - **Keep hooks focused**: Each hook should do one thing well
@@ -207,3 +271,9 @@ const customHelpPlugin = definePlugin({
 - **Use `onAfterCommand` for cleanup**: It always runs, even if the handler throws
 - **Store state in closures**: Use closures to share data between hooks
 - **Make plugins reusable**: Export plugins for use across multiple CLIs
+
+1. **Use `onInit` for structural changes** - Modify CLI structure only in `onInit`
+2. **Keep hooks focused** - Each hook should do one thing well
+3. **Handle errors gracefully** - `onAfterCommandExecution` and `onDestroy` should not throw
+4. **Use command plugins for command-specific behavior** - Global plugins for cross-cutting concerns
+5. **Avoid side effects in `onPreCommandExecution`** - Use it for validation/checks, not mutations
