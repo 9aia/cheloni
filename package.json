@@ -1,7 +1,7 @@
 {
   "name": "cheloni",
   "version": "0.2.2",
-  "description": "A type-safe, schema-based framework for building CLI with full TypeScript inference",
+  "description": "A modern, type-safe CLI framework for TypeScript. Build command-line tools with full type inference, Zod validation, and a powerful plugin system—zero manual types required.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,7 +32,10 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [
     "cli",
@@ -57,6 +60,7 @@
     "release-it": "^19.2.4",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
+    "vitepress": "^2.0.0-alpha.16",
     "vitest": "^4.0.18",
     "zod": "^4.3.6"
   },

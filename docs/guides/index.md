@@ -18,5 +18,6 @@ How-to guides help you accomplish specific tasks with Cheloni.
 
 ## Advanced Topics
 
-- [Creating Global Options](./global-option/creating-global-options.md) - Create global options for your CLI
-- [Creating Plugins](./creating-plugins.md) - Extend CLI functionality
+- [Creating Global Options](./command/creating-global-options.md) - Create global options for your CLI
+- [Creating Packs](./advanced/creating-packs.md) - Bundle multiple plugins together
+- [Creating Plugins](./advanced/creating-plugins.md) - Extend CLI functionality

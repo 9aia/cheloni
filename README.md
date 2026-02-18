@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > This project is a work in progress and is not yet ready for production.
 
-Modern TypeScript CLI framework.
+**Cheloni** is a modern, type-safe CLI framework for TypeScript. Build powerful command-line tools with full type inference, Zod-based validation, and a flexible plugin system—all without writing a single manual type annotation.
 
 ## Quick Start
 
@@ -55,4 +55,4 @@ You can contribute to the project by submitting pull requests or by creating an 
 
 ---
 
-[Documentation](./docs/index.md) | [Project](./project/index.md) | [License](./LICENSE)
+[Documentation](./docs/docs.md) | [Project](./project/index.md) | [License](./LICENSE)
