@@ -11,9 +11,13 @@
       "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.js"
     },
-    "./plugins": {
-      "types": "./dist/plugins/index.d.ts",
-      "import": "./dist/plugins/index.js"
+    "./std": {
+      "types": "./dist/std/index.d.ts",
+      "import": "./dist/std/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
     }
   },
   "files": [

@@ -10,7 +10,8 @@ export default defineConfig({
     lib: {
       entry: {
         "core/index": resolve(__dirname, "src/core/index.ts"),
-        "plugins/index": resolve(__dirname, "src/plugins/index.ts"),
+        "std/index": resolve(__dirname, "src/std/index.ts"),
+        "utils/index": resolve(__dirname, "src/utils/index.ts"),
       },
       formats: ["es"],
     },
