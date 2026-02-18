@@ -56,4 +56,4 @@ After the `Cli` object is assembled, `onInit` hooks run in insertion order. Hook
 - Add items to `cli.globalOptions`
 - Modify `cli.plugins`
 
-The standard library plugins use this to inject `help` and `version` commands and global options. See [How Plugins Work](../plugins/index.md).
+The standard library plugins use this to inject `help` and `version` commands and global options. See [Creating Plugins](../../../guides/advanced/creating-plugins.md).
