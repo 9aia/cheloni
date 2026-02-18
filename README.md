@@ -5,49 +5,44 @@
 
 **Cheloni** is a modern, type-safe CLI framework for TypeScript. Build powerful command-line tools with full type inference, Zod-based validation, and a flexible plugin system—all without writing a single manual type annotation.
 
-## Quick Start
-
-1. Install the package
-    ```bash
-    bun add cheloni
-    ```
-
-2. Create a simple CLI
+## Overview
 
 ```typescript
-// hello.ts
-import { createCli, defineRootCommand, executeCli } from 'cheloni';
+import { createCli, defineCommand, defineRootCommand, defineMiddleware, defineGlobalOption, executeCli } from 'cheloni';
+import { stdPack } from 'cheloni/std';
 import z from 'zod';
+import { authMiddleware, loggerMiddleware, configMiddleware } from 'your-lib';
 
-const helloWorld = defineRootCommand({
-  positional: z.string(),
-  handler: async ({ positional }) => {
-    console.log(`Hello, ${positional}!`);
+const deploy = defineCommand({
+  name: 'deploy',
+  description: 'Deploy to production',
+  positional: z.string().meta({ description: 'Environment (staging|production)' }),
+  options: z.object({
+    dryRun: z.boolean().optional().meta({ alias: 'n' }),
+  }),
+  middleware: [authMiddleware], // Handle auth and provides it to the handler
+  handler: async ({ positional, options, context }) => {
+    // { positional: string, options: { dryRun?: boolean }, context: { session: Session } }
+    console.log(`Deploying to ${positional}...`);
+    if (options.dryRun) console.log('Dry run mode');
   },
 });
 
+
 const cli = await createCli({
-  name: 'hello-world',
-  command: helloWorld,
+  name: pkg.name,
+  version: pkg.version,
+  command: defineRootCommand({
+    command: [deploy],
+    middleware: [loggerMiddleware], // Runs for all commands
+  }),
+  pack: stdPack, // Adds help and version commands
 });
 
 await executeCli({ cli });
 ```
 
-3. Run your CLI
-    ```bash
-    bun run hello.ts world
-    // Output: Hello, world!
-    ```
-
-## Features
-
-- **Zero Manual Types**: Full TypeScript inference from Zod schemas—define once, get types everywhere
-- **One Schema, Three Benefits**: Define with Zod and get validation, type safety, and auto-generated documentation automatically
-- **User-Friendly Errors**: Intelligent error messages with field names, descriptions, and validation details—no configuration needed
-- **Plugin System**: Lifecycle hooks (`onInit`, `onBeforeCommand`, `onAfterCommand`, `onDestroy`) that can modify CLI structure at runtime
-- **Dynamic Options**: Support for arbitrary key-value options with `z.record()` for flexible CLI patterns
-- **Middleware Pipeline**: Pre-handler execution hooks for cross-cutting concerns like auth, logging, and telemetry
+**That's it!** Zero manual types, full validation, and complete type safety. Try `my-cli build src --watch --minify`.
 
 ## Contributing
 

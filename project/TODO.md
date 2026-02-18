@@ -4,6 +4,9 @@
 
 - ---
 
+- Add global verbose option to std lib
+- Add global config option to std lib
+- Add dynamic interactive prompting based on schema plugin to std lib
 - Add support for user-extendable middleware context type
 - Add support for lazy commands and plugins
 - Improve option inference to include global options
