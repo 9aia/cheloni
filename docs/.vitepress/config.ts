@@ -11,7 +11,8 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guides', link: '/guides/getting-started/introduction' },
       { text: 'Reference', link: '/reference/index' },
-      { text: 'Explanation', link: '/explanation/index' }
+      { text: 'Explanation', link: '/explanation/index' },
+      { text: 'Examples', link: '/examples/index' },
     ],
 
     sidebar: {
@@ -30,7 +31,7 @@ export default defineConfig({
             { text: 'Creating Commands', link: '/guides/essentials/creating-commands' },
             { text: 'Defining Options', link: '/guides/essentials/defining-options' },
             { text: 'Defining Positional Args', link: '/guides/essentials/defining-positional-args' },
-            { text: 'Creating Command Handlers', link: '/guides/essentials/creating-handlers' },
+            { text: 'Creating Command Handlers', link: '/guides/essentials/creating-command-handlers' },
             { text: 'Defining Middleware', link: '/guides/essentials/defining-middleware' },
           ]
         },
@@ -53,8 +54,8 @@ export default defineConfig({
         {
           text: 'Advanced',
           items: [
-            { text: 'Creating Middleware', link: '/guides/command/creating-middleware' },
-            { text: 'Creating Global Options', link: '/guides/command/creating-global-options' },
+            { text: 'Creating Middleware', link: '/guides/advanced/creating-middleware' },
+            { text: 'Creating Global Options', link: '/guides/advanced/creating-global-options' },
             { text: 'Creating Packs', link: '/guides/advanced/creating-packs' },
             { text: 'Creating Plugins', link: '/guides/advanced/creating-plugins' }
           ]
@@ -109,6 +110,18 @@ export default defineConfig({
               ]
             },
             { text: 'Standard Library', link: '/explanation/how-it-works/std/index' }
+          ]
+        }
+      ],
+      '/examples/': [
+        {
+          text: 'Examples',
+          items: [
+            { text: 'File Converter', link: '/examples/01-file-converter' },
+            { text: 'Task Manager', link: '/examples/02-task-manager' },
+            { text: 'Benchmark', link: '/examples/03-benchmark' },
+            { text: 'JSON Tool', link: '/examples/04-json-tool' },
+            { text: 'Task Runner', link: '/examples/05-task-runner' },
           ]
         }
       ]
