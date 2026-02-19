@@ -1,26 +1,16 @@
 # TODO
 
-- Release
+- Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
 
-- ---
+- Rewrite middleware
+  - Koa-like middlware uses a single, mutable ctx object passed through a middleware chain, its type is generally "static." When you add a property (like ctx.user) in one middleware, TypeScript doesn't inherently know it exists in the next one unless you manually extend the global interface or use generics.
 
-- Add global verbose option to std lib
-- Add global config option to std lib
-- Add dynamic interactive prompting based on schema plugin to std lib
-- Add support for user-extendable middleware context type
-- Add support for lazy commands and plugins
+- Global user-extendable option types, useful for programmatic CLI definition global types
 - Improve option inference to include global options
-- Rewrite errors to use a single error class with code field, message, and issues
-- Change globalOption to `bequeathOption`
-- Ensure error handling by throwing errors instead of `process.exit(1)`
-- Generate `src/manifest.gen.ts` from code (for example, `src/commands/**/*.ts` directory to automatically load all commands from default export)
+
+- Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
 - Add test utils package
-- Refactor src to monorepo (3 packages: packages/core, packages/cli, packages/create (create-cheloni))
-- Rewrite reference docs using a script that grabs from jsdoc comments
 - Add and publish agent skills
-- Add examples/ (monorepo)
-
-- ---
-
-- Add linter and formatter to the repo
-- Add changelog
+- Refactor src to monorepo (3 main packages: packages/core, packages/cli, packages/create (create-cheloni))
+  - Add examples/ (monorepo)
+  - Ensure error handling by throwing errors instead of `process.exit(1)`
