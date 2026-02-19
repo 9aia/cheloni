@@ -1,13 +1,11 @@
 import type z from "zod";
 import type { OptionDefinition } from "~/core/definition/command/option";
-import type { MaybeArray } from "~/lib/ts-utils";
-import { getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
+import { getSchemaAliases, getSchemaDeprecated, getSchemaObject, type Manifest } from "~/utils/definition";
 
-export interface OptionManifest {
-    name: string;
+export interface OptionManifest extends Manifest {
     description?: string;
     details?: string;
-    alias?: MaybeArray<string>;
+    aliases?: string[];
     deprecated?: boolean | string;
 }
 
@@ -27,12 +25,11 @@ export function getOptionManifest(name: string, definition: OptionDefinition): O
         throw new Error("Option definition is required");
     }
 
-    const def = (definition as any)._def;
     return {
         name,
-        description: def?.description ?? def?.metadata?.description,
-        details: def?.metadata?.details,
-        alias: def.alias ?? def?.metadata?.alias,
+        description: (definition as any)._def?.description ?? (definition as any)._def?.metadata?.description,
+        details: (definition as any)._def?.metadata?.details,
+        aliases: getSchemaAliases(definition),
         deprecated: getSchemaDeprecated(definition),
     };
 }

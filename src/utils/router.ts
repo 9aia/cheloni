@@ -7,12 +7,12 @@ export function findCommandInTree(
     command: Command,
     name: string
 ): Command | undefined {
-    for (const child of command.commands) {
+    for (const child of command.commands.values()) {
         if (child.manifest.name === name) return child;
         if (child.paths?.includes(name)) return child;
     }
     // Deep search
-    for (const child of command.commands) {
+    for (const child of command.commands.values()) {
         const found = findCommandInTree(child, name);
         if (found) return found;
     }

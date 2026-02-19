@@ -1,21 +1,21 @@
 import { createCommand } from "~/core";
-import { normalizeMaybeArray } from "~/lib/js";
 import { definePlugin } from "~/core/definition/plugin";
 import versionCommand from "~/std/commands/version";
 import helpCommand from "~/std/commands/help";
 import { mergeOptionsWithVersion } from "~/std/utils/option";
+import defaultRootCommand from "~/std/commands/default-root";
 
 export default definePlugin({
     name: "version",
     onInit: ({ cli }) => {
         if (cli.command) {
             const existingDef = cli.command.definition;
-            const existingCommands = normalizeMaybeArray(existingDef.command);
+            const existingCommands = existingDef.commands ?? [];
 
             cli.command = createCommand({
                 ...existingDef,
                 options: mergeOptionsWithVersion(existingDef.options),
-                command: [
+                commands: [
                     ...existingCommands,
                     versionCommand,
                 ],
@@ -23,14 +23,10 @@ export default definePlugin({
             return;
         }
 
-        // No root command registered
-        // Create one based on help command as default handler (fallback if help plugin not used)
         cli.command = createCommand({
-            ...helpCommand,
-            name: "root",
-            paths: [],
+            ...defaultRootCommand,
             options: mergeOptionsWithVersion(helpCommand.options),
-            command: [helpCommand, versionCommand],
+            commands: [versionCommand],
         });
     },
 });

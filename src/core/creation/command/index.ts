@@ -5,19 +5,26 @@ import type { InferPositionalType } from "~/core/creation/command/positional";
 import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
 import type { OptionDefinition } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
+import type { GlobalOption } from "~/core/creation/command/global-option";
+import { createGlobalOption } from "~/core/creation/command/global-option";
 import { getCommandManifest, type CommandManifest } from "~/core/manifest/command";
-import { KeyedSet, normalizeMaybeArray } from "~/lib/js";
-import type { MaybePromise } from "~/lib/ts-utils";
+import type { Promisable } from "type-fest";
+import type { RuntimeObject } from "~/utils/creation";
+import { ManifestKeyedMap } from "~/utils/definition";
 
 export interface Command<
     TPositionalDefinition extends PositionalDefinition = any,
     TOptionsDefinition extends OptionDefinition = any
-> {
+> extends RuntimeObject<CommandManifest> {
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
-    manifest: CommandManifest;
-    commands: KeyedSet<Command>;
+    commands: ManifestKeyedMap<Command>;
     paths: string[];
     deprecated?: boolean | string;
+    /**
+     * Options that are inherited by subcommands.
+     * @default []
+     */
+    bequeathOptions: ManifestKeyedMap<GlobalOption>;
 }
 
 export type RootCommand<
@@ -39,18 +46,36 @@ export interface CommandHandlerParams<
 export type CommandHandler<
     TPositionalDefinition extends PositionalDefinition,
     TOptionsDefinition extends OptionDefinition
-> = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => MaybePromise<void>;
+> = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => Promisable<void>;
 
 export function createCommand<
     TPositionalDefinition extends PositionalDefinition,
     TOptionsDefinition extends OptionDefinition
 >(
-    definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>
+    definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>,
+    inheritedBequeathOptions: GlobalOption[] = []
 ): Command<TPositionalDefinition, TOptionsDefinition> {
-    const commands = new KeyedSet<Command>(cmd => cmd.manifest.name);
-    const childDefinitions = normalizeMaybeArray(definition.command);
-    for (const childDef of childDefinitions) {
-        commands.add(createCommand(childDef));
+    // Collect bequeathOptions from this command definition
+    const bequeathOptionsMap = new ManifestKeyedMap<GlobalOption>();
+    
+    // Add inherited bequeathOptions from parent commands
+    for (const inheritedOpt of inheritedBequeathOptions) {
+        bequeathOptionsMap.set(inheritedOpt);
+    }
+    
+    // Add this command's own bequeathOptions (they override inherited ones if same name)
+    for (const bequeathOptDef of definition.bequeathOptions ?? []) {
+        const bequeathOption = createGlobalOption(bequeathOptDef);
+        bequeathOptionsMap.set(bequeathOption);
+    }
+    
+    // Collect all bequeathOptions to pass to children
+    const allBequeathOptions = Array.from(bequeathOptionsMap.values());
+    
+    const commands = new ManifestKeyedMap<Command>();
+    for (const childDef of definition.commands ?? []) {
+        const childCommand = createCommand(childDef, allBequeathOptions);
+        commands.set(childCommand);
     }
 
     return {
@@ -59,6 +84,7 @@ export function createCommand<
         commands,
         paths: definition.paths ?? [definition.name],
         deprecated: definition.deprecated,
+        bequeathOptions: bequeathOptionsMap,
     };
 }
 
@@ -70,6 +96,3 @@ export function createRootCommand<
 ): RootCommand<TPositionalDefinition, TOptionsDefinition> {
     return createCommand({ ...definition, name: "root" });
 }
-
-// TODO: Add support for lazy commands
-//export type LazyCommand = () => Promise<Command>;

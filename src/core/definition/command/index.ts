@@ -1,9 +1,9 @@
 import type { CommandHandler } from "~/core/creation/command";
 import type { ExtrageousOptionsBehavior } from "~/core/creation/command/option";
-import type { MaybeArray } from "~/lib/ts-utils";
 import type { MiddlewareDefinition } from "~/core/definition/command/middleware";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import type { OptionDefinition } from "~/core/definition/command/option";
+import type { GlobalOptionDefinition } from "~/core/definition/command/global-option";
 import type { PluginDefinition } from "~/core/definition/plugin";
 
 export interface CommandDefinition<
@@ -16,12 +16,17 @@ export interface CommandDefinition<
     description?: string;
     positional?: TPositionalDefinition;
     options?: TOptionsDefinition;
-    middleware?: MaybeArray<MiddlewareDefinition>;
-    example?: MaybeArray<string>;
+    middleware?: MiddlewareDefinition[];
+    examples?: string[];
     details?: string;
     throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
-    plugin?: MaybeArray<PluginDefinition>;
-    command?: MaybeArray<CommandDefinition>;
+    plugins?: PluginDefinition[];
+    commands?: CommandDefinition[];
+    /**
+     * Options that are inherited by subcommands.
+     * @default []
+     */
+    bequeathOptions?: GlobalOptionDefinition[];
     handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition>;
 }
 
@@ -29,9 +34,6 @@ export type RootCommandDefinition<
 TPositionalDefinition extends PositionalDefinition = any,
 TOptionsDefinition extends OptionDefinition = any
 > = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition>, "name">;
-
-// TODO: Add support for lazy commands
-// export type LazyCommandDefinition = () => Promise<CommandDefinition>;
 
 export function defineCommand<
     TPositionalDefinition extends PositionalDefinition,

@@ -1,11 +1,11 @@
 import { defineCommand } from "~/core/definition/command";
 import { showHelp } from "~/std/services/help";
-import z from "zod";
+import { helpPositionalSchema } from "../schemas/help";
 
 export default defineCommand({
     name: "help",
     description: "Show help",
-    positional: z.string().optional().describe("Command name to show help for"),
+    positional: helpPositionalSchema,
     handler: ({ cli, positional }) => {
         const commandName = positional;
         showHelp(cli, commandName);

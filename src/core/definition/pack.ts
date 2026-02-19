@@ -1,11 +1,10 @@
-import type { MaybeArray } from "~/lib/ts-utils";
 import type { PluginDefinition } from "./plugin";
 
-export interface PackDefinition {
+export interface PluginpackDefinition {
     name: string;
-    plugin: MaybeArray<PluginDefinition>;
+    plugins: PluginDefinition[];
 }
 
-export function definePack(definition: PackDefinition): PackDefinition {
+export function definePluginpack(definition: PluginpackDefinition): PluginpackDefinition {
     return definition;
 }

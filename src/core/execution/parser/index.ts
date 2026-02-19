@@ -1,7 +1,7 @@
 import mri from "mri";
 import type z from "zod";
 
-export function parseArgs(args: string[], aliasMap: Record<string, string | string[]> = {}) {
+export function parseArgs(args: string[], aliasMap: Record<string, string[]> = {}) {
     const argv = mri(args, {
         boolean: [],
         string: [],

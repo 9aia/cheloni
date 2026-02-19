@@ -3,17 +3,16 @@ import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { CommandManifest } from "~/core/manifest/command";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
-import { getSchemaAlias, getSchemaDeprecated, getSchemaDescription, getSchemaObject } from "~/utils/definition";
+import { getSchemaAliases, getSchemaDeprecated, getSchemaDescription, getSchemaObject } from "~/utils/definition";
 import { findCommandInTree } from "~/utils/router";
 
 function showOptionHelp(name: string, schema: z.ZodTypeAny): void {
     const description = getSchemaDescription(schema);
-    const alias = getSchemaAlias(schema);
+    const aliases = getSchemaAliases(schema);
     const deprecated = getSchemaDeprecated(schema);
 
     let line = `  --${name}`;
-    if (alias) {
-        const aliases = Array.isArray(alias) ? alias : [alias];
+    if (aliases && aliases.length > 0) {
         line += `, ${aliases.map(a => `-${a}`).join(', ')}`;
     }
     line += `    ${description || ''}`;
@@ -81,7 +80,7 @@ function showCommandHelp(cli: Cli, commandName: string): void {
     // Show subcommands if any
     if (actualCommand.commands.size > 0) {
         console.log(`\nCommands:`);
-        for (const cmd of actualCommand.commands) {
+        for (const cmd of actualCommand.commands.values()) {
             const sub = cmd.manifest;
             let cmdLine = `  ${sub.name}`;
             if (sub.paths && sub.paths.length > 0) {
@@ -92,13 +91,13 @@ function showCommandHelp(cli: Cli, commandName: string): void {
         }
     }
 
-    // Show command options (merged with global options)
+    // Show command options (merged with bequeath options)
     const commandOptions = getSchemaObject(actualCommand.definition.options ?? z.object({}));
 
     const hasCommandOptions = commandOptions && Object.keys(commandOptions).length > 0;
-    const hasGlobalOptions = cli.globalOptions.size > 0;
+    const hasBequeathOptions = actualCommand.bequeathOptions.size > 0;
 
-    if (hasCommandOptions || hasGlobalOptions) {
+    if (hasCommandOptions || hasBequeathOptions) {
         console.log(`\nOptions:`);
 
         // Show command-specific options
@@ -108,15 +107,15 @@ function showCommandHelp(cli: Cli, commandName: string): void {
             }
         }
 
-        // Show global options (automatically available to all commands)
-        for (const globalOpt of cli.globalOptions) {
-            showOptionHelp(globalOpt.definition.name, globalOpt.definition.schema ?? z.any());
+        // Show bequeath options (inherited from parent commands)
+        for (const bequeathOpt of actualCommand.bequeathOptions.values()) {
+            showOptionHelp(bequeathOpt.definition.name, bequeathOpt.definition.schema ?? z.any());
         }
     }
 
     // Show examples
-    if (command.example) {
-        const examples = Array.isArray(command.example) ? command.example : [command.example];
+    if (command.examples && command.examples.length > 0) {
+        const examples = command.examples;
         console.log(`\nExamples:`);
         for (const example of examples) {
             console.log(`  ${example}`);
@@ -127,7 +126,7 @@ function showCommandHelp(cli: Cli, commandName: string): void {
 function showUsage(cli: Cli): void {
     const rootCommand = cli.command;
     const hasCommands = rootCommand && rootCommand.commands.size > 0;
-    const hasOptions = cli.globalOptions.size > 0 || rootCommand?.definition.options;
+    const hasOptions = (rootCommand && rootCommand.bequeathOptions.size > 0) || rootCommand?.definition.options;
     const hasPositional = rootCommand && rootCommand.definition.positional;
 
     let usageParts = [cli.manifest.name];
@@ -172,7 +171,7 @@ function showRootHelp(cli: Cli): void {
     const rootCommand = cli.command;
     if (rootCommand && rootCommand.commands.size > 0) {
         console.log(`Commands:`);
-        for (const cmd of rootCommand.commands) {
+        for (const cmd of rootCommand.commands.values()) {
             const command = cmd.manifest;
             const name = command.name;
             const commandDescription = command.description || '';

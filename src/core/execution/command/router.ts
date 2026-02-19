@@ -48,7 +48,7 @@ export function resolveCommand(cli: Cli, argv: string[]): CommandMatch | null {
         }
 
         // Try to find a matching subcommand
-        const found = findCommandByPath(current.commands, firstArg);
+        const found = findCommandByPath(current.commands.values(), firstArg);
         if (found) {
             current = found;
             remaining = remaining.slice(1);

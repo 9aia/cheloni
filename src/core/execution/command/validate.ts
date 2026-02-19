@@ -1,7 +1,6 @@
 import type z from "zod";
 import { InvalidOptionsError } from "./errors";
-import { normalizeMaybeArray } from "~/lib/js";
-import { getSchemaAlias, getSchemaObject } from "~/utils/definition";
+import { getSchemaAliases, getSchemaObject } from "~/utils/definition";
 
 export function getValidOptionNames(optionsSchema: z.ZodTypeAny): Set<string> {
     const validOptionNames = new Set<string>();
@@ -15,8 +14,7 @@ export function getValidOptionNames(optionsSchema: z.ZodTypeAny): Set<string> {
         validOptionNames.add(optionName);
 
         // Add aliases to the valid set
-        const alias = getSchemaAlias(schema);
-        for (const aliasName of normalizeMaybeArray(alias)) {
+        for (const aliasName of getSchemaAliases(schema) ?? []) {
             validOptionNames.add(aliasName);
         }
     }
@@ -31,15 +29,30 @@ export function validateOptionsExist(
     globalOptionNames: Set<string> = new Set()
 ): Record<string, any> {
     if (!definedOptions) {
-        // Filter out global options from unknown options check
-        const nonGlobalOptions = Object.keys(rawOptions).filter(opt => !globalOptionNames.has(opt));
+        // Command defines no options — only global options are allowed (unless pass-through)
+        const providedOptionNames = Object.keys(rawOptions);
+        const nonGlobalOptions = providedOptionNames.filter(opt => !globalOptionNames.has(opt));
+
         if (nonGlobalOptions.length > 0 && behavior === 'throw') {
             throw new InvalidOptionsError(
                 `Unknown options provided: ${nonGlobalOptions.map(opt => `--${opt}`).join(', ')}. This command does not accept any options.`,
                 []
             );
         }
-        return behavior === 'pass-through' ? rawOptions : {};
+
+        if (behavior === 'filter-out') {
+            const filtered: Record<string, any> = {};
+            for (const [key, value] of Object.entries(rawOptions)) {
+                if (globalOptionNames.has(key)) {
+                    filtered[key] = value;
+                }
+            }
+            return filtered;
+        }
+
+        // For both 'throw' (after validation) and 'pass-through', keep parsed values so
+        // global options can still execute (e.g. `-h`, `--version`, `-v`).
+        return rawOptions;
     }
 
     const validOptionNames = getValidOptionNames(definedOptions);
@@ -53,9 +66,8 @@ export function validateOptionsExist(
         const object = getSchemaObject(definedOptions);
         const knownOptions = object 
             ? Object.entries(object).map(([name, schema]) => {
-                const alias = getSchemaAlias(schema);
-                if (alias) {
-                    const aliases = normalizeMaybeArray(alias);
+                const aliases = getSchemaAliases(schema);
+                if (aliases && aliases.length > 0) {
                     const aliasStr = aliases.map(a => `-${a}`).join(', ');
                     return `--${name} (${aliasStr})`;
                 }

@@ -1,77 +1,52 @@
 import type { RootCommand } from "~/core/creation/command";
 import { createRootCommand } from "~/core/creation/command";
-import type { GlobalOption } from "~/core/creation/command/global-option";
-import { createGlobalOption } from "~/core/creation/command/global-option";
 import type { Plugin } from "~/core/creation/plugin";
 import { createPlugin } from "~/core/creation/plugin";
 import type { CliDefinition } from "~/core/definition/cli";
 import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
-import { KeyedSet, normalizeMaybeArray } from "~/lib/js";
 import type { PluginDefinition } from "~/core/definition/plugin";
+import type { RuntimeObject } from "~/utils/creation";
+import { ManifestKeyedMap } from "~/utils/definition";
 
-export interface Cli {
-    manifest: CliManifest;
+export interface Cli extends RuntimeObject<CliManifest> {
     /** The root command of the CLI */
     command?: RootCommand;
-    // TODO: Consider lazy command
-    //command?: Command | LazyCommand;
     /** Plugins applied to all commands */
-    plugins: KeyedSet<Plugin>;
-    /** Option definitions available globally */
-    globalOptions: KeyedSet<GlobalOption>;
-    // TODO: Consider global commands
-    //globalCommands: KeyedSet<Command>;
-    /** Positional argument definitions available globally */
-    // TODO: add global positional
-    //globalPositional: Positional;
+    plugins: ManifestKeyedMap<Plugin>;
 }
 
 export async function createCli(definition: CliDefinition): Promise<Cli> {
     const manifest = getCliManifest(definition);
 
-    const pluginSet = new KeyedSet<Plugin>(plugin => plugin.manifest.name);
-    const globalOptionsSet = new KeyedSet<GlobalOption>(globalOption => globalOption.definition.name);
+    const pluginMap = new ManifestKeyedMap<Plugin>();
 
     // Create root command from definition (if provided)
     const command = definition.command ? createRootCommand(definition.command) : undefined;
 
-    // Create global options from definitions
-    const globalOptionDefinitions = normalizeMaybeArray(definition.globalOption);
-    for (const globalOptDef of globalOptionDefinitions) {
-        const globalOption = createGlobalOption(globalOptDef);
-        globalOptionsSet.add(globalOption);
-    }
-
-    // Create plugins from definitions and packs
+    // Create plugins from definitions and pluginpacks
     const pluginDefinitions: PluginDefinition[] = [];
     
     // Add plugins from plugin field
-    if (definition.plugin) {
-        pluginDefinitions.push(...normalizeMaybeArray(definition.plugin));
-    }
+    pluginDefinitions.push(...(definition.plugins ?? []));
     
-    // Add plugins from pack field
-    if (definition.pack) {
-        const packDefinitions = normalizeMaybeArray(definition.pack);
-        for (const packDef of packDefinitions) {
-            pluginDefinitions.push(...normalizeMaybeArray(packDef.plugin));
-        }
+    // Add plugins from pluginpack field
+    for (const pluginpackDef of definition.pluginpacks ?? []) {
+        pluginDefinitions.push(...(pluginpackDef.plugins ?? []));
     }
     
     for (const pluginDef of pluginDefinitions) {
         const plugin = createPlugin(pluginDef);
-        pluginSet.add(plugin);
+        pluginMap.set(plugin);
     }
 
     const cli: Cli = {
         manifest,
         command,
-        plugins: pluginSet,
-        globalOptions: globalOptionsSet,
+        plugins: pluginMap,
     };
 
     // Call onInit hooks for all plugins
-    for (const plugin of pluginSet) {
+    for (const plugin of pluginMap.values()) {
         if (plugin.definition.onInit) {
             try {
                 await plugin.definition.onInit({ cli, plugin });

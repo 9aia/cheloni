@@ -63,7 +63,7 @@ export async function executeCli(options: ExecuteCliOptions): Promise<void> {
         process.exit(1);
     } finally {
         // Call onDestroy hooks for all plugins (always called, even on error)
-        for (const plugin of cli.plugins) {
+        for (const plugin of cli.plugins.values()) {
             if (plugin.definition.onDestroy) {
                 try {
                     await plugin.definition.onDestroy({ cli, plugin });

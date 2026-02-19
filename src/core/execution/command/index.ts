@@ -8,9 +8,8 @@ import { extractPositionalValue, parseArgs } from "../parser";
 import { HaltError, InvalidOptionsError, InvalidPositionalError } from "./errors";
 import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
-import { getAliasMap, getSchemaAlias, getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
+import { getAliasMap, getSchemaAliases, getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
-import { normalizeMaybeArray } from "~/lib/js";
 
 export type Context = {
     [key: string]: any;
@@ -28,20 +27,20 @@ export interface ExecuteCommandOptions {
 }
 
 function collectPlugins(cli: Cli, commandDef: Command["definition"]) {
-    const globalPlugins = Array.from(cli.plugins);
-    const commandPluginDefinitions = normalizeMaybeArray(commandDef.plugin);
-    const commandPlugins = commandPluginDefinitions.map(createPlugin);
+    const globalPlugins = Array.from(cli.plugins.values());
+    const commandPlugins = (commandDef.plugins ?? []).map(createPlugin);
     return [...globalPlugins, ...commandPlugins];
 }
 
-function buildAliasMap(commandDef: Command["definition"], cli: Cli): Record<string, string | string[]> {
+function buildAliasMap(commandDef: Command["definition"], cli: Cli, command: Command): Record<string, string[]> {
     const commandAliasMap = commandDef.options ? getAliasMap(commandDef.options) : {};
-    const globalAliasMap: Record<string, string | string[]> = {};
+    const globalAliasMap: Record<string, string[]> = {};
     
-    for (const globalOpt of cli.globalOptions) {
-        const alias = getSchemaAlias(globalOpt.definition.schema);
-        if (alias !== undefined) {
-            globalAliasMap[globalOpt.definition.name] = alias;
+    // Include bequeathOptions from parent commands
+    for (const bequeathOpt of command.bequeathOptions.values()) {
+        const aliases = getSchemaAliases(bequeathOpt.definition.schema);
+        if (aliases !== undefined) {
+            globalAliasMap[bequeathOpt.definition.name] = aliases;
         }
     }
     
@@ -49,11 +48,11 @@ function buildAliasMap(commandDef: Command["definition"], cli: Cli): Record<stri
 }
 
 async function executeMiddlewareChain(
-    middlewares: Command["definition"]["middleware"],
+    middleware: Command["definition"]["middleware"],
     command: Command
 ): Promise<Record<string, any>> {
     return await executeMiddleware({
-        middlewares: normalizeMaybeArray(middlewares),
+        middlewares: middleware ?? [],
         command,
     });
 }
@@ -64,8 +63,9 @@ async function validateAndExecuteGlobalOptions(
     command: Command,
     context: Context
 ): Promise<void> {
-    for (const globalOpt of cli.globalOptions) {
-        const optName = globalOpt.definition.name;
+    // Process bequeathOptions from parent commands
+    for (const bequeathOpt of command.bequeathOptions.values()) {
+        const optName = bequeathOpt.definition.name;
         const optValue = validatedOptions[optName];
         
         if (optValue === undefined) {
@@ -73,9 +73,9 @@ async function validateAndExecuteGlobalOptions(
         }
         
         let parsedValue: any = optValue;
-        if (globalOpt.definition.schema) {
+        if (bequeathOpt.definition.schema) {
             try {
-                parsedValue = globalOpt.definition.schema.parse(optValue);
+                parsedValue = bequeathOpt.definition.schema.parse(optValue);
             } catch (error) {
                 const zodError = error as z.ZodError;
                 throw new InvalidOptionsError(
@@ -85,13 +85,13 @@ async function validateAndExecuteGlobalOptions(
             }
         }
         
-        if (globalOpt.definition.handler) {
-            await globalOpt.definition.handler({
+        if (bequeathOpt.definition.handler) {
+            await bequeathOpt.definition.handler({
                 value: parsedValue,
                 option: {
                     name: optName,
-                    schema: globalOpt.definition.schema,
-                    handler: globalOpt.definition.handler,
+                    schema: bequeathOpt.definition.schema,
+                    handler: bequeathOpt.definition.handler,
                 },
                 command,
                 cli,
@@ -133,7 +133,7 @@ function validatePositional<T extends z.ZodTypeAny | undefined>(
 function showDeprecationWarnings(
     validatedOptions: Record<string, any>,
     commandOptions: Record<string, z.ZodTypeAny> | null | undefined,
-    globalOptions: Cli["globalOptions"],
+    bequeathOptions: Command["bequeathOptions"],
     optionsSchema: z.ZodTypeAny | undefined
 ): void {
     if (commandOptions) {
@@ -150,14 +150,14 @@ function showDeprecationWarnings(
         }
     }
     
-    for (const globalOpt of globalOptions) {
-        if (validatedOptions[globalOpt.definition.name] !== undefined) {
-            const globalOptDeprecated = getSchemaDeprecated(globalOpt.definition.schema);
-            if (globalOptDeprecated) {
-                const message = typeof globalOptDeprecated === 'string' 
-                    ? globalOptDeprecated 
+    for (const bequeathOpt of bequeathOptions.values()) {
+        if (validatedOptions[bequeathOpt.definition.name] !== undefined) {
+            const bequeathOptDeprecated = getSchemaDeprecated(bequeathOpt.definition.schema);
+            if (bequeathOptDeprecated) {
+                const message = typeof bequeathOptDeprecated === 'string' 
+                    ? bequeathOptDeprecated 
                     : 'This option is deprecated';
-                console.warn(`Deprecated: --${globalOpt.definition.name}: ${message}`);
+                console.warn(`Deprecated: --${bequeathOpt.definition.name}: ${message}`);
             }
         }
     }
@@ -167,17 +167,17 @@ function validateOptions<T extends z.ZodTypeAny | undefined>(
     optionsSchema: T,
     validatedOptions: Record<string, any>,
     extrageousOptionsBehavior: 'throw' | 'filter-out' | 'pass-through',
-    globalOptions: Cli["globalOptions"]
+    bequeathOptions: Command["bequeathOptions"]
 ): InferOptionsType<T> {
     if (!optionsSchema) {
-        showDeprecationWarnings(validatedOptions, null, globalOptions, undefined);
+        showDeprecationWarnings(validatedOptions, null, bequeathOptions, undefined);
         return validatedOptions as InferOptionsType<T>;
     }
     
     const validOptionNames = getValidOptionNames(optionsSchema);
     const commandOptions = getSchemaObject(optionsSchema);
     
-    showDeprecationWarnings(validatedOptions, commandOptions, globalOptions, optionsSchema);
+    showDeprecationWarnings(validatedOptions, commandOptions, bequeathOptions, optionsSchema);
     
     const optionsForZod: Record<string, any> = {};
     const extraOptions: Record<string, any> = {};
@@ -235,19 +235,35 @@ async function executePostCommandHooks(
     }
 }
 
+function buildGlobalOptionNames(cli: Cli, command: Command): Set<string> {
+    // mri returns BOTH the canonical key AND the alias key(s) in the parsed output.
+    // Include global option aliases here so unknown-option validation doesn't reject `-h`, `-v`, etc.
+    const names = new Set<string>();
+    
+    // Include bequeathOptions from parent commands
+    for (const opt of command.bequeathOptions.values()) {
+        names.add(opt.definition.name);
+        for (const a of getSchemaAliases(opt.definition.schema) ?? []) {
+            if (a) names.add(a);
+        }
+    }
+
+    return names;
+}
+
 export async function executeCommand(options: ExecuteCommandOptions): Promise<void> {
     const { command, args, cli } = options;
     const def = command.definition;
     
     const allPlugins = collectPlugins(cli, def);
-    const aliasMap = buildAliasMap(def, cli);
+    const aliasMap = buildAliasMap(def, cli, command);
     const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
     
     try {
         const middlewareContext = await executeMiddlewareChain(def.middleware, command);
         
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? 'throw';
-        const globalOptionNames = new Set(Array.from(cli.globalOptions).map(opt => opt.definition.name));
+        const globalOptionNames = buildGlobalOptionNames(cli, command);
         const validatedOptions = validateOptionsExist(
             rawOptions,
             def.options,
@@ -265,7 +281,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             optionsSchema,
             validatedOptions,
             extrageousOptionsBehavior,
-            cli.globalOptions
+            command.bequeathOptions
         );
         
         await executePreCommandHooks(allPlugins, cli, def);

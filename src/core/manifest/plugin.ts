@@ -1,10 +1,7 @@
 import type { PluginDefinition } from "~/core/definition/plugin";
-import { normalizeMaybeArray } from "~/lib/js";
-import type { MaybeArray } from "~/lib/ts-utils";
+import type { Manifest } from "~/utils/definition";
 
-export interface PluginManifest {
-    name: string;
-}
+export interface PluginManifest extends Manifest {}
 
 export function getPluginManifest(plugin: PluginDefinition): PluginManifest {
     return {
@@ -12,7 +9,6 @@ export function getPluginManifest(plugin: PluginDefinition): PluginManifest {
     };
 }
 
-export function getPluginsManifest(plugins: MaybeArray<PluginDefinition>): PluginManifest[] {
-    const normalizedPlugins = normalizeMaybeArray(plugins);
-    return normalizedPlugins.map(plugin => getPluginManifest(plugin));
+export function getPluginsManifest(plugins: PluginDefinition[]): PluginManifest[] {
+    return plugins.map(plugin => getPluginManifest(plugin));
 }

@@ -2,15 +2,13 @@ import type { CommandDefinition, RootCommandDefinition } from "~/core/definition
 import { getOptionsManifest, type OptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest, type PositionalManifest } from "~/core/manifest/command/positional";
 import { getPluginsManifest, type PluginManifest } from "~/core/manifest/plugin";
-import { normalizeMaybeArray } from "~/lib/js";
-import type { MaybeArray } from "~/lib/ts-utils";
+import type { Manifest } from "~/utils/definition";
 
-export interface CommandManifest {
-    name: string;
+export interface CommandManifest extends Manifest {
     paths?: string[];
     deprecated?: boolean | string;
     description?: string;
-    example?: MaybeArray<string>;
+    examples?: string[];
     options?: OptionManifest[];
     positional?: PositionalManifest;
     plugins?: PluginManifest[];
@@ -19,19 +17,17 @@ export interface CommandManifest {
 }
 
 export function getCommandManifest(definition: CommandDefinition): CommandManifest {
-    const childDefs = normalizeMaybeArray(definition.command);
-
     return {
         name: definition.name,
         paths: definition.paths ?? [definition.name],
         description: definition.description,
         details: definition.details,
-        example: definition.example,
+        examples: definition.examples,
         deprecated: definition.deprecated,
         positional: definition.positional ? getPositionalManifest(definition.positional) : undefined,
         options: definition.options ? getOptionsManifest(definition.options) : undefined,
-        plugins: definition.plugin ? getPluginsManifest(definition.plugin) : undefined,
-        commands: childDefs.map(c => getCommandManifest(c)),
+        plugins: definition.plugins ? getPluginsManifest(definition.plugins) : undefined,
+        commands: (definition.commands ?? []).map(c => getCommandManifest(c)),
     };
 }
 

@@ -1,7 +1,7 @@
 import type z from "zod";
 import type { Command } from ".";
 import type { Cli } from "~/core/creation/cli";
-import type { MaybePromise } from "~/lib/ts-utils";
+import type { Promisable } from "type-fest";
 import type { HaltFunction, Context } from "~/core/execution/command";
 
 export interface OptionHandlerParams<TSchema extends z.ZodTypeAny> {
@@ -13,7 +13,7 @@ export interface OptionHandlerParams<TSchema extends z.ZodTypeAny> {
     halt: HaltFunction;
 }
 
-export type OptionHandler<TSchema extends z.ZodTypeAny> = (params: OptionHandlerParams<TSchema>) => MaybePromise<void>;
+export type OptionHandler<TSchema extends z.ZodTypeAny> = (params: OptionHandlerParams<TSchema>) => Promisable<void>;
 
 export interface Option<TSchema extends z.ZodTypeAny> {
     name: string;

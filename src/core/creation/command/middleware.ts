@@ -1,5 +1,5 @@
 import type { Command } from "~/core/creation/command";
-import type { MaybePromise } from "~/lib/ts-utils";
+import type { Promisable } from "type-fest";
 import type { Context } from "~/core/execution/command";
 
 export type NextFunction = () => Promise<void>;
@@ -11,4 +11,4 @@ export interface MiddlewareParams {
     halt: () => never;
 }
 
-export type Middleware = (params: MiddlewareParams) => MaybePromise<void>;
+export type Middleware = (params: MiddlewareParams) => Promisable<void>;

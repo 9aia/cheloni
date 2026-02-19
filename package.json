@@ -58,8 +58,10 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/lodash-es": "^4.17.12",
     "gh-pages": "^6.1.1",
     "release-it": "^19.2.4",
+    "type-fest": "^5.4.4",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
     "vitepress": "^2.0.0-alpha.16",
@@ -71,6 +73,7 @@
     "zod": "^4.0.0"
   },
   "dependencies": {
+    "lodash-es": "^4.17.23",
     "mri": "^1.2.0"
   }
 }
