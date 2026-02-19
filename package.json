@@ -36,7 +36,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:deploy": "bun run docs:build && gh-pages -d docs/.vitepress/dist"
+    "docs:deploy": "gh-pages -d docs/.vitepress/dist"
   },
   "keywords": [
     "cli",

@@ -14,7 +14,7 @@
   },
   "hooks": {
     "after:bump": ["bun run build", "bun run docs:build"],
-    "after:release": "echo Successfully released v${version} to ${repo.repository}."
+    "after:release": ["bun run docs:deploy", "echo Successfully released v${version} to ${repo.repository}."]
   },
   "plugins": {}
 }
