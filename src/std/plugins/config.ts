@@ -1,4 +1,5 @@
-import { definePlugin } from "~/core/definition/plugin";
+import { definePlugin, type PluginDefinition, type PluginFactory } from "~/core/definition/plugin";
+import type { PluginCommandHook, PluginHook } from "~/core/creation/plugin/hook";
 import * as _ from "lodash-es";
 import configOption from "~/std/global-options/config";
 import { createCommand, type Middleware } from "~/core";
@@ -29,9 +30,9 @@ export interface ConfigPluginConfig {
     schema?: z.ZodTypeAny;
 }
 
-export default definePlugin((pluginConfig: ConfigPluginConfig = {}) => ({
+const configPluginFactory = (pluginConfig: ConfigPluginConfig = {}) => ({
     name: "config",
-    onInit: async ({ cli }) => {
+    onInit: async ({ cli }: Parameters<PluginHook>[0]) => {
         if (cli.command) {
             const existingDef = cli.command.definition;
             const existingBequeathOptions = existingDef.bequeathOptions ?? [];
@@ -48,7 +49,7 @@ export default definePlugin((pluginConfig: ConfigPluginConfig = {}) => ({
             bequeathOptions: [configOption],
         });
     },
-    onPreCommandExecution: async ({ cli, command }) => {
+    onPreCommandExecution: async ({ cli, command }: Parameters<PluginCommandHook>[0]) => {
         const options = command.options ?? {};
         const explicitConfigPath = options.config;
         const cliName = cli.manifest.name;
@@ -158,4 +159,6 @@ export default definePlugin((pluginConfig: ConfigPluginConfig = {}) => ({
             cli.command.definition.middleware = [middleware, ...existingMiddleware];
         }
     },
-}));
+});
+
+export default definePlugin(configPluginFactory) as (config?: ConfigPluginConfig) => PluginDefinition;
