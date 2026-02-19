@@ -1,6 +1,6 @@
 # Defining Options
 
-> For creating global options, see [Creating Global Options](./creating-global-options.md).
+> For creating global options, see [Creating Global Options](../advanced/creating-global-options.md).
 
 ## Option Aliases
 

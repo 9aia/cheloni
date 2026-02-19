@@ -1,6 +1,6 @@
 # Creating Command Middleware
 
-> Don't confuse this with [Defining Command Middleware](./defining-middleware.md). This guide covers how to create middleware from scratch, not using a middleware that has already been created.
+> Don't confuse this with [Defining Command Middleware](../essentials/defining-middleware.md). This guide covers how to create middleware from scratch, not using a middleware that has already been created.
 
 ## Error Handling
 
