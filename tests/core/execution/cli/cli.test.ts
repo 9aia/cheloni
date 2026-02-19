@@ -54,11 +54,13 @@ describe('executeCli', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['t'],
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['t'],
+              handler,
+            }),
+          ],
         }),
       })
     );
@@ -89,12 +91,14 @@ describe('executeCli', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            deprecated: true,
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              deprecated: true,
+              handler,
+            }),
+          ],
         }),
       })
     );
@@ -112,12 +116,14 @@ describe('executeCli', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            deprecated: 'Use new command instead',
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              deprecated: 'Use new command instead',
+              handler,
+            }),
+          ],
         }),
       })
     );
@@ -132,17 +138,21 @@ describe('executeCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: {
-          name: 'test-plugin',
-          onDestroy,
-        },
+        plugins: [
+          {
+            name: 'test-plugin',
+            onDestroy,
+          },
+        ],
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            handler: async () => {},
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              handler: async () => {},
+            }),
+          ],
         }),
       })
     );
@@ -157,10 +167,12 @@ describe('executeCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: {
-          name: 'test-plugin',
-          onDestroy,
-        },
+        plugins: [
+          {
+            name: 'test-plugin',
+            onDestroy,
+          },
+        ],
         command: defineCommand({
           name: 'root',
           handler: async () => {
@@ -181,19 +193,23 @@ describe('executeCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: {
-          name: 'test-plugin',
-          onDestroy: async () => {
-            throw new Error('Destroy error');
+        plugins: [
+          {
+            name: 'test-plugin',
+            onDestroy: async () => {
+              throw new Error('Destroy error');
+            },
           },
-        },
+        ],
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            handler: async () => {},
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              handler: async () => {},
+            }),
+          ],
         }),
       })
     );

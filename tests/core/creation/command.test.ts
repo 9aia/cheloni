@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
 import { defineCommand, defineRootCommand } from '~/core/definition/command';
+import { defineGlobalOption } from '~/core/definition/command/global-option';
 import { createCommand, createRootCommand } from '~/core/creation/command';
 
 describe('createCommand', () => {
@@ -102,7 +103,7 @@ describe('createCommand', () => {
   it('creates nested subcommands', () => {
     const definition = defineCommand({
       name: 'parent',
-      command: [
+      commands: [
         defineCommand({
           name: 'child1',
           handler: async () => {},
@@ -117,44 +118,50 @@ describe('createCommand', () => {
 
     const command = createCommand(definition);
     expect(command.commands.size).toBe(2);
-    expect([...command.commands].map(c => c.manifest.name)).toEqual(['child1', 'child2']);
+    expect([...command.commands.values()].map(c => c.manifest.name)).toEqual(['child1', 'child2']);
   });
 
   it('creates single nested subcommand', () => {
     const definition = defineCommand({
       name: 'parent',
-      command: defineCommand({
-        name: 'child',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'child',
+          handler: async () => {},
+        }),
+      ],
       handler: async () => {},
     });
 
     const command = createCommand(definition);
     expect(command.commands.size).toBe(1);
-    expect([...command.commands][0]?.manifest.name).toBe('child');
+    expect([...command.commands.values()][0]?.manifest.name).toBe('child');
   });
 
   it('creates deeply nested command tree', () => {
     const definition = defineCommand({
       name: 'root',
-      command: defineCommand({
-        name: 'level1',
-        command: defineCommand({
-          name: 'level2',
+      commands: [
+        defineCommand({
+          name: 'level1',
+          commands: [
+            defineCommand({
+              name: 'level2',
+              handler: async () => {},
+            }),
+          ],
           handler: async () => {},
         }),
-        handler: async () => {},
-      }),
+      ],
       handler: async () => {},
     });
 
     const command = createCommand(definition);
     expect(command.commands.size).toBe(1);
-    const level1 = [...command.commands][0];
+    const level1 = [...command.commands.values()][0];
     expect(level1?.manifest.name).toBe('level1');
     expect(level1?.commands.size).toBe(1);
-    const level2 = [...level1!.commands][0];
+    const level2 = [...level1!.commands.values()][0];
     expect(level2?.manifest.name).toBe('level2');
   });
 
@@ -166,10 +173,12 @@ describe('createCommand', () => {
       deprecated: 'Use transform',
       positional: z.string(),
       options: z.object({ output: z.string().optional() }),
-      command: defineCommand({
-        name: 'sub',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'sub',
+          handler: async () => {},
+        }),
+      ],
       handler: async () => {},
     });
 
@@ -197,10 +206,12 @@ describe('createCommand', () => {
 describe('createRootCommand', () => {
   it('creates root command with name "root"', () => {
     const definition = defineRootCommand({
-      command: defineCommand({
-        name: 'test',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'test',
+          handler: async () => {},
+        }),
+      ],
     });
 
     const command = createRootCommand(definition);
@@ -211,14 +222,243 @@ describe('createRootCommand', () => {
   it('preserves root command properties', () => {
     const definition = defineRootCommand({
       description: 'Root description',
-      command: defineCommand({
-        name: 'test',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'test',
+          handler: async () => {},
+        }),
+      ],
     });
 
     const command = createRootCommand(definition);
     expect(command.manifest.name).toBe('root');
     expect(command.manifest.description).toBe('Root description');
+  });
+});
+
+describe('bequeathOptions', () => {
+  it('creates command with empty bequeathOptions when not defined', () => {
+    const definition = defineCommand({
+      name: 'test',
+      handler: async () => {},
+    });
+
+    const command = createCommand(definition);
+    expect(command.bequeathOptions).toBeDefined();
+    expect(command.bequeathOptions.size).toBe(0);
+  });
+
+  it('creates command with bequeathOptions', () => {
+    const verboseOption = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+    });
+
+    const definition = defineCommand({
+      name: 'test',
+      bequeathOptions: [verboseOption],
+      handler: async () => {},
+    });
+
+    const command = createCommand(definition);
+    expect(command.bequeathOptions.size).toBe(1);
+    const option = command.bequeathOptions.get('verbose');
+    expect(option).toBeDefined();
+    expect(option?.definition.name).toBe('verbose');
+  });
+
+  it('inherits bequeathOptions from parent to child', () => {
+    const verboseOption = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+    });
+
+    const parent = defineCommand({
+      name: 'parent',
+      bequeathOptions: [verboseOption],
+      commands: [
+        defineCommand({
+          name: 'child',
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const parentCommand = createCommand(parent);
+    const childCommand = parentCommand.commands.get('child')!;
+
+    expect(parentCommand.bequeathOptions.size).toBe(1);
+    expect(childCommand.bequeathOptions.size).toBe(1);
+    expect(childCommand.bequeathOptions.get('verbose')).toBeDefined();
+  });
+
+  it('inherits bequeathOptions through multiple levels', () => {
+    const verboseOption = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+    });
+
+    const root = defineCommand({
+      name: 'root',
+      bequeathOptions: [verboseOption],
+      commands: [
+        defineCommand({
+          name: 'level1',
+          commands: [
+            defineCommand({
+              name: 'level2',
+              handler: async () => {},
+            }),
+          ],
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const rootCommand = createCommand(root);
+    const level1Command = rootCommand.commands.get('level1')!;
+    const level2Command = level1Command.commands.get('level2')!;
+
+    expect(rootCommand.bequeathOptions.size).toBe(1);
+    expect(level1Command.bequeathOptions.size).toBe(1);
+    expect(level2Command.bequeathOptions.size).toBe(1);
+    expect(level2Command.bequeathOptions.get('verbose')).toBeDefined();
+  });
+
+  it('merges bequeathOptions from multiple ancestors', () => {
+    const verboseOption = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+    });
+
+    const outputOption = defineGlobalOption({
+      name: 'output',
+      schema: z.string().optional(),
+    });
+
+    const root = defineCommand({
+      name: 'root',
+      bequeathOptions: [verboseOption],
+      commands: [
+        defineCommand({
+          name: 'level1',
+          bequeathOptions: [outputOption],
+          commands: [
+            defineCommand({
+              name: 'level2',
+              handler: async () => {},
+            }),
+          ],
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const rootCommand = createCommand(root);
+    const level1Command = rootCommand.commands.get('level1')!;
+    const level2Command = level1Command.commands.get('level2')!;
+
+    expect(level2Command.bequeathOptions.size).toBe(2);
+    expect(level2Command.bequeathOptions.get('verbose')).toBeDefined();
+    expect(level2Command.bequeathOptions.get('output')).toBeDefined();
+  });
+
+  it('allows child to override parent bequeathOptions', () => {
+    const parentVerbose = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+    });
+
+    const childVerbose = defineGlobalOption({
+      name: 'verbose',
+      schema: z.string().optional(), // Different schema
+    });
+
+    const parent = defineCommand({
+      name: 'parent',
+      bequeathOptions: [parentVerbose],
+      commands: [
+        defineCommand({
+          name: 'child',
+          bequeathOptions: [childVerbose],
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const parentCommand = createCommand(parent);
+    const childCommand = parentCommand.commands.get('child')!;
+
+    expect(parentCommand.bequeathOptions.get('verbose')?.definition.schema).toBe(parentVerbose.schema);
+    expect(childCommand.bequeathOptions.get('verbose')?.definition.schema).toBe(childVerbose.schema);
+  });
+
+  it('handles bequeathOptions with handlers', () => {
+    const handler = vi.fn();
+    const option = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+      handler,
+    });
+
+    const definition = defineCommand({
+      name: 'test',
+      bequeathOptions: [option],
+      handler: async () => {},
+    });
+
+    const command = createCommand(definition);
+    const bequeathOption = command.bequeathOptions.get('verbose');
+    expect(bequeathOption?.definition.handler).toBe(handler);
+  });
+
+  it('handles bequeathOptions without schema', () => {
+    const option = defineGlobalOption({
+      name: 'verbose',
+    });
+
+    const definition = defineCommand({
+      name: 'test',
+      bequeathOptions: [option],
+      handler: async () => {},
+    });
+
+    const command = createCommand(definition);
+    const bequeathOption = command.bequeathOptions.get('verbose');
+    expect(bequeathOption).toBeDefined();
+    expect(bequeathOption?.definition.schema).toBeUndefined();
+  });
+
+  it('handles multiple bequeathOptions', () => {
+    const verboseOption = defineGlobalOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+    });
+
+    const outputOption = defineGlobalOption({
+      name: 'output',
+      schema: z.string().optional(),
+    });
+
+    const countOption = defineGlobalOption({
+      name: 'count',
+      schema: z.number().optional(),
+    });
+
+    const definition = defineCommand({
+      name: 'test',
+      bequeathOptions: [verboseOption, outputOption, countOption],
+      handler: async () => {},
+    });
+
+    const command = createCommand(definition);
+    expect(command.bequeathOptions.size).toBe(3);
+    expect(command.bequeathOptions.get('verbose')).toBeDefined();
+    expect(command.bequeathOptions.get('output')).toBeDefined();
+    expect(command.bequeathOptions.get('count')).toBeDefined();
   });
 });

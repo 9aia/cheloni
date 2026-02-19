@@ -22,7 +22,7 @@ describe('parseArgs', () => {
   });
 
   it('handles alias map', () => {
-    const aliasMap = { verbose: 'v' };
+    const aliasMap = { verbose: ['v'] };
     const result = parseArgs(['-v'], aliasMap);
     expect(result.options.verbose).toBe(true);
   });

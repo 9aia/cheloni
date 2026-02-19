@@ -15,17 +15,19 @@ describe('Integration Tests', () => {
         description: 'Test CLI',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'greet',
-            paths: ['g', 'greet'],
-            description: 'Greet someone',
-            positional: z.string().describe('name'),
-            options: z.object({
-              verbose: z.boolean().optional().describe('verbose output'),
-              count: z.number().default(1).describe('number of times'),
+          commands: [
+            defineCommand({
+              name: 'greet',
+              paths: ['g', 'greet'],
+              description: 'Greet someone',
+              positional: z.string().describe('name'),
+              options: z.object({
+                verbose: z.boolean().optional().describe('verbose output'),
+                count: z.number().default(1).describe('number of times'),
+              }),
+              handler,
             }),
-            handler,
-          }),
+          ],
         }),
       })
     );
@@ -55,22 +57,24 @@ describe('Integration Tests', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            middleware: [
-              async ({ next }) => {
-                order.push('middleware1');
-                await next();
-              },
-              async ({ context: data, next }) => {
-                data.value = 'test';
-                order.push('middleware2');
-                await next();
-              },
-            ],
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              middleware: [
+                async ({ next }) => {
+                  order.push('middleware1');
+                  await next();
+                },
+                async ({ context: data, next }) => {
+                  data.value = 'test';
+                  order.push('middleware2');
+                  await next();
+                },
+              ],
+              handler,
+            }),
+          ],
         }),
       })
     );
@@ -92,28 +96,32 @@ describe('Integration Tests', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: {
-          name: 'test-plugin',
-          onInit: async () => {
-            lifecycle.push('onInit');
+        plugins: [
+          {
+            name: 'test-plugin',
+            onInit: async () => {
+              lifecycle.push('onInit');
+            },
+            onPreCommandExecution: async () => {
+              lifecycle.push('onBeforeCommand');
+            },
+            onAfterCommandExecution: async () => {
+              lifecycle.push('onAfterCommand');
+            },
+            onDestroy: async () => {
+              lifecycle.push('onDestroy');
+            },
           },
-          onPreCommandExecution: async () => {
-            lifecycle.push('onBeforeCommand');
-          },
-          onAfterCommandExecution: async () => {
-            lifecycle.push('onAfterCommand');
-          },
-          onDestroy: async () => {
-            lifecycle.push('onDestroy');
-          },
-        },
+        ],
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              handler,
+            }),
+          ],
         }),
       })
     );
@@ -134,12 +142,14 @@ describe('Integration Tests', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            positional: z.string().min(5),
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              positional: z.string().min(5),
+              handler,
+            }),
+          ],
         }),
       })
     );
@@ -163,14 +173,16 @@ describe('Integration Tests', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            options: z.object({
-              count: z.number(),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              options: z.object({
+                count: z.number(),
+              }),
+              handler,
             }),
-            handler,
-          }),
+          ],
         }),
       })
     );
@@ -192,7 +204,7 @@ describe('Integration Tests', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: [
+          commands: [
             defineCommand({
               name: 'cmd1',
               paths: ['a', 'alpha'],
@@ -227,15 +239,17 @@ describe('Integration Tests', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            options: z.object({
-              verbose: z.boolean().optional(),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              options: z.object({
+                verbose: z.boolean().optional(),
+              }),
+              throwOnExtrageousOptions: 'filter-out',
+              handler,
             }),
-            throwOnExtrageousOptions: 'filter-out',
-            handler,
-          }),
+          ],
         }),
       })
     );
@@ -256,21 +270,27 @@ describe('Integration Tests', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: {
-          name: 'global',
-          onPreCommandExecution: globalHook,
-        },
+        plugins: [
+          {
+            name: 'global',
+            onPreCommandExecution: globalHook,
+          },
+        ],
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            paths: ['test'],
-            plugin: {
-              name: 'command',
-              onPreCommandExecution: commandHook,
-            },
-            handler,
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              plugins: [
+                {
+                  name: 'command',
+                  onPreCommandExecution: commandHook,
+                },
+              ],
+              handler,
+            }),
+          ],
         }),
       })
     );

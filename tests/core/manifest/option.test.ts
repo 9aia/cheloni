@@ -18,23 +18,23 @@ describe('getOptionManifest', () => {
   it.skip('extracts alias', () => {
     const schema = z.boolean();
     Object.defineProperty(schema, '_def', {
-      value: { alias: 'v' },
+      value: { metadata: { aliases: ['v'] } },
       writable: true,
       configurable: true,
     });
     const manifest = getOptionManifest('verbose', schema);
-    expect(manifest.alias).toBe('v');
+    expect(manifest.aliases).toEqual(['v']);
   });
 
   it.skip('extracts array alias', () => {
     const schema = z.boolean();
     Object.defineProperty(schema, '_def', {
-      value: { alias: ['v', 'V'] },
+      value: { metadata: { aliases: ['v', 'V'] } },
       writable: true,
       configurable: true,
     });
     const manifest = getOptionManifest('verbose', schema);
-    expect(manifest.alias).toEqual(['v', 'V']);
+    expect(manifest.aliases).toEqual(['v', 'V']);
   });
 
   it.skip('extracts deprecated flag', () => {

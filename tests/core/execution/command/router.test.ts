@@ -69,11 +69,13 @@ describe('resolveCommand', () => {
         name: 'test',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'sub',
-            paths: ['s', 'sub'],
-            handler: async () => {},
-          }),
+          commands: [
+            defineCommand({
+              name: 'sub',
+              paths: ['s', 'sub'],
+              handler: async () => {},
+            }),
+          ],
           handler: async () => {},
         }),
       })
@@ -118,11 +120,13 @@ describe('resolveCommand', () => {
         name: 'test',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'known',
-            paths: ['known'],
-            handler: async () => {},
-          }),
+          commands: [
+            defineCommand({
+              name: 'known',
+              paths: ['known'],
+              handler: async () => {},
+            }),
+          ],
           handler: async () => {},
         }),
       })
@@ -141,15 +145,19 @@ describe('resolveCommand', () => {
         name: 'test',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'level1',
-            paths: ['l1'],
-            command: defineCommand({
-              name: 'level2',
-              paths: ['l2'],
-              handler: async () => {},
+          commands: [
+            defineCommand({
+              name: 'level1',
+              paths: ['l1'],
+              commands: [
+                defineCommand({
+                  name: 'level2',
+                  paths: ['l2'],
+                  handler: async () => {},
+                }),
+              ],
             }),
-          }),
+          ],
         }),
       })
     );

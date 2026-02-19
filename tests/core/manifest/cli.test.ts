@@ -49,7 +49,7 @@ describe('getCliManifest', () => {
       name: 'test-cli',
       command: defineCommand({
         name: 'root',
-        command: [
+        commands: [
           defineCommand({
             name: 'cmd1',
             handler: async () => {},
@@ -68,47 +68,12 @@ describe('getCliManifest', () => {
     expect(manifest.command?.commands?.map(c => c.name)).toEqual(['cmd1', 'cmd2']);
   });
 
-  it('includes global options', () => {
-    const definition = defineCli({
-      name: 'test-cli',
-      globalOption: {
-        name: 'verbose',
-        schema: z.boolean(),
-      },
-    });
-
-    const manifest = getCliManifest(definition);
-    expect(manifest.globalOptions).toHaveLength(1);
-    expect(manifest.globalOptions?.[0]?.name).toBe('verbose');
-  });
-
-  it('handles multiple global options', () => {
-    const definition = defineCli({
-      name: 'test-cli',
-      globalOption: [
-        {
-          name: 'verbose',
-          schema: z.boolean(),
-        },
-        {
-          name: 'output',
-          schema: z.string(),
-        },
-      ],
-    });
-
-    const manifest = getCliManifest(definition);
-    expect(manifest.globalOptions).toHaveLength(2);
-    expect(manifest.globalOptions?.map(o => o.name)).toEqual(['verbose', 'output']);
-  });
-
-  it('handles no command and no options', () => {
+  it('handles no command', () => {
     const definition = defineCli({
       name: 'test-cli',
     });
 
     const manifest = getCliManifest(definition);
     expect(manifest.command).toBeUndefined();
-    expect(manifest.globalOptions).toEqual([]);
   });
 });

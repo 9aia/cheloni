@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
+import { defineCommand, defineRootCommand } from '~/core/definition/command';
 import { definePlugin } from '~/core/definition/plugin';
 import { createCli } from '~/core/creation/cli';
 import z from 'zod';
@@ -18,7 +18,6 @@ describe('createCli', () => {
     expect(cli.manifest.version).toBe('1.0.0');
     expect(cli.command).toBeUndefined();
     expect(cli.plugins.size).toBe(0);
-    expect(cli.globalOptions.size).toBe(0);
   });
 
   it('creates root command from definition', async () => {
@@ -42,7 +41,7 @@ describe('createCli', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: [
+          commands: [
             defineCommand({
               name: 'cmd1',
               handler: async () => {},
@@ -61,54 +60,64 @@ describe('createCli', () => {
     expect(cli.command?.commands.size).toBe(2);
   });
 
-  it('creates global options', async () => {
+  it('creates root command with bequeath options', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        globalOption: {
-          name: 'verbose',
-          schema: z.boolean(),
-        },
+        command: defineRootCommand({
+          bequeathOptions: [
+            {
+              name: 'verbose',
+              schema: z.boolean(),
+            },
+          ],
+        }),
       })
     );
 
-    expect(cli.globalOptions.size).toBe(1);
-    const option = [...cli.globalOptions][0];
+    expect(cli.command).toBeDefined();
+    expect(cli.command!.bequeathOptions.size).toBe(1);
+    const option = cli.command!.bequeathOptions.get('verbose');
     expect(option?.definition.name).toBe('verbose');
   });
 
-  it('creates multiple global options', async () => {
+  it('creates root command with multiple bequeath options', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        globalOption: [
-          {
-            name: 'verbose',
-            schema: z.boolean(),
-          },
-          {
-            name: 'output',
-            schema: z.string(),
-          },
-        ],
+        command: defineRootCommand({
+          bequeathOptions: [
+            {
+              name: 'verbose',
+              schema: z.boolean(),
+            },
+            {
+              name: 'output',
+              schema: z.string(),
+            },
+          ],
+        }),
       })
     );
 
-    expect(cli.globalOptions.size).toBe(2);
+    expect(cli.command).toBeDefined();
+    expect(cli.command!.bequeathOptions.size).toBe(2);
   });
 
   it('creates plugins', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: definePlugin({
-          name: 'test-plugin',
-        }),
+        plugins: [
+          definePlugin({
+            name: 'test-plugin',
+          }),
+        ],
       })
     );
 
     expect(cli.plugins.size).toBe(1);
-    const plugin = [...cli.plugins][0];
+    const plugin = [...cli.plugins.values()][0];
     expect(plugin?.manifest.name).toBe('test-plugin');
   });
 
@@ -118,12 +127,14 @@ describe('createCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: definePlugin({
-          name: 'test-plugin',
-          onInit: async () => {
-            initCalled = true;
-          },
-        }),
+        plugins: [
+          definePlugin({
+            name: 'test-plugin',
+            onInit: async () => {
+              initCalled = true;
+            },
+          }),
+        ],
       })
     );
 
@@ -137,7 +148,7 @@ describe('createCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: [
+        plugins: [
           definePlugin({
             name: 'plugin1',
             onInit: async () => {
@@ -162,16 +173,18 @@ describe('createCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: definePlugin({
-          name: 'test-plugin',
-          onInit: async ({ cli }) => {
-            const { createCommand } = await import('~/core/creation/command');
-            cli.command = createCommand({
-              name: 'dynamic',
-              handler: async () => {},
-            });
-          },
-        }),
+        plugins: [
+          definePlugin({
+            name: 'test-plugin',
+            onInit: async ({ cli }) => {
+              const { createCommand } = await import('~/core/creation/command');
+              cli.command = createCommand({
+                name: 'dynamic',
+                handler: async () => {},
+              });
+            },
+          }),
+        ],
       })
     );
 
@@ -210,13 +223,15 @@ describe('createCli', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: [
+          commands: [
             defineCommand({
               name: 'cmd1',
-              command: defineCommand({
-                name: 'subcmd1',
-                handler: async () => {},
-              }),
+              commands: [
+                defineCommand({
+                  name: 'subcmd1',
+                  handler: async () => {},
+                }),
+              ],
               handler: async () => {},
             }),
             defineCommand({
@@ -231,9 +246,10 @@ describe('createCli', () => {
 
     expect(cli.command).toBeDefined();
     expect(cli.command?.commands.size).toBe(2);
-    const cmd1 = [...cli.command!.commands].find(c => c.manifest.name === 'cmd1');
+    const cmd1 = [...cli.command!.commands.values()].find(c => c.manifest.name === 'cmd1');
     expect(cmd1?.commands.size).toBe(1);
-    expect(cmd1?.commands.has([...cmd1.commands][0]!)).toBe(true);
+    const subcmd = [...cmd1!.commands.values()][0];
+    expect(cmd1?.commands.has(subcmd!.manifest.name)).toBe(true);
   });
 
   it('creates CLI with multiple plugins in order', async () => {
@@ -242,7 +258,7 @@ describe('createCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugin: [
+        plugins: [
           definePlugin({
             name: 'plugin1',
             onInit: async () => {
@@ -274,51 +290,61 @@ describe('createCli', () => {
       createCli(
         defineCli({
           name: 'test-cli',
-          plugin: definePlugin({
-            name: 'error-plugin',
-            onInit: async () => {
-              throw new Error('Plugin init failed');
-            },
-          }),
+          plugins: [
+            definePlugin({
+              name: 'error-plugin',
+              onInit: async () => {
+                throw new Error('Plugin init failed');
+              },
+            }),
+          ],
         })
       )
     ).rejects.toThrow('Plugin init failed');
   });
 
-  it('creates CLI with global options that have handlers', async () => {
+  it('creates CLI with bequeath options that have handlers', async () => {
     const handler = vi.fn();
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        globalOption: {
-          name: 'verbose',
-          schema: z.boolean(),
-          handler,
-        },
+        command: defineRootCommand({
+          bequeathOptions: [
+            {
+              name: 'verbose',
+              schema: z.boolean(),
+              handler,
+            },
+          ],
+        }),
       })
     );
 
-    expect(cli.globalOptions.size).toBe(1);
-    const option = [...cli.globalOptions][0];
+    expect(cli.command).toBeDefined();
+    expect(cli.command!.bequeathOptions.size).toBe(1);
+    const option = cli.command!.bequeathOptions.get('verbose');
     expect(option?.definition.handler).toBe(handler);
   });
 
-  it('creates CLI with both global options and plugins', async () => {
+  it('creates CLI with both bequeath options and plugins', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        globalOption: [
-          { name: 'verbose', schema: z.boolean() },
-          { name: 'output', schema: z.string() },
-        ],
-        plugin: [
+        command: defineRootCommand({
+          bequeathOptions: [
+            { name: 'verbose', schema: z.boolean() },
+            { name: 'output', schema: z.string() },
+          ],
+        }),
+        plugins: [
           definePlugin({ name: 'plugin1' }),
           definePlugin({ name: 'plugin2' }),
         ],
       })
     );
 
-    expect(cli.globalOptions.size).toBe(2);
+    expect(cli.command).toBeDefined();
+    expect(cli.command!.bequeathOptions.size).toBe(2);
     expect(cli.plugins.size).toBe(2);
   });
 
@@ -328,21 +354,25 @@ describe('createCli', () => {
         name: 'test-cli',
         command: defineCommand({
           name: 'root',
-          command: defineCommand({
-            name: 'test',
-            handler: async () => {},
-          }),
+          commands: [
+            defineCommand({
+              name: 'test',
+              handler: async () => {},
+            }),
+          ],
           handler: async () => {},
         }),
-        plugin: definePlugin({
-          name: 'modifier',
-          onInit: async ({ cli }) => {
-            // Plugin can access and modify command
-            if (cli.command) {
-              expect(cli.command.manifest.name).toBe('root');
-            }
-          },
-        }),
+        plugins: [
+          definePlugin({
+            name: 'modifier',
+            onInit: async ({ cli }) => {
+              // Plugin can access and modify command
+              if (cli.command) {
+                expect(cli.command.manifest.name).toBe('root');
+              }
+            },
+          }),
+        ],
       })
     );
 

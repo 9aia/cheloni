@@ -65,23 +65,23 @@ describe('getCommandManifest', () => {
   it('includes examples', () => {
     const definition = defineCommand({
       name: 'test',
-      example: 'test --flag',
+      examples: ['test --flag'],
       handler: async () => {},
     });
 
     const manifest = getCommandManifest(definition);
-    expect(manifest.example).toBe('test --flag');
+    expect(manifest.examples).toEqual(['test --flag']);
   });
 
-  it('handles array examples', () => {
+  it('handles multiple examples', () => {
     const definition = defineCommand({
       name: 'test',
-      example: ['test --flag', 'test --other'],
+      examples: ['test --flag', 'test --other'],
       handler: async () => {},
     });
 
     const manifest = getCommandManifest(definition);
-    expect(manifest.example).toEqual(['test --flag', 'test --other']);
+    expect(manifest.examples).toEqual(['test --flag', 'test --other']);
   });
 
   it('includes deprecated flag', () => {
@@ -179,7 +179,7 @@ describe('getCommandManifest', () => {
   it('includes nested commands in manifest', () => {
     const definition = defineCommand({
       name: 'parent',
-      command: [
+      commands: [
         defineCommand({
           name: 'child1',
           handler: async () => {},
@@ -201,10 +201,12 @@ describe('getCommandManifest', () => {
   it('handles single nested command', () => {
     const definition = defineCommand({
       name: 'parent',
-      command: defineCommand({
-        name: 'child',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'child',
+          handler: async () => {},
+        }),
+      ],
       handler: async () => {},
     });
 
@@ -216,14 +218,18 @@ describe('getCommandManifest', () => {
   it('handles deeply nested commands', () => {
     const definition = defineCommand({
       name: 'root',
-      command: defineCommand({
-        name: 'level1',
-        command: defineCommand({
-          name: 'level2',
+      commands: [
+        defineCommand({
+          name: 'level1',
+          commands: [
+            defineCommand({
+              name: 'level2',
+              handler: async () => {},
+            }),
+          ],
           handler: async () => {},
         }),
-        handler: async () => {},
-      }),
+      ],
       handler: async () => {},
     });
 
@@ -237,7 +243,7 @@ describe('getCommandManifest', () => {
   it('includes plugins in manifest', () => {
     const definition = defineCommand({
       name: 'test',
-      plugin: [
+      plugins: [
         definePlugin({ name: 'plugin1' }),
         definePlugin({ name: 'plugin2' }),
       ],
@@ -250,10 +256,10 @@ describe('getCommandManifest', () => {
     expect(manifest.plugins?.[1]?.name).toBe('plugin2');
   });
 
-  it('handles single plugin', () => {
+  it('handles single plugin (array of one)', () => {
     const definition = defineCommand({
       name: 'test',
-      plugin: definePlugin({ name: 'plugin1' }),
+      plugins: [definePlugin({ name: 'plugin1' })],
       handler: async () => {},
     });
 
@@ -278,18 +284,20 @@ describe('getCommandManifest', () => {
       paths: ['c', 'convert'],
       description: 'Convert files',
       details: 'Detailed description',
-      example: ['convert file.png', 'convert file.png --output out.jpg'],
+      examples: ['convert file.png', 'convert file.png --output out.jpg'],
       deprecated: 'Use transform instead',
       positional: z.string().describe('input file'),
       options: z.object({
         output: z.string().optional().describe('output path'),
         quality: z.number().min(0).max(100).optional(),
       }),
-      command: defineCommand({
-        name: 'subcommand',
-        handler: async () => {},
-      }),
-      plugin: definePlugin({ name: 'analytics' }),
+      commands: [
+        defineCommand({
+          name: 'subcommand',
+          handler: async () => {},
+        }),
+      ],
+      plugins: [definePlugin({ name: 'analytics' })],
       handler: async () => {},
     });
 
@@ -298,7 +306,7 @@ describe('getCommandManifest', () => {
     expect(manifest.paths).toEqual(['c', 'convert']);
     expect(manifest.description).toBe('Convert files');
     expect(manifest.details).toBe('Detailed description');
-    expect(manifest.example).toEqual(['convert file.png', 'convert file.png --output out.jpg']);
+    expect(manifest.examples).toEqual(['convert file.png', 'convert file.png --output out.jpg']);
     expect(manifest.deprecated).toBe('Use transform instead');
     // Description extraction depends on Zod internals - just verify manifest exists
     expect(manifest.positional).toBeDefined();
@@ -311,10 +319,12 @@ describe('getCommandManifest', () => {
 describe('getRootCommandsManifest', () => {
   it('extracts root command manifest with name "root"', () => {
     const definition = defineRootCommand({
-      command: defineCommand({
-        name: 'test',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'test',
+          handler: async () => {},
+        }),
+      ],
     });
 
     const manifest = getRootCommandsManifest(definition);
@@ -326,10 +336,12 @@ describe('getRootCommandsManifest', () => {
   it('preserves all root command properties', () => {
     const definition = defineRootCommand({
       description: 'Root command',
-      command: defineCommand({
-        name: 'test',
-        handler: async () => {},
-      }),
+      commands: [
+        defineCommand({
+          name: 'test',
+          handler: async () => {},
+        }),
+      ],
     });
 
     const manifest = getRootCommandsManifest(definition);

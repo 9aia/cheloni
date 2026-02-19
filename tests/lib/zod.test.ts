@@ -3,7 +3,7 @@ import z from 'zod';
 import {
   getSchemaObject,
   getSchemaDescription,
-  getSchemaAlias,
+  getSchemaAliases,
   getAliasMap,
   getSchemaDeprecated,
 } from '~/utils/definition';
@@ -45,9 +45,9 @@ describe('getSchemaDescription', () => {
   });
 });
 
-describe('getSchemaAlias', () => {
+describe('getSchemaAliases', () => {
   it('returns undefined for schema without alias', () => {
-    expect(getSchemaAlias(z.string())).toBeUndefined();
+    expect(getSchemaAliases(z.string())).toBeUndefined();
   });
 
   it.skip('extracts alias from schema metadata', () => {
@@ -57,7 +57,7 @@ describe('getSchemaAlias', () => {
       writable: true,
       configurable: true,
     });
-    expect(getSchemaAlias(schema)).toBe('v');
+    expect(getSchemaAliases(schema)).toBe('v');
   });
 
   it.skip('extracts array alias from schema metadata', () => {
@@ -67,11 +67,11 @@ describe('getSchemaAlias', () => {
       writable: true,
       configurable: true,
     });
-    expect(getSchemaAlias(schema)).toEqual(['v', 'verbose']);
+    expect(getSchemaAliases(schema)).toEqual(['v', 'verbose']);
   });
 
   it('returns undefined for undefined input', () => {
-    expect(getSchemaAlias(undefined)).toBeUndefined();
+    expect(getSchemaAliases(undefined)).toBeUndefined();
   });
 });
 
