@@ -9,23 +9,45 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Guides', link: '/guides/getting-started' },
-      { text: 'Reference', link: '/reference/api/index' },
+      { text: 'Guides', link: '/guides/getting-started/introduction' },
+      { text: 'Reference', link: '/reference/index' },
       { text: 'Explanation', link: '/explanation/index' }
     ],
 
     sidebar: {
       '/guides/': [
         {
-          text: 'Basics',
+          text: 'Getting Started',
           items: [
-            { text: 'Getting Started', link: '/guides/getting-started' },
-            { text: 'Creating CLI', link: '/guides/creating-cli' },
-            { text: 'Creating Commands', link: '/guides/command/creating-commands' },
-            { text: 'Defining Options', link: '/guides/command/defining-options' },
-            { text: 'Defining Positional Args', link: '/guides/command/defining-positional-args' },
-            { text: 'Writing Handlers', link: '/guides/command/writing-handlers' },
-            { text: 'Defining Middleware', link: '/guides/command/defining-middleware' },
+            { text: 'Introduction', link: '/guides/getting-started/introduction' },
+            { text: 'Quick Start', link: '/guides/getting-started/quick-start' },
+          ]
+        },
+        {
+          text: 'Essentials',
+          items: [
+            { text: 'Creating a CLI', link: '/guides/essentials/creating-a-cli' },
+            { text: 'Creating Commands', link: '/guides/essentials/creating-commands' },
+            { text: 'Defining Options', link: '/guides/essentials/defining-options' },
+            { text: 'Defining Positional Args', link: '/guides/essentials/defining-positional-args' },
+            { text: 'Creating Command Handlers', link: '/guides/essentials/creating-handlers' },
+            { text: 'Defining Middleware', link: '/guides/essentials/defining-middleware' },
+          ]
+        },
+        {
+          text: 'Standard Library',
+          items: [
+            { text: 'Help', link: '/guides/std/help' },
+            { text: 'Version', link: '/guides/std/version' },
+            { text: 'Configuration', link: '/guides/std/config' },
+          ]
+        },
+        {
+          text: 'Toolchain',
+          items: [
+            { text: 'Dev Mode', link: '/guides/toolchain/dev-mode' },
+            { text: 'CI', link: '/guides/toolchain/ci' },
+            { text: 'Releasing', link: '/guides/toolchain/releasing' },
           ]
         },
         {

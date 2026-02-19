@@ -61,7 +61,7 @@ Parses command-line arguments into positional arguments and options.
 
 **Parameters:**
 - `args: string[]` - The argument array
-- `aliasMap?: Record<string, string | string[]>` - Optional alias map
+- `aliasMap?: Record<string, string[]>` - Optional alias map
 
 **Returns:** `{ positional: string[], options: Record<string, any> }`
 
@@ -71,7 +71,7 @@ import { parseArgs } from "cheloni";
 
 const { positional, options } = parseArgs(
   ["--verbose", "file.txt"],
-  { v: "verbose" }
+  { verbose: ["v"] }
 );
 // positional: ["file.txt"]
 // options: { verbose: true }

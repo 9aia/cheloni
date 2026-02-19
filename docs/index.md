@@ -7,17 +7,20 @@ hero:
   tagline: Build type-safe command-line tools with full TypeScript inference, Zod validation, and a powerful plugin system—zero manual types required.
   actions:
     - theme: brand
-      text: Documentation
-      link: /docs.md
+      text: Get Started
+      link: /guides/getting-started/introduction
     - theme: alt
-      text: API Reference
-      link: /reference/api/index.md
+      text: Install
+      link: /guides/getting-started/quick-start
+    - theme: alt
+      text: Reference
+      link: /reference/index.md
 
 features:
   - title: Modern Core
     icon: 🚀
     details: Type-safety, performance, schema-based, and more
-  - title: Standard Library
+  - title: Tree-shakable and Modular Standard Library
     icon: 📚
     details: Help, version, and more
   - title: Opinionated, Schema-based and Parseable Introspection

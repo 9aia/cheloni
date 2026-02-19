@@ -6,13 +6,20 @@ How-to guides help you accomplish specific tasks with Cheloni.
 
 - [Quick Start](./getting-started.md) - Get up and running in minutes
 
-## Common Tasks
+## Essentials
 
 - [Creating CLI](./creating-cli.md)
 - [Creating Commands](./command/creating-commands.md)
-  - [Defining Options](./command/defining-options.md)
-  - [Defining Positional Arguments](./command/defining-positional-args.md)
-  - [Writing Command Handlers](./command/writing-handlers.md)
+- [Defining Options](./command/defining-options.md)
+- [Defining Positional Arguments](./command/defining-positional-args.md)
+- [Defining Middleware](./command/defining-middleware.md)
+- [Creating Command Handlers](./command/creating-handlers.md)
+
+## Standard Library
+
+- [Help](./std/help.md) - Add help command to your CLI
+- [Version](./std/version.md) - Add version command to your CLI
+- [Configuration (std)](./std/config.md) - Global and local JSON config for your CLI
 
 ## Advanced Topics
 

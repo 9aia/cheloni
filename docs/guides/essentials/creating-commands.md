@@ -42,7 +42,7 @@ When wrapping another CLI tool, use `throwOnExtrageousOptions: 'pass-through'` t
 const build = defineCommand({
   options: z.object({
     // Only define wrapper-specific options
-    dryRun: z.boolean().optional().meta({ alias: 'd' }),
+    dryRun: z.boolean().optional().meta({ aliases: ['d'] }),
   }),
   throwOnExtrageousOptions: 'pass-through', // Pass through unknown options
   handler: async ({ options }) => {
@@ -123,7 +123,7 @@ Provide global examples to help users understand how to use the command:
 ```typescript
 defineCommand({
   // ...
-  example: [
+  examples: [
     'my-cli convert ./images/photo.jpg',
     'my-cli convert ~/Downloads/photo.jpg --normalize',
   ],

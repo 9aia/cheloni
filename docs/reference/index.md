@@ -4,7 +4,8 @@ Technical details and information for Cheloni.
 
 ## API Reference
 
-- [Core API](./api/core/index.md) - Core functions and types (includes Plugin API)
+- [Core API](./api/core/index.md) - Core components
+- [Std API](./api/std/index.md) - Standard Library
 
 ## CLI Reference
 

@@ -173,22 +173,22 @@ const plugin = definePlugin({
 });
 ```
 
-### `definePack(definition)`
+### `definePluginpack(definition)`
 
-Creates a pack definition that bundles multiple plugins together.
+Creates a pluginpack definition that bundles multiple plugins together.
 
 **Parameters:**
-- `definition: PackDefinition` - The pack definition
+- `definition: PluginpackDefinition` - The pluginpack definition
 
-**Returns:** `PackDefinition`
+**Returns:** `PluginpackDefinition`
 
 **Example:**
 ```typescript
-import { definePack, definePlugin } from "cheloni";
+import { definePluginpack, definePlugin } from "cheloni";
 
-const pack = definePack({
+const pack = definePluginpack({
   name: "my-pack",
-  plugin: [plugin1, plugin2]
+  plugins: [plugin1, plugin2]
 });
 ```
 
@@ -201,8 +201,7 @@ Runs once during CLI creation, before any commands are executed. This is the onl
 **When it runs:** During `createCli()`, for each global plugin in order.
 
 **What you can do:**
-- Modify `cli.command` (replace the root command)
-- Add to `cli.globalOptions`
+- Modify `cli.command` (replace the root command, add bequeathOptions)
 - Modify `cli.plugins`
 - Access `cli.manifest`
 
@@ -216,13 +215,22 @@ import z from "zod";
 const plugin = definePlugin({
   name: "my-plugin",
   onInit: ({ cli }) => {
-    // Add a global option
-    cli.globalOptions.add(
-      createGlobalOption({
-        name: "debug",
-        schema: z.boolean().optional()
-      })
-    );
+    // Add a bequeath option to root command (available to all commands)
+    if (cli.command) {
+      const existingDef = cli.command.definition;
+      const existingBequeathOptions = existingDef.bequeathOptions ?? [];
+      
+      cli.command = createCommand({
+        ...existingDef,
+        bequeathOptions: [
+          ...existingBequeathOptions,
+          createGlobalOption({
+            name: "debug",
+            schema: z.boolean().optional()
+          })
+        ],
+      });
+    }
     
     // Modify the root command
     if (cli.command) {
@@ -320,9 +328,8 @@ interface CliDefinition {
   details?: string;
   deprecated?: boolean | string;
   command?: RootCommandDefinition;
-  globalOption?: MaybeArray<GlobalOptionDefinition>;
-  plugin?: MaybeArray<PluginDefinition>;
-  pack?: MaybeArray<PackDefinition>;
+  plugins?: PluginDefinition[];
+  pluginpacks?: PluginpackDefinition[];
 }
 ```
 
@@ -339,12 +346,12 @@ interface CommandDefinition<
   description?: string;
   positional?: TPositionalDefinition;
   options?: TOptionsDefinition;
-  middleware?: MaybeArray<MiddlewareDefinition>;
-  example?: MaybeArray<string>;
+  middleware?: MiddlewareDefinition[];
+  examples?: string[];
   details?: string;
   throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
-  plugin?: MaybeArray<PluginDefinition>;
-  command?: MaybeArray<CommandDefinition>;
+  plugins?: PluginDefinition[];
+  commands?: CommandDefinition[];
   handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition>;
 }
 ```
@@ -403,7 +410,7 @@ interface PluginDefinition {
 Called during CLI initialization (`onInit`) or cleanup (`onDestroy`).
 
 ```typescript
-type PluginHook = (params: PluginHookParams) => MaybePromise<void>;
+type PluginHook = (params: PluginHookParams) => Promisable<void>;
 ```
 
 **Parameters:**
@@ -415,7 +422,7 @@ type PluginHook = (params: PluginHookParams) => MaybePromise<void>;
 Called before (`onPreCommandExecution`) or after (`onAfterCommandExecution`) command execution.
 
 ```typescript
-type PluginCommandHook = (params: PluginCommandHookParams) => MaybePromise<void>;
+type PluginCommandHook = (params: PluginCommandHookParams) => Promisable<void>;
 ```
 
 **Parameters:**
@@ -426,9 +433,9 @@ type PluginCommandHook = (params: PluginCommandHookParams) => MaybePromise<void>
 ### `PackDefinition`
 
 ```typescript
-interface PackDefinition {
+interface PluginpackDefinition {
   name: string;
-  plugin: MaybeArray<PluginDefinition>;
+  plugins: PluginDefinition[];
 }
 ```
 

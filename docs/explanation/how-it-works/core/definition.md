@@ -29,12 +29,8 @@ These generics propagate through creation and into the handler, where `z.infer<T
 
 `RootCommandDefinition` is `CommandDefinition` with `name` omitted. `defineRootCommand()` adds `name: "root"` automatically, so the user never needs to name the root.
 
-## `MaybeArray` Normalization
-
-Most array fields (`command`, `plugin`, `middleware`, `globalOption`) accept `MaybeArray<T>` — either a single value or an array. This is normalized to an array via `normalizeMaybeArray()` at the creation layer, not at definition time. Definitions store the value as-is.
-
 ## Zod as the Schema Layer
 
 Positional and options are raw Zod schemas — not wrappers, not adapters. The definition stores the schema directly, and downstream layers (`manifest`, `creation`, `execution`) read from it. This is what makes the entire type inference chain work: the Zod type is the single source of truth from definition to handler.
 
-Metadata like `description`, `alias`, and `deprecated` is embedded in the schema via `.meta()` or `.describe()`, and later extracted by the manifest layer through Zod's `_def` internals.
+Metadata like `description`, `aliases`, and `deprecated` is embedded in the schema via `.meta()` or `.describe()`, and later extracted by the manifest layer through Zod's `_def` internals.

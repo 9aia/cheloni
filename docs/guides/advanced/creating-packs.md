@@ -5,7 +5,7 @@ Packs bundle multiple plugins together for reuse across CLIs. Use them to create
 ## Basic Structure
 
 ```typescript
-import { definePack, definePlugin } from 'cheloni';
+import { definePluginpack, definePlugin } from 'cheloni';
 
 const analyticsPlugin = definePlugin({
   name: 'analytics',
@@ -21,9 +21,9 @@ const loggingPlugin = definePlugin({
   },
 });
 
-const monitoringPack = definePack({
+const monitoringPack = definePluginpack({
   name: 'monitoring',
-  plugin: [analyticsPlugin, loggingPlugin],
+  plugins: [analyticsPlugin, loggingPlugin],
 });
 ```
 
@@ -37,9 +37,9 @@ import { createCli } from 'cheloni';
 const cli = await createCli({
   name: 'my-cli',
   command: rootCommand,
-  pack: monitoringPack,
+  pluginpacks: [monitoringPack],
   // You can also add individual plugins alongside packs
-  plugin: [customPlugin],
+  plugins: [customPlugin],
 });
 ```
 
@@ -49,31 +49,31 @@ Packs can contain a single plugin or multiple plugins:
 
 ```typescript
 // Single plugin
-const singlePluginPack = definePack({
+const singlePluginPack = definePluginpack({
   name: 'auth',
-  plugin: authPlugin,
+  plugins: [authPlugin],
 });
 
 // Multiple plugins
-const multiPluginPack = definePack({
+const multiPluginPack = definePluginpack({
   name: 'enterprise',
-  plugin: [authPlugin, analyticsPlugin, loggingPlugin, telemetryPlugin],
+  plugins: [authPlugin, analyticsPlugin, loggingPlugin, telemetryPlugin],
 });
 ```
 
 ## Practical Examples
 
-### Standard Library Pack
+### Standard Library Base Pluginpack
 
-The standard library provides a pack with help and version support:
+The standard library provides a basic pluginpack with help and version support:
 
 ```typescript
-import { stdPack } from 'cheloni/std';
+import { basePluginpack } from 'cheloni/std';
 
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  pack: stdPack, // Includes help and version plugins
+  pluginpacks: [basePluginpack], // Includes help and version plugins
 });
 ```
 
@@ -82,7 +82,7 @@ const cli = await createCli({
 Create a pack for a specific feature set:
 
 ```typescript
-import { definePack, definePlugin } from 'cheloni';
+import { definePluginpack, definePlugin } from 'cheloni';
 
 const databasePlugin = definePlugin({
   name: 'database',
@@ -101,9 +101,9 @@ const cachePlugin = definePlugin({
   },
 });
 
-const dataPack = definePack({
+const dataPack = definePluginpack({
   name: 'data-layer',
-  plugin: [databasePlugin, cachePlugin],
+  plugins: [databasePlugin, cachePlugin],
 });
 ```
 
@@ -112,9 +112,9 @@ const dataPack = definePack({
 Bundle development-specific plugins:
 
 ```typescript
-const devPack = definePack({
+const devPack = definePluginpack({
   name: 'dev-tools',
-  plugin: [
+  plugins: [
     verboseLoggingPlugin,
     performanceMonitoringPlugin,
     debugPlugin,
@@ -125,7 +125,7 @@ const devPack = definePack({
 const cli = await createCli({
   name: 'my-cli',
   command: rootCommand,
-  pack: process.env.NODE_ENV === 'development' ? devPack : undefined,
+  pluginpacks: process.env.NODE_ENV === 'development' ? [devPack] : undefined,
 });
 ```
 
@@ -137,8 +137,8 @@ You can use both packs and individual plugins together. Plugins from both source
 const cli = await createCli({
   name: 'my-cli',
   command: rootCommand,
-  pack: stdPack, // Adds help and version plugins
-  plugin: [customPlugin], // Adds custom plugin
+  pluginpacks: [basePluginpack], // Adds help and version plugins
+  plugins: [customPlugin], // Adds custom plugin
   // All plugins are combined
 });
 ```
@@ -163,9 +163,9 @@ Packs themselves don't execute code—they're just containers for plugin definit
 See [Creating Plugins](./creating-plugins.md#error-handling) for detailed error handling guidance.
 
 ```typescript
-const pack = definePack({
+const pack = definePluginpack({
   name: 'my-pack',
-  plugin: [
+  plugins: [
     definePlugin({
       name: 'plugin-with-error-handling',
       onBeforeCommand: async ({ command }) => {

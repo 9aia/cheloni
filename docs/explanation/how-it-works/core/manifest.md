@@ -8,7 +8,7 @@ Each definition type has a corresponding manifest interface that holds only seri
 
 - **CLI**: name, version, description, details, deprecated, plus nested command/option/plugin manifests
 - **Command**: name, paths, description, details, example, deprecated, plus nested positional/options/plugins/subcommand manifests
-- **Option**: name, description, details, alias, deprecated
+- **Option**: name, description, details, aliases, deprecated
 - **Positional**: description, details, deprecated
 - **Plugin**: name
 
@@ -18,7 +18,7 @@ Cheloni reads metadata directly from Zod's internal `_def` property. The helper 
 
 - **`getSchemaObject(schema)`** — unwraps a Zod object to get its `shape` (the `{ key: ZodType }` map). Tries `_def.shape` first, falls back to `schema.shape`.
 - **`getSchemaDescription(schema)`** — reads `_def.description` or `_def.metadata.description`
-- **`getSchemaAlias(schema)`** — reads `_def.metadata.alias` (string or string array)
+- **`getSchemaAliases(schema)`** — reads `_def.metadata.aliases` (string array)
 - **`getSchemaDeprecated(schema)`** — reads `_def.deprecated` or `_def.metadata.deprecated` (boolean or string)
 
 These are the same internals that Zod populates when the user calls `.describe()`, `.meta()`, or `.deprecated()`.

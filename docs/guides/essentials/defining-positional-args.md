@@ -14,7 +14,7 @@ Add metadata to help users understand what the positional argument expects:
       Specify the path to the input JPEG file you wish to convert to PDF.
       Relative and absolute paths are accepted.
     `,
-    example: 'my-cli convert ./images/photo.jpg',
+    examples: ['my-cli convert ./images/photo.jpg'],
   })
 }
 ```

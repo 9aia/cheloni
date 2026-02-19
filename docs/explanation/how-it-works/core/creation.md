@@ -19,8 +19,8 @@ GlobalOptionDef     → GlobalOption { definition, manifest }
 
 1. Extracts the CLI manifest via `getCliManifest()`
 2. Creates the root command tree (if a command definition is provided)
-3. Creates global options from definitions (normalized from `MaybeArray` to array)
-4. Creates plugins from definitions (normalized the same way)
+3. Creates global options from `globalOptions`
+4. Creates plugins from `plugins` and `pluginpacks`
 5. Assembles the `Cli` object
 6. Runs `onInit` hooks for each plugin, passing the `Cli` object
 
@@ -30,21 +30,22 @@ If any `onInit` hook throws, creation fails immediately — the error is logged 
 
 `createCommand()` builds the command tree recursively. For each command definition:
 
-1. Normalizes the `command` field (single or array) into an array
+1. Reads `commands`
 2. Calls `createCommand()` for each child definition
-3. Stores children in a `KeyedSet` keyed by `manifest.name`
+3. Stores children in a `ManifestKeyedMap` keyed by `manifest.name`
 4. Extracts the command manifest via `getCommandManifest()`
 5. Resolves `paths` — defaults to `[definition.name]` if none provided
 
 `createRootCommand()` is a thin wrapper that adds `name: "root"` and delegates to `createCommand()`.
 
-## `KeyedSet`
+## `ManifestKeyedMap`
 
-Collections of commands, plugins, and global options use `KeyedSet` — a `Map`-backed set that derives the key from each item via a function (e.g. `plugin => plugin.manifest.name`). It provides:
+Collections of commands, plugins, and global options use `ManifestKeyedMap` — a `Map`-backed collection that derives the key from each item via its `manifest.name` property. It provides:
 
-- Uniqueness enforcement — adding a duplicate key throws by default
+- Uniqueness enforcement — adding a duplicate key overwrites the previous value
 - Key-based lookup via `.get(key)`
-- Iteration via `for...of`
+- Iteration via `.values()` or `for...of`
+- Convenient `.set(value)` method that automatically uses `value.manifest.name` as the key
 
 This is what allows `cli.plugins`, `cli.globalOptions`, and `command.commands` to be both iterable and key-addressable.
 

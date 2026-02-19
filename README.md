@@ -8,41 +8,47 @@
 ## Overview
 
 ```typescript
-import { createCli, defineCommand, defineRootCommand, defineMiddleware, defineGlobalOption, executeCli } from 'cheloni';
-import { stdPack } from 'cheloni/std';
+import { createCli, defineCommand, defineRootCommand, executeCli } from 'cheloni';
+import { basePluginpack, dryRunOptionSchema, configPlugin, verbosePlugin } from 'cheloni/std';
 import z from 'zod';
-import { authMiddleware, loggerMiddleware, configMiddleware } from 'your-lib';
+import { authMiddleware, loggerMiddleware } from 'your-lib';
 
 const deploy = defineCommand({
   name: 'deploy',
   description: 'Deploy to production',
+  paths: ['deploy', 'd'], // `d` is now considered a alias for the command
   positional: z.string().meta({ description: 'Environment (staging|production)' }),
   options: z.object({
-    dryRun: z.boolean().optional().meta({ alias: 'n' }),
+    dryRun: dryRunOptionSchema,
+    force: z.boolean().optional().meta({ aliases: ['f'] }),
   }),
+  examples: ['deploy staging', 'deploy production --force'],
+  details: 'Deploys your application to the specified environment.',
   middleware: [authMiddleware], // Handle auth and provides it to the handler
   handler: async ({ positional, options, context }) => {
-    // { positional: string, options: { dryRun?: boolean }, context: { session: Session } }
+    // Full type inference: { positional: string, options: { dryRun?: boolean, force?: boolean }, context: { session: Session } }
     console.log(`Deploying to ${positional}...`);
     if (options.dryRun) console.log('Dry run mode');
+    if (options.force) console.log('Force mode enabled');
   },
 });
 
-
 const cli = await createCli({
-  name: pkg.name,
-  version: pkg.version,
+  name: "my-cli",
+  version: "1.0.0",
   command: defineRootCommand({
-    command: [deploy],
+    commands: [deploy],
     middleware: [loggerMiddleware], // Runs for all commands
+    bequeathOptions: [], // Options inherited by subcommands
   }),
-  pack: stdPack, // Adds help and version commands
+  plugins: [configPlugin, verbosePlugin], // Individual plugins
+  pluginpacks: [basePluginpack], // Plugin packs (adds help and version commands)
 });
 
 await executeCli({ cli });
 ```
 
-**That's it!** Zero manual types, full validation, and complete type safety. Try `my-cli build src --watch --minify`.
+**That's it!** Zero manual types, full validation, and complete type safety. Try `my-cli deploy staging -n`.
 
 ## Contributing
 

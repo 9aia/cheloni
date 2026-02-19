@@ -18,7 +18,7 @@ Execution (command pipeline)
 
 - [How Definition Works](./definition.md) - Identity functions, type generics, Zod as the schema layer
 - [How Manifest Works](./manifest.md) - Metadata extraction from Zod internals, recursive traversal
-- [How Creation Works](./creation.md) - Runtime object construction, command tree, `KeyedSet`, plugin `onInit`
+- [How Creation Works](./creation.md) - Runtime object construction, command tree, `ManifestKeyedMap`, plugin `onInit`
 - [How Execution Works](./execution.md) - Routing, parsing, middleware, validation, handler pipeline
 
 ## Type Inference

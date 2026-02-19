@@ -43,7 +43,7 @@ This is the core of execution. Runs in this exact order:
 
 ### 1. Alias Map
 
-Merges command option aliases (from Zod `.meta({ alias })`) with global option aliases into a single lookup map.
+Merges command option aliases (from Zod `.meta({ aliases })`) with global option aliases into a single lookup map.
 
 ### 2. Argument Parsing
 

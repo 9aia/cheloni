@@ -151,7 +151,7 @@ const manifest = getPositionalManifest(z.string());
 Extracts manifests for multiple plugins.
 
 **Parameters:**
-- `plugins: MaybeArray<PluginDefinition>` - The plugin definitions
+- `plugins: PluginDefinition[]` - The plugin definitions
 
 **Returns:** `PluginManifest[]`
 
@@ -179,7 +179,6 @@ interface CliManifest {
   details?: string;
   deprecated?: boolean | string;
   command?: CommandManifest;
-  globalOptions?: OptionManifest[];
   plugins?: PluginManifest[];
 }
 ```
@@ -192,7 +191,7 @@ interface CommandManifest {
   paths?: string[];
   deprecated?: boolean | string;
   description?: string;
-  example?: MaybeArray<string>;
+  examples?: string[];
   options?: OptionManifest[];
   positional?: PositionalManifest;
   plugins?: PluginManifest[];
@@ -222,12 +221,10 @@ interface PluginManifest {
 ```typescript
 interface OptionManifest {
   name: string;
-  type: string;
   description?: string;
+  details?: string;
+  aliases?: string[];
   deprecated?: boolean | string;
-  default?: any;
-  required?: boolean;
-  alias?: string | string[];
 }
 ```
 
@@ -235,10 +232,9 @@ interface OptionManifest {
 
 ```typescript
 interface PositionalManifest {
-  type: string;
   description?: string;
+  details?: string;
   deprecated?: boolean | string;
-  required?: boolean;
 }
 ```
 

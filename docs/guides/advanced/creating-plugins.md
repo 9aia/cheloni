@@ -7,21 +7,27 @@ Plugins extend CLI functionality with lifecycle hooks. Use them for analytics, t
 ```typescript
 import { definePlugin } from 'cheloni';
 
-const myPlugin = definePlugin({
+export interface MyPluginConfig {
+  level?: 'info' | 'debug';
+}
+
+const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
   name: 'my-plugin',
   onInit: async ({ cli, plugin }) => {
     // Called when CLI is created
   },
-  onBeforeCommand: async ({ cli, plugin, command }) => {
-    // Called before each command execution
+  onPreCommandExecution: async ({ cli, plugin, command }) => {
+    if (options.level === 'debug') {
+      console.debug('About to run', command.name);
+    }
   },
-  onAfterCommand: async ({ cli, plugin, command }) => {
+  onAfterCommandExecution: async ({ cli, plugin, command }) => {
     // Called after each command execution (even if it fails)
   },
   onDestroy: async ({ cli, plugin }) => {
     // Called when CLI is shutting down
   },
-});
+}));
 ```
 
 ## Lifecycle Hooks
@@ -45,7 +51,7 @@ const plugin = definePlugin({
       schema: z.boolean(),
       handler: () => {},
     });
-    cli.globalOptions.add(createGlobalOption(verboseOption));
+    cli.command.manifest.bequeathOptions.add(createGlobalOption(verboseOption));
   },
 });
 ```
@@ -108,7 +114,7 @@ const analyticsPlugin = definePlugin({
 
 const cli = await createCli({
   name: 'my-cli',
-  plugin: analyticsPlugin,
+  plugins: [analyticsPlugin],
   command: rootCommand,
 });
 ```
@@ -129,7 +135,7 @@ const deploymentPlugin = definePlugin({
 
 const deployCommand = defineCommand({
   name: 'deploy',
-  plugin: deploymentPlugin,
+  plugins: [deploymentPlugin],
   handler: async ({ options }) => {
     // ...
   },
@@ -175,7 +181,6 @@ const loggingPlugin = definePlugin({
 
 ```typescript
 import { createCommand, defineCommand } from 'cheloni';
-import { normalizeMaybeArray } from 'cheloni';
 
 const customHelpPlugin = definePlugin({
   name: 'custom-help',
@@ -191,10 +196,10 @@ const customHelpPlugin = definePlugin({
     });
 
     const existingDef = cli.command.definition;
-    const existingCommands = normalizeMaybeArray(existingDef.command);
+    const existingCommands = existingDef.commands ?? [];
     cli.command = createCommand({
       ...existingDef,
-      command: [...existingCommands, customHelpCommand],
+      commands: [...existingCommands, customHelpCommand],
     });
   },
 });
@@ -218,14 +223,14 @@ const timer = definePlugin({
 // Global — will run for every command
 const cli = await createCli({
   name: 'my-cli',
-  plugin: timer,
+  plugins: [timer],
   command: rootCommand,
 });
 
 // Per-command — will run only for this command
 defineCommand({
   name: 'deploy',
-  plugin: timer,
+  plugins: [timer],
   handler: async () => { /* ... */ },
 });
 ```

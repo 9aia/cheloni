@@ -1,4 +1,4 @@
-# Creating CLI
+# Creating a CLI
 
 ## Best Practices
 
@@ -17,7 +17,7 @@
 
     const rootCommand = defineCommand({
     name: 'root',
-    command: [command1, command2],
+    commands: [command1, command2],
     });
 
     const cli = await createCli({

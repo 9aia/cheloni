@@ -4,16 +4,16 @@
 
 ## Option Aliases
 
-Option aliases are set using the `alias` property in the Zod metadata:
+Option aliases are set using the `aliases` property in the Zod metadata:
 
 ```typescript
 const command = defineCommand({
   options: z.object({
     output: z.string().optional().meta({
-      alias: 'o' // Single alias: -o
+      aliases: ['o'] // Single alias: -o
     }),
     normalize: z.boolean().optional().meta({ 
-      alias: ['n', 'c'] // Multiple aliases: -n and --normalize
+      aliases: ['n', 'c'] // Multiple aliases: -n and --normalize
     }),
   }),
   handler: async ({ options }) => {
@@ -57,8 +57,8 @@ Provide both `description` (short) and `details` (long) for better help output:
   options: z.object({
     output: z.string().optional().meta({
       description: 'Output file path',
-      alias: 'o',
-      example: [
+      aliases: ['o'],
+      examples: [
         'my-cli convert ./images/photo.jpg -o ./images/photo.pdf',
         'my-cli convert ~/Downloads/photo.jpg -o ~/Downloads/photo.pdf',
       ]
@@ -70,8 +70,8 @@ Provide both `description` (short) and `details` (long) for better help output:
         replacing special characters with underscores, and
         collapsing multiple underscores.
       `,
-      alias: 'n',
-      example: 'my-cli convert ~/Downloads/photo.jpg -n',
+      aliases: ['n'],
+      examples: ['my-cli convert ~/Downloads/photo.jpg -n'],
     }),
   })
 }

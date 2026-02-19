@@ -1,13 +1,8 @@
-# Getting Started
+# Introduction
 
-An overview of Cheloni's architecture and features. For detailed API reference, see the [Reference Documentation](../reference/index.md).
+## What is Cheloni?
 
-## Installation
-
-```sh
-bun install cheloni
-# or your favorite package manager
-```
+Cheloni (pronounced /keˈlɔːni/) is a modern, type-safe CLI framework for TypeScript. Build powerful command-line tools with full type inference, Zod-based validation, and a flexible plugin system—all without writing a single manual type annotation.
 
 ## Architecture
 
@@ -18,7 +13,7 @@ Cheloni follows a four-phase architecture: **Definition** → **Manifest** → *
 Define your CLI structure using `define*` functions. These return plain objects with full type inference — nothing is created or executed yet.
 
 ```typescript
-import { defineCommand, defineRootCommand, defineGlobalOption, definePlugin, definePack, defineCli } from 'cheloni';
+import { defineCommand, defineRootCommand, defineGlobalOption, definePlugin, definePluginpack, defineCli } from 'cheloni';
 import z from 'zod';
 
 const convert = defineCommand({
@@ -27,12 +22,12 @@ const convert = defineCommand({
   description: 'Convert a file',
   positional: z.string().meta({ description: 'Input file' }),
   options: z.object({
-    output: z.string().optional().meta({ alias: 'o', description: 'Output path' }),
+    output: z.string().optional().meta({ aliases: ['o'], description: 'Output path' }),
     quality: z.number().min(0).max(100).optional(),
   }),
   middleware: [authMiddleware],
-  plugin: [telemetryPlugin],
-  example: 'my-cli convert image.png --output result.webp',
+  plugins: [telemetryPlugin],
+  examples: ['my-cli convert image.png --output result.webp'],
   throwOnExtrageousOptions: 'throw',
   handler: async ({ positional, options, context, command, cli }) => {
     // positional: string, options: { output?: string, quality?: number }
@@ -42,16 +37,16 @@ const convert = defineCommand({
   },
 });
 
-const root = defineRootCommand({ command: [convert, ...otherCommands] });
+const root = defineRootCommand({ commands: [convert, ...otherCommands] });
 
 const verboseOption = defineGlobalOption({
   name: 'verbose',
-  schema: z.boolean().optional().meta({ alias: 'V' }),
+  schema: z.boolean().optional().meta({ aliases: ['V'] }),
 });
 
 const tokenOption = defineGlobalOption({
   name: 'token',
-  schema: z.string().meta({ alias: 't' }),
+  schema: z.string().meta({ aliases: ['t'] }),
   handler: async ({ value, context }) => {
     const token = value;
     const session = await getSession(token);
@@ -79,17 +74,21 @@ const analytics = definePlugin({
   onDestroy: async ({ cli }) => { /* ... */ },
 });
 
-const pack = definePack({
+const pack = definePluginpack({
   name: 'my-pack',
-  plugin: [analytics, ...otherPlugins],
+  plugins: [analytics, ...otherPlugins],
+});
+
+const rootCommand = defineRootCommand({
+  commands: [/* ... */],
+  bequeathOptions: [circuitBreakerOption, ...otherGlobalOptions], // Available to all commands
 });
 
 const cli = defineCli({
   name: 'my-cli',
   version: '1.0.0',
-  command: root,
-  globalOption: [circuitBreakerOption, ...otherGlobalOptions],
-  pack,
+  command: rootCommand,
+  pluginpacks: [pack],
 });
 ```
 
@@ -106,33 +105,37 @@ plugin.manifest     // { name: 'analytics' }
 
 ### Creation
 
-`createCli` turns definitions into runtime objects. It extracts manifests, builds the command tree, creates global options and plugins, then runs plugin `onInit` hooks (which can mutate the CLI structure).
+`createCli` turns definitions into runtime objects. It extracts manifests, builds the command tree, creates plugins, then runs plugin `onInit` hooks (which can mutate the CLI structure).
 
 ```typescript
-import { createCli } from 'cheloni';
-import { stdPack } from 'cheloni/std';
+import { createCli, defineRootCommand } from 'cheloni';
+import { basePluginpack } from 'cheloni/std';
+
+const rootCommand = defineRootCommand({
+  bequeathOptions: [verboseOption], // Available to all commands
+  commands: [/* ... */],
+});
 
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  command: root,
-  globalOption: [verboseOption],
-  plugin: [analytics],
-  // Or use a pack: pack: stdPack,
+  command: rootCommand,
+  plugins: [analytics],
+  // Or use a pluginpack:
+  // pluginpacks: [basePluginpack],
 });
 
 // cli.command       — root Command (with nested command tree)
 // cli.plugins       — resolved Plugin instances
-// cli.globalOptions — resolved GlobalOption instances
 // cli.manifest      — extracted metadata (name, version, descriptions, ...)
 ```
 
 **What happens during `createCli`:**
 1. Manifest is extracted from the definition (metadata for help/introspection)
 2. Root command tree is built recursively (`createCommand` / `createRootCommand`)
-3. Global options are created
+3. Plugins are created
 4. Plugins are created
-5. Plugin `onInit` hooks run — they can modify the CLI structure (e.g. `stdPack` injects help/version commands)
+5. Plugin `onInit` hooks run — they can modify the CLI structure (e.g. `basePluginpack` injects help/version commands)
 
 ### Execution
 
@@ -167,9 +170,9 @@ defineCommand({
   paths: ['greet', 'g'], // Aliases
   positional: z.string(),
   options: z.object({ loud: z.boolean().optional() }),
-  command: [subcommand], // Nested subcommands
+  commands: [subcommand], // Nested subcommands
   middleware: [authMiddleware],
-  plugin: [telemetryPlugin],
+  plugins: [telemetryPlugin],
   handler: async ({ positional, options, context, command, cli }) => {
     // positional: string
     // options: { loud?: boolean }
@@ -215,7 +218,7 @@ Global options are available to all commands. They can short-circuit execution (
 ```typescript
 defineGlobalOption({
   name: 'verbose',
-  schema: z.boolean().optional().meta({ alias: 'V' }),
+  schema: z.boolean().optional().meta({ aliases: ['V'] }),
   handler: ({ value, command, cli }) => {
     // Short-circuits — command handler won't run
   },
@@ -247,17 +250,17 @@ Plugins hook into the CLI lifecycle at specific points. They can be applied glob
 
 The standard library (`cheloni/std`) provides ready-to-use components for common CLI features.
 
-### Standard Pack
+### Base Pluginpack
 
-The `stdPack` automatically adds help and version support:
+The `basePluginpack` automatically adds help and version support:
 
 ```typescript
-import { stdPack } from 'cheloni/std';
+import { basePluginpack } from 'cheloni/std';
 
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  pack: stdPack,
+  pluginpacks: [basePluginpack],
 });
 ```
 
@@ -279,7 +282,7 @@ import { helpPlugin, versionPlugin } from 'cheloni/std';
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  plugin: [helpPlugin, versionPlugin],
+  plugins: [helpPlugin, versionPlugin],
 });
 ```
 
@@ -331,7 +334,7 @@ import {
 
 ```typescript
 import { defineCommand, defineRootCommand, createCli, executeCli } from 'cheloni';
-import { stdPack } from 'cheloni/std';
+import { basePluginpack } from 'cheloni/std';
 import z from 'zod';
 
 const greet = defineCommand({
@@ -339,7 +342,7 @@ const greet = defineCommand({
   paths: ['greet', 'g'],
   positional: z.string().meta({ description: 'Name to greet' }),
   options: z.object({
-    loud: z.boolean().optional().meta({ alias: 'l' }),
+    loud: z.boolean().optional().meta({ aliases: ['l'] }),
   }),
   handler: async ({ positional, options }) => {
     const msg = `Hello, ${positional}!`;
@@ -350,8 +353,8 @@ const greet = defineCommand({
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  command: defineRootCommand({ command: [greet] }),
-  pack: stdPack,
+  command: defineRootCommand({ commands: [greet] }),
+  pluginpacks: [basePluginpack],
 });
 
 await executeCli({ cli });

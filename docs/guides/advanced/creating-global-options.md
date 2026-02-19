@@ -2,20 +2,22 @@
 
 Global options are available to all commands. Use them for shared functionality like verbose logging, configuration files, or authentication tokens.
 
+**Note**: Global options are implemented using `bequeathOptions` on the root command. Options defined in `bequeathOptions` on the root command are available to the root command itself and all its subcommands, making them effectively "global" to the CLI.
+
 ## Defining Global Options
 
 ```typescript
-import { defineGlobalOption } from 'cheloni';
+import { defineGlobalOption, defineRootCommand } from 'cheloni';
 import z from 'zod';
 
 const verboseOption = defineGlobalOption({
   name: 'verbose',
-  schema: z.boolean().optional().meta({ alias: 'V' }),
+  schema: z.boolean().optional().meta({ aliases: ['V'] }),
 });
 
 const tokenOption = defineGlobalOption({
   name: 'token',
-  schema: z.string().meta({ alias: 't' }),
+  schema: z.string().meta({ aliases: ['t'] }),
   handler: async ({ value, context }) => {
     // Handler runs before command execution
     // Can short-circuit command execution
@@ -25,12 +27,16 @@ const tokenOption = defineGlobalOption({
 
 ## Registering Global Options
 
-Register global options when creating your CLI:
+Register global options on the root command using `bequeathOptions`:
 
 ```typescript
+const rootCommand = defineRootCommand({
+  bequeathOptions: [verboseOption], // Available to all commands
+  commands: [/* ... */],
+});
+
 const cli = await createCli({
   name: 'my-cli',
-  globalOption: verboseOption, // or [option1, option2]
   command: rootCommand,
 });
 ```
@@ -42,33 +48,45 @@ Global options can have handlers that run before command execution. If a handler
 ```typescript
 const helpOption = defineGlobalOption({
   name: 'help',
-  schema: z.boolean().optional().meta({ alias: 'h' }),
+  schema: z.boolean().optional().meta({ aliases: ['h'] }),
   handler: ({ command, cli, halt }) => {
     // Show help and exit
     showHelp(cli, command.manifest.name);
     halt(); // Short-circuit command execution
   },
 });
+
+const rootCommand = defineRootCommand({
+  bequeathOptions: [helpOption],
+  commands: [/* ... */],
+});
 ```
 
 ## Global Options Without Handlers
 
-Global options without handlers are passed to the command handler:
+Global options without handlers are available to all commands:
 
 ```typescript
 const verboseOption = defineGlobalOption({
   name: 'verbose',
   schema: z.boolean().optional(),
-  // No handler - value is available in command handler
+  // No handler - available to all commands
 });
 
-// In your command handler:
-handler: async ({ options, cli }) => {
-  // options.verbose is available if --verbose was passed
-  if (cli.globalOptions.get('verbose')?.definition.schema) {
-    // Access global option definition if needed
-  }
-}
+const rootCommand = defineRootCommand({
+  bequeathOptions: [verboseOption],
+  commands: [
+    defineCommand({
+      name: 'build',
+      handler: async ({ options }) => {
+        // options.verbose is available if --verbose was passed
+        if (options.verbose) {
+          console.log('Verbose mode enabled');
+        }
+      },
+    }),
+  ],
+});
 ```
 
 ## Error Handling
@@ -98,6 +116,6 @@ const tokenOption = defineGlobalOption({
 ## Use Cases
 
 - **Verbose logging**: `--verbose` / `-v` flag available to all commands
-- **Configuration**: `--config` to specify a config file path
+- **Configuration**: `--config` to specify a config file path (see [Configuration (std)](../std/config.md))
 - **Authentication**: `--token` for API authentication
 - **Help and version**: `--help` and `--version` options

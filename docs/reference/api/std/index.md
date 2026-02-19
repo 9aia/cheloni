@@ -14,7 +14,7 @@ import { helpCommand } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   command: {
-    command: [helpCommand]
+    commands: [helpCommand]
   }
 });
 ```
@@ -29,7 +29,7 @@ import { versionCommand } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   command: {
-    command: [versionCommand]
+    commands: [versionCommand]
   }
 });
 ```
@@ -41,12 +41,16 @@ const cli = await createCli({
 The help global option definition.
 
 ```typescript
-import { createGlobalOption } from "cheloni";
+import { defineRootCommand } from "cheloni";
 import { helpOption } from "cheloni/std";
+
+const rootCommand = defineRootCommand({
+  bequeathOptions: [helpOption], // Available to all commands
+});
 
 const cli = await createCli({
   name: "my-cli",
-  globalOption: helpOption
+  command: rootCommand,
 });
 ```
 
@@ -55,12 +59,16 @@ const cli = await createCli({
 The version global option definition.
 
 ```typescript
-import { createGlobalOption } from "cheloni";
+import { defineRootCommand } from "cheloni";
 import { versionOption } from "cheloni/std";
+
+const rootCommand = defineRootCommand({
+  bequeathOptions: [versionOption], // Available to all commands
+});
 
 const cli = await createCli({
   name: "my-cli",
-  globalOption: versionOption
+  command: rootCommand,
 });
 ```
 
@@ -88,6 +96,21 @@ Shows the CLI version.
 import { showVersion } from "cheloni/std";
 
 showVersion(cli.manifest);
+```
+
+### `resolveConfig(cli, explicitPath?)`
+
+Resolves configuration for a CLI instance.
+
+- Reads JSON from global + local config files, plus an optional explicit path.
+- Merges them in order: global < local < explicit.
+
+```typescript
+import { resolveConfig } from "cheloni/std";
+
+const { config, files } = await resolveConfig(cli);
+// config -> merged configuration object (or undefined)
+// files  -> [{ path: string, scope: "global" | "local" | "explicit" }, ...]
 ```
 
 ## Utilities
@@ -124,6 +147,39 @@ const options = mergeOptionsWithVersion(
 );
 ```
 
+### `getLocalConfigPath(cliName)`
+
+Returns the default local JSON config path `<cwd>/<cli-name>.config.json`.
+
+```typescript
+import { getLocalConfigPath } from "cheloni/std";
+
+const path = getLocalConfigPath("my-cli"); // $CWD/my-cli.config.json
+```
+
+### `getGlobalConfigPath(cliName)`
+
+Returns the default global JSON config path:
+
+- Unix: `$XDG_CONFIG_HOME/<cli-name>/config.json` or `~/.config/<cli-name>/config.json`
+- Windows: `%APPDATA%\\<cli-name>\\config.json` or `<home>\\AppData\\Roaming\\<cli-name>\\config.json`
+
+```typescript
+import { getGlobalConfigPath } from "cheloni/std";
+
+const path = getGlobalConfigPath("my-cli");
+```
+
+### `loadConfigForCli(cliName, explicitPath?)`
+
+Low‑level helper to read and merge config without a `Cli` instance.
+
+```typescript
+import { loadConfigForCli } from "cheloni/std";
+
+const { config, files } = await loadConfigForCli("my-cli", "./my-cli.config.json");
+```
+
 ## Plugins
 
 ### `helpPlugin`
@@ -136,7 +192,7 @@ import { helpPlugin } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
-  plugin: helpPlugin
+  plugins: [helpPlugin]
 });
 ```
 
@@ -152,26 +208,55 @@ import { versionPlugin } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
-  plugin: versionPlugin
+  plugins: [versionPlugin]
 });
 ```
 
 The plugin's `onInit` hook automatically adds the `version` command and merges `--version` / `-v` into root options. If no root command exists, it creates one.
 
-## Packs
+### `configPlugin`
 
-### `stdPack`
-
-The standard library pack that includes both `helpPlugin` and `versionPlugin`.
+The config plugin that adds `--config` / `-c` global option and loads configuration files.
 
 ```typescript
-import { stdPack } from "cheloni/std";
+import { configPlugin } from "cheloni/std";
+import z from "zod";
 
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
-  pack: stdPack
+  plugins: [
+    configPlugin({
+      defaultFilename: "sample.config.json",
+      defaultConfig: { outputDir: "dist" },
+      schema: z.object({ outputDir: z.string() }),
+    }),
+  ],
 });
 ```
 
-The pack includes both help and version plugins, providing complete help and version support. This is the recommended way to add standard library functionality.
+#### Options
+
+- `defaultFilename?: string` - Override the default config filename (defaults to `<cli-name>.config.json`)
+- `defaultConfig?: unknown` - Default configuration object; properties not present in the loaded config file will inherit from this
+- `schema?: z.ZodTypeAny` - Zod schema to validate the merged configuration
+
+The plugin looks for config files in precedence order (explicit → local → global), uses the first file that exists, merges it with `defaultConfig`, validates against `schema` if provided, and exposes the result on `context.config` and `context.configFiles`.
+
+## Packs
+
+### `basePluginpack`
+
+The standard library pluginpack that includes both `helpPlugin` and `versionPlugin`.
+
+```typescript
+import { basePluginpack } from "cheloni/std";
+
+const cli = await createCli({
+  name: "my-cli",
+  version: "1.0.0",
+  pluginpacks: [basePluginpack]
+});
+```
+
+The pluginpack includes both help and version plugins, providing complete help and version support. This is the recommended way to add standard library functionality.

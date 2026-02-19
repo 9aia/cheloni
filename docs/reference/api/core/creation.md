@@ -123,7 +123,7 @@ Registered on the CLI definition:
 ```typescript
 const cli = await createCli({
   name: "my-cli",
-  plugin: myPlugin // or [plugin1, plugin2]
+  plugins: [myPlugin] // or [plugin1, plugin2]
 });
 ```
 
@@ -139,7 +139,7 @@ Registered on a command definition:
 ```typescript
 const command = defineCommand({
   name: "build",
-  plugin: myPlugin, // or [plugin1, plugin2]
+  plugins: [myPlugin], // or [plugin1, plugin2]
   handler: () => {}
 });
 ```
@@ -157,8 +157,7 @@ const command = defineCommand({
 interface Cli {
   manifest: CliManifest;
   command?: RootCommand;
-  plugins: KeyedSet<Plugin>;
-  globalOptions: KeyedSet<GlobalOption>;
+  plugins: ManifestKeyedMap<Plugin>;
 }
 ```
 
@@ -171,7 +170,7 @@ interface Command<
 > {
   definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
   manifest: CommandManifest;
-  commands: KeyedSet<Command>;
+  commands: ManifestKeyedMap<Command>;
   paths: string[];
   deprecated?: boolean | string;
 }
@@ -207,7 +206,7 @@ interface CommandHandlerParams<
 type CommandHandler<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionDefinition
-> = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => MaybePromise<void>;
+> = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => Promisable<void>;
 ```
 
 ### `GlobalOption<TSchema>`
@@ -246,7 +245,7 @@ interface OptionHandlerParams<TSchema extends z.ZodTypeAny> {
 ```typescript
 type OptionHandler<TSchema extends z.ZodTypeAny> = (
   params: OptionHandlerParams<TSchema>
-) => MaybePromise<void>;
+) => Promisable<void>;
 ```
 
 ### `Option<TSchema>`
@@ -270,7 +269,7 @@ type Context = {
 ### `Middleware`
 
 ```typescript
-type Middleware = (params?: MiddlewareParams) => MaybePromise<void>;
+type Middleware = (params?: MiddlewareParams) => Promisable<void>;
 ```
 
 ### `MiddlewareParams`
