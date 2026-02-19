@@ -13,7 +13,7 @@
     "publish": true
   },
   "hooks": {
-    "after:bump": ["bun run build"],
+    "after:bump": ["bun run build", "bun run docs:build"],
     "after:release": "echo Successfully released v${version} to ${repo.repository}."
   },
   "plugins": {}
