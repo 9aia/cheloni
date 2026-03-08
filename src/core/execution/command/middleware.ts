@@ -15,6 +15,36 @@ export interface ExecuteMiddlewareOptions {
 }
 
 /**
+ * Execute a middleware chain, accumulating context through `next({ ctx })` calls.
+ * Returns the final accumulated context.
+ *
+ * Uses a slim executor in production and a safe executor (with next()-usage
+ * validation) in development.
+ */
+export async function executeMiddleware(
+    options: ExecuteMiddlewareOptions,
+): Promise<UnknownRecord> {
+    const { middleware, cli, command } = options;
+
+    if (middleware.length === 0) {
+        return {};
+    }
+
+    for (const fn of middleware) {
+        if (typeof fn !== "function") {
+            throw new TypeError("Middleware must be composed of functions!");
+        }
+    }
+
+    if (process.env.NODE_ENV === "production") {
+        return executeSlim(middleware, cli, command);
+    }
+
+    return executeSafe(middleware, cli, command);
+}
+
+
+/**
  * Build a frozen params object for a middleware invocation.
  */
 function buildParams(
@@ -104,33 +134,4 @@ async function executeSafe(
 
     const result = await dispatch(0);
     return result?.ctx ?? ctx;
-}
-
-/**
- * Execute a middleware chain, accumulating context through `next({ ctx })` calls.
- * Returns the final accumulated context.
- *
- * Uses a slim executor in production and a safe executor (with next()-usage
- * validation) in development.
- */
-export async function executeMiddleware(
-    options: ExecuteMiddlewareOptions,
-): Promise<UnknownRecord> {
-    const { middleware, cli, command } = options;
-
-    if (middleware.length === 0) {
-        return {};
-    }
-
-    for (const fn of middleware) {
-        if (typeof fn !== "function") {
-            throw new TypeError("Middleware must be composed of functions!");
-        }
-    }
-
-    if (process.env.NODE_ENV === "production") {
-        return executeSlim(middleware, cli, command);
-    }
-
-    return executeSafe(middleware, cli, command);
 }
