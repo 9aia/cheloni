@@ -31,9 +31,9 @@ export async function executeCli(options: ExecuteCliOptions): Promise<void> {
         }
 
         // Show deprecation warning if command is deprecated
-        if (match.command.deprecated) {
-            const message = typeof match.command.deprecated === 'string' 
-                ? match.command.deprecated 
+        if (match.command.definition.deprecated) {
+            const message = typeof match.command.definition.deprecated === 'string' 
+                ? match.command.definition.deprecated 
                 : 'This command is deprecated';
             console.warn(`Deprecated: ${message}`);
         }

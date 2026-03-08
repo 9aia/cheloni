@@ -1,15 +1,15 @@
 import type z from "zod";
 import type { Command } from ".";
 import type { Cli } from "~/core/creation/cli";
-import type { Promisable } from "type-fest";
-import type { HaltFunction, Context } from "~/core/execution/command";
+import type { Promisable, UnknownRecord } from "type-fest";
+import type { HaltFunction } from "~/core/execution/command";
 
 export interface OptionHandlerParams<TSchema extends z.ZodTypeAny> {
     value: z.infer<TSchema>;
     option: Option<TSchema>;
     command: Command;
     cli: Cli;
-    context: Context;
+    context: UnknownRecord;
     halt: HaltFunction;
 }
 

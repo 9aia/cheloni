@@ -1,19 +1,17 @@
 import type z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
+import type { AnyMiddleware } from "~/core/creation/command/middleware";
 import type { InferOptionsType } from "~/core/creation/command/option";
 import type { InferPositionalType } from "~/core/creation/command/positional";
 import { createPlugin } from "~/core/creation/plugin";
+import { getPositionalManifest } from "~/core/manifest/command/positional";
+import { getAliasMap, getSchemaAliases, getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
 import { extractPositionalValue, parseArgs } from "../parser";
 import { HaltError, InvalidOptionsError, InvalidPositionalError } from "./errors";
 import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
-import { getAliasMap, getSchemaAliases, getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
-import { getPositionalManifest } from "~/core/manifest/command/positional";
-
-export type Context = {
-    [key: string]: any;
-};
+import type { UnknownRecord } from "type-fest";
 
 export function halt(): never {
     throw new HaltError();
@@ -48,11 +46,14 @@ function buildAliasMap(commandDef: Command["definition"], cli: Cli, command: Com
 }
 
 async function executeMiddlewareChain(
-    middleware: Command["definition"]["middleware"],
-    command: Command
-): Promise<Record<string, any>> {
+    middleware: AnyMiddleware[] | undefined,
+    cli: Cli,
+    command: Command,
+): Promise<UnknownRecord> {
+    if (!middleware) return {};
     return await executeMiddleware({
-        middlewares: middleware ?? [],
+        middleware: middleware,
+        cli,
         command,
     });
 }
@@ -61,7 +62,7 @@ async function validateAndExecuteGlobalOptions(
     validatedOptions: Record<string, any>,
     cli: Cli,
     command: Command,
-    context: Context
+    context: UnknownRecord,
 ): Promise<void> {
     // Process bequeathOptions from parent commands
     for (const bequeathOpt of command.bequeathOptions.values()) {
@@ -260,7 +261,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
     
     try {
-        const middlewareContext = await executeMiddlewareChain(def.middleware, command);
+        const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);
         
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? 'throw';
         const globalOptionNames = buildGlobalOptionNames(cli, command);

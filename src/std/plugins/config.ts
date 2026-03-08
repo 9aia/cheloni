@@ -1,13 +1,13 @@
-import { definePlugin, type PluginDefinition, type PluginFactory } from "~/core/definition/plugin";
-import type { PluginCommandHook, PluginHook } from "~/core/creation/plugin/hook";
 import * as _ from "lodash-es";
-import configOption from "~/std/global-options/config";
-import { createCommand, type Middleware } from "~/core";
-import defaultRootCommand from "~/std/commands/default-root";
-import type z from "zod";
-import path from "node:path";
 import fs from "node:fs/promises";
-import { getLocalConfigPath, getGlobalConfigPath } from "~/std/utils/config";
+import path from "node:path";
+import type z from "zod";
+import { createCommand, type AnyMiddleware } from "~/core";
+import type { PluginCommandHook, PluginHook } from "~/core/creation/plugin/hook";
+import { definePlugin, type PluginDefinition } from "~/core/definition/plugin";
+import defaultRootCommand from "~/std/commands/default-root";
+import configOption from "~/std/global-options/config";
+import { getGlobalConfigPath, getLocalConfigPath } from "~/std/utils/config";
 
 export interface ConfigPluginConfig {
     /**
@@ -150,13 +150,11 @@ const configPluginFactory = (pluginConfig: ConfigPluginConfig = {}) => ({
         }
 
         if(cli.command) {
-            const middleware: Middleware = async ({ context, next }) => {
-                context.config = finalConfig;
-                context.configFiles = files;
-                await next();
+            const middleware: AnyMiddleware = async ({ next }) => {
+                return next({ ctx: { config: finalConfig, configFiles: files } });
             };
-            const existingMiddleware = cli.command.definition.middleware ?? [];
-            cli.command.definition.middleware = [middleware, ...existingMiddleware];
+            const existing = cli.command.definition.middleware;
+            cli.command.definition.middleware = [middleware, ...existing || []];
         }
     },
 });

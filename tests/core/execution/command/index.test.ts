@@ -179,7 +179,7 @@ describe('executeCommand', () => {
           middleware: [
             async ({ next }) => {
               order.push('middleware');
-              await next();
+              return next();
             },
           ],
           handler,

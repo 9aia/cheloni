@@ -2,8 +2,7 @@
 
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
 
-- Rewrite middleware
-  - Koa-like middlware uses a single, mutable ctx object passed through a middleware chain, its type is generally "static." When you add a property (like ctx.user) in one middleware, TypeScript doesn't inherently know it exists in the next one unless you manually extend the global interface or use generics.
+- Add dependencies for commands, so it can inherit types
 
 - Global user-extendable option types, useful for programmatic CLI definition global types
 - Improve option inference to include global options

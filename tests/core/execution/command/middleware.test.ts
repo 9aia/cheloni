@@ -18,7 +18,7 @@ describe('executeMiddleware', () => {
 
     const command = cli.command!;
     const data = await executeMiddleware({
-      middlewares: [],
+      middleware: [],
       command,
     });
 
@@ -40,10 +40,10 @@ describe('executeMiddleware', () => {
     let executed = false;
 
     const data = await executeMiddleware({
-      middlewares: [
+      middleware: [
         async ({ next }) => {
           executed = true;
-          await next();
+          return next();
         },
       ],
       command,
@@ -68,18 +68,18 @@ describe('executeMiddleware', () => {
     const order: number[] = [];
 
     await executeMiddleware({
-      middlewares: [
+      middleware: [
         async ({ next }) => {
           order.push(1);
-          await next();
+          return next();
         },
         async ({ next }) => {
           order.push(2);
-          await next();
+          return next();
         },
         async ({ next }) => {
           order.push(3);
-          await next();
+          return next();
         },
       ],
       command,
@@ -88,7 +88,7 @@ describe('executeMiddleware', () => {
     expect(order).toEqual([1, 2, 3]);
   });
 
-  it('shares data between middleware', async () => {
+  it('accumulates context through next({ ctx })', async () => {
     const cli = await createCli(
       defineCli({
         name: 'test',
@@ -102,20 +102,48 @@ describe('executeMiddleware', () => {
     const command = cli.command!;
 
     const data = await executeMiddleware({
-      middlewares: [
-        async ({ context: data, next }) => {
-          data.set = 'value1';
-          await next();
+      middleware: [
+        async ({ next }) => {
+          return next({ ctx: { set: 'value1' } });
         },
-        async ({ context: data, next }) => {
-          data.added = 'value2';
-          await next();
+        async ({ next }) => {
+          return next({ ctx: { added: 'value2' } });
         },
       ],
       command,
     });
 
     expect(data).toEqual({ set: 'value1', added: 'value2' });
+  });
+
+  it('later middleware can see context from earlier middleware', async () => {
+    const cli = await createCli(
+      defineCli({
+        name: 'test',
+        command: defineCommand({
+          name: 'root',
+          handler: async () => {},
+        }),
+      })
+    );
+
+    const command = cli.command!;
+    let seenValue: unknown;
+
+    await executeMiddleware({
+      middleware: [
+        async ({ next }) => {
+          return next({ ctx: { user: 'alice' } });
+        },
+        async ({ ctx, next }) => {
+          seenValue = ctx.user;
+          return next();
+        },
+      ],
+      command,
+    });
+
+    expect(seenValue).toBe('alice');
   });
 
   it('stops execution when next is not called', async () => {
@@ -133,16 +161,47 @@ describe('executeMiddleware', () => {
     let secondExecuted = false;
 
     await executeMiddleware({
-      middlewares: [
+      middleware: [
         async () => {
+          return { ctx: {} };
         },
-        async () => {
+        async ({ next }) => {
           secondExecuted = true;
+          return next();
         },
       ],
       command,
     });
 
     expect(secondExecuted).toBe(false);
+  });
+
+  it('works with compose()', async () => {
+    const { compose } = await import('~/core/creation/command/middleware');
+    const { defineMiddleware: defMw } = await import('~/core/definition/command/middleware');
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test',
+        command: defineCommand({
+          name: 'root',
+          handler: async () => {},
+        }),
+      })
+    );
+
+    const command = cli.command!;
+
+    const m1 = defMw(async ({ next }) => next({ ctx: { user: 'alice' } }));
+    const m2 = defMw(async ({ next }) => next({ ctx: { role: 'admin' } }));
+
+    const chain = compose(m1, m2);
+
+    const data = await executeMiddleware({
+      middleware: chain,
+      command,
+    });
+
+    expect(data).toEqual({ user: 'alice', role: 'admin' });
   });
 });

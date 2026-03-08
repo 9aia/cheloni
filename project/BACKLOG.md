@@ -25,6 +25,8 @@
 
 - Improve error handling
 - Improve std config abstraction
+- Add eslint plugin for cheloni
+- Add prettier plugin for cheloni
 
 ## Documentation
 

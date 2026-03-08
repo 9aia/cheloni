@@ -47,9 +47,9 @@ describe('Integration Tests', () => {
   it('handles middleware chain', async () => {
     const order: string[] = [];
     let capturedContext: any;
-    const handler = vi.fn((context: any) => {
+    const handler = vi.fn((params: any) => {
       order.push('handler');
-      capturedContext = context;
+      capturedContext = params;
     });
 
     const cli = await createCli(
@@ -64,12 +64,11 @@ describe('Integration Tests', () => {
               middleware: [
                 async ({ next }) => {
                   order.push('middleware1');
-                  await next();
+                  return next();
                 },
-                async ({ context: data, next }) => {
-                  data.value = 'test';
+                async ({ next }) => {
                   order.push('middleware2');
-                  await next();
+                  return next({ ctx: { value: 'test' } });
                 },
               ],
               handler,

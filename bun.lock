@@ -5,6 +5,7 @@
     "": {
       "name": "cheloni",
       "dependencies": {
+        "defu": "^6.1.4",
         "lodash-es": "^4.17.23",
         "mri": "^1.2.0",
       },

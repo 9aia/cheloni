@@ -1,6 +1,6 @@
 import type { CommandHandler } from "~/core/creation/command";
 import type { ExtrageousOptionsBehavior } from "~/core/creation/command/option";
-import type { MiddlewareDefinition } from "~/core/definition/command/middleware";
+import type { AnyMiddleware, InferComposedContext } from "~/core/creation/command/middleware";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import type { OptionDefinition } from "~/core/definition/command/option";
 import type { GlobalOptionDefinition } from "~/core/definition/command/global-option";
@@ -8,7 +8,8 @@ import type { PluginDefinition } from "~/core/definition/plugin";
 
 export interface CommandDefinition<
     TPositionalDefinition extends PositionalDefinition = any,
-    TOptionsDefinition extends OptionDefinition = any
+    TOptionsDefinition extends OptionDefinition = any,
+    TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 > {
     name: string;
     paths?: string[];
@@ -16,7 +17,7 @@ export interface CommandDefinition<
     description?: string;
     positional?: TPositionalDefinition;
     options?: TOptionsDefinition;
-    middleware?: MiddlewareDefinition[];
+    middleware?: [...TMiddleware];
     examples?: string[];
     details?: string;
     throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
@@ -27,29 +28,32 @@ export interface CommandDefinition<
      * @default []
      */
     bequeathOptions?: GlobalOptionDefinition[];
-    handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition>;
+    handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition, InferComposedContext<TMiddleware>>;
 }
 
 export type RootCommandDefinition<
-TPositionalDefinition extends PositionalDefinition = any,
-TOptionsDefinition extends OptionDefinition = any
-> = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition>, "name">;
+    TPositionalDefinition extends PositionalDefinition = any,
+    TOptionsDefinition extends OptionDefinition = any,
+    TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
+> = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>, "name">;
 
 export function defineCommand<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionDefinition
+    TOptionsDefinition extends OptionDefinition,
+    TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 >(
-    definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>
-): CommandDefinition<TPositionalDefinition, TOptionsDefinition> {
+    definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
+): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware> {
     return definition;
 }
 
 export function defineRootCommand<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionDefinition
+    TOptionsDefinition extends OptionDefinition,
+    TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 >(
-    definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>
-): CommandDefinition<TPositionalDefinition, TOptionsDefinition> {
+    definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
+): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware> {
     return {
         ...definition,
         name: "root",
