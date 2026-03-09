@@ -13,7 +13,7 @@ Creates a CLI definition.
 
 **Returns:** `CliDefinition`
 
-**Example:**
+**Example (basic):**
 ```typescript
 import { defineCli } from "cheloni";
 
@@ -23,6 +23,30 @@ const cli = defineCli({
   description: "My CLI tool"
 });
 ```
+
+**Example (with plugins and pluginpacks):**
+
+```typescript
+import { defineCli, definePlugin, definePluginpack } from "cheloni";
+
+const loggingPlugin = definePlugin({ name: "logging" });
+
+const monitoringPack = definePluginpack({
+  name: "monitoring",
+  plugins: [
+    definePlugin({ name: "analytics" }),
+    definePlugin({ name: "tracing" }),
+  ],
+});
+
+const cli = defineCli({
+  name: "my-cli",
+  plugins: [loggingPlugin],      // Individual global plugins
+  pluginpacks: [monitoringPack], // Packs of reusable plugins
+});
+```
+
+When you call `createCli()` with this definition, plugins from `plugins` and from each `pluginpack.plugins` array are **flattened into a single global plugin list**. Their `onInit` hooks run in order: all `plugins` first (in array order), followed by all plugins from `pluginpacks` (respecting pack order).
 
 ### `defineCommand(definition)`
 

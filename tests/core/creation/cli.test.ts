@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { defineCli } from '~/core/definition/cli';
 import { defineCommand, defineRootCommand } from '~/core/definition/command';
 import { definePlugin } from '~/core/definition/plugin';
+import { definePluginpack } from '~/core/definition/pack';
 import { createCli } from '~/core/creation/cli';
 import z from 'zod';
 
@@ -346,6 +347,92 @@ describe('createCli', () => {
     expect(cli.command).toBeDefined();
     expect(cli.command!.bequeathOptions.size).toBe(2);
     expect(cli.plugins.size).toBe(2);
+  });
+
+  it('creates plugins from pluginpacks', async () => {
+    const packPlugin1 = definePlugin({ name: 'pack-plugin-1' });
+    const packPlugin2 = definePlugin({ name: 'pack-plugin-2' });
+
+    const pack = definePluginpack({
+      name: 'test-pack',
+      plugins: [packPlugin1, packPlugin2],
+    });
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        pluginpacks: [pack],
+      })
+    );
+
+    expect(cli.plugins.size).toBe(2);
+    const pluginNames = [...cli.plugins.values()].map(p => p.manifest.name);
+    expect(pluginNames).toContain('pack-plugin-1');
+    expect(pluginNames).toContain('pack-plugin-2');
+  });
+
+  it('combines plugins from plugins and pluginpacks', async () => {
+    const directPlugin = definePlugin({ name: 'direct-plugin' });
+    const packPlugin = definePlugin({ name: 'pack-plugin' });
+
+    const pack = definePluginpack({
+      name: 'test-pack',
+      plugins: [packPlugin],
+    });
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [directPlugin],
+        pluginpacks: [pack],
+      })
+    );
+
+    expect(cli.plugins.size).toBe(2);
+    const pluginNames = [...cli.plugins.values()].map(p => p.manifest.name);
+    expect(pluginNames).toContain('direct-plugin');
+    expect(pluginNames).toContain('pack-plugin');
+  });
+
+  it('runs pluginpack onInit hooks after direct plugins', async () => {
+    const order: string[] = [];
+
+    const directPlugin = definePlugin({
+      name: 'direct-plugin',
+      onInit: async () => {
+        order.push('direct-plugin');
+      },
+    });
+
+    const packPlugin1 = definePlugin({
+      name: 'pack-plugin-1',
+      onInit: async () => {
+        order.push('pack-plugin-1');
+      },
+    });
+
+    const packPlugin2 = definePlugin({
+      name: 'pack-plugin-2',
+      onInit: async () => {
+        order.push('pack-plugin-2');
+      },
+    });
+
+    const pack = definePluginpack({
+      name: 'test-pack',
+      plugins: [packPlugin1, packPlugin2],
+    });
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [directPlugin],
+        pluginpacks: [pack],
+      })
+    );
+
+    expect(cli.plugins.size).toBe(3);
+    expect(order).toEqual(['direct-plugin', 'pack-plugin-1', 'pack-plugin-2']);
   });
 
   it('preserves command structure after plugin onInit', async () => {

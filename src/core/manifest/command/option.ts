@@ -1,6 +1,6 @@
 import type z from "zod";
 import type { OptionDefinition, OptionSchema } from "~/core/definition/command/option";
-import { getSchemaAliases, getSchemaDeprecated, getSchemaObject, type Manifest } from "~/utils/definition";
+import { getSchemaAliases, getSchemaDeprecated, getSchemaDescription, getSchemaMeta, getSchemaObject, type Manifest } from "~/utils/definition";
 
 export interface OptionManifest extends Manifest {
     description?: string;
@@ -27,8 +27,8 @@ export function getOptionManifest(name: string, definition: OptionSchema): Optio
 
     return {
         name,
-        description: (definition as any)._def?.description ?? (definition as any)._def?.metadata?.description,
-        details: (definition as any)._def?.metadata?.details,
+        description: getSchemaDescription(definition),
+        details: getSchemaMeta(definition)?.details,
         aliases: getSchemaAliases(definition),
         deprecated: getSchemaDeprecated(definition),
     };
