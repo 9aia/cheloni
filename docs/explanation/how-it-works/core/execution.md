@@ -12,7 +12,7 @@ argv
   ├─ 3. Middleware ─────── Run middleware chain, build shared context
   ├─ 4. Validate ───────── Check for unknown options, then Zod-validate positional & options
   ├─ 5. Bequeath opts ──── Execute bequeath option handlers (may short-circuit)
-  ├─ 6. Plugin hooks ───── onPreCommandExecution (global + command plugins)
+  ├─ 6. Plugin hooks ───── onBeforeCommandExecution (global + command plugins)
   ├─ 7. Handler ────────── Execute command handler with validated params
   └─ 8. Plugin hooks ───── onAfterCommandExecution (always runs, even on error)
 ```
@@ -81,7 +81,7 @@ Separates valid vs. extra options, shows deprecation warnings, then runs `schema
 
 ### 8. Pre-Execution Plugin Hooks
 
-Collects global plugins first, then command-level plugins (created on the fly from definitions). Runs `onPreCommandExecution` hooks in order. If a hook throws, the handler does not execute.
+Collects global plugins first, then command-level plugins (created on the fly from definitions). Runs `onBeforeCommandExecution` hooks in order. If a hook throws, the handler does not execute.
 
 ### 9. Handler
 

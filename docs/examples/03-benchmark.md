@@ -13,7 +13,7 @@ import pkg from '../package.json' with { type: 'json' };
 // Custom time plugin that measures command execution time
 const timePlugin = definePlugin({
   name: 'time',
-  onPreCommandExecution: async ({ command, context }) => {
+  onBeforeCommandExecution: async ({ command, context }) => {
     context.startTime = Date.now();
   },
   onAfterCommandExecution: async ({ command, context }) => {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
 import { defineCli } from '~/core/definition/cli';
 import { defineCommand, defineRootCommand } from '~/core/definition/command';
-import { defineGlobalOption } from '~/core/definition/command/global-option';
+import { defineOption } from '~/core/definition/command/option';
 import { createCli } from '~/core/creation/cli';
 import { executeCommand } from '~/core/execution/command';
 import { InvalidPositionalError, InvalidOptionsError } from '~/core/execution/command/errors';
@@ -207,7 +207,7 @@ describe('executeCommand', () => {
         plugins: [
           {
             name: 'test-plugin',
-            onPreCommandExecution: onBefore,
+            onBeforeCommandExecution: onBefore,
           },
         ],
         command: defineCommand({
@@ -272,7 +272,7 @@ describe('executeCommand', () => {
         plugins: [
           {
             name: 'global-plugin',
-            onPreCommandExecution: globalHook,
+            onBeforeCommandExecution: globalHook,
           },
         ],
         command: defineCommand({
@@ -280,7 +280,7 @@ describe('executeCommand', () => {
           plugins: [
             {
               name: 'command-plugin',
-              onPreCommandExecution: commandHook,
+              onBeforeCommandExecution: commandHook,
             },
           ],
           handler: async () => {},
@@ -371,7 +371,7 @@ describe('executeCommand', () => {
 describe('bequeathOptions execution', () => {
   it('inherits bequeathOptions from root command to subcommand', async () => {
     const handler = vi.fn();
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
@@ -406,7 +406,7 @@ describe('bequeathOptions execution', () => {
 
   it('validates bequeathOptions schema', async () => {
     const handler = vi.fn();
-    const countOption = defineGlobalOption({
+    const countOption = defineOption({
       name: 'count',
       schema: z.number(),
     });
@@ -443,7 +443,7 @@ describe('bequeathOptions execution', () => {
     const commandHandler = vi.fn();
     const optionHandler = vi.fn();
 
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
       handler: optionHandler,
@@ -484,7 +484,7 @@ describe('bequeathOptions execution', () => {
       halt();
     });
 
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
       handler: optionHandler,
@@ -521,7 +521,7 @@ describe('bequeathOptions execution', () => {
 
   it('inherits bequeathOptions through multiple levels', async () => {
     const handler = vi.fn();
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
@@ -562,12 +562,12 @@ describe('bequeathOptions execution', () => {
 
   it('merges bequeathOptions from multiple ancestors', async () => {
     const handler = vi.fn();
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
 
-    const outputOption = defineGlobalOption({
+    const outputOption = defineOption({
       name: 'output',
       schema: z.string().optional(),
     });
@@ -612,13 +612,13 @@ describe('bequeathOptions execution', () => {
     const parentHandler = vi.fn();
     const childHandler = vi.fn();
 
-    const parentOption = defineGlobalOption({
+    const parentOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
       handler: parentHandler,
     });
 
-    const childOption = defineGlobalOption({
+    const childOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
       handler: childHandler,
@@ -657,7 +657,7 @@ describe('bequeathOptions execution', () => {
 
   it('bequeathOptions work with aliases', async () => {
     const handler = vi.fn();
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional().meta({ aliases: ['v'] }),
     });
@@ -692,7 +692,7 @@ describe('bequeathOptions execution', () => {
 
   it('bequeathOptions are included in unknown option validation', async () => {
     const handler = vi.fn();
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });

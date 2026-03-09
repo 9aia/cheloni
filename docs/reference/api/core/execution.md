@@ -35,7 +35,7 @@ Executes a command with the provided arguments. This function:
 - Executes middleware
 - Validates options and positional arguments
 - Executes bequeath option handlers
-- Calls `onPreCommandExecution` hooks
+- Calls `onBeforeCommandExecution` hooks
 - Executes the command handler
 - Calls `onAfterCommandExecution` hooks
 
@@ -194,7 +194,7 @@ class InvalidPositionalError extends InvalidSchemaError {
 4. **Bequeath Option Handlers** - Execute bequeath option handlers (may short-circuit)
 5. **Positional Validation** - Extract and validate positional arguments
 6. **Option Schema Validation** - Validate options with Zod
-7. **Plugin Hooks (Pre)** - Call `onPreCommandExecution` hooks
+7. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks
 8. **Handler Execution** - Execute the command handler
 9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks (always runs, even on error)
 
@@ -202,8 +202,8 @@ class InvalidPositionalError extends InvalidSchemaError {
 
 During command execution:
 
-1. Global plugins' `onPreCommandExecution` (in registration order)
-2. Command plugins' `onPreCommandExecution` (in registration order)
+1. Global plugins' `onBeforeCommandExecution` (in registration order)
+2. Command plugins' `onBeforeCommandExecution` (in registration order)
 3. Command handler
 4. Command plugins' `onAfterCommandExecution` (reverse order)
 5. Global plugins' `onAfterCommandExecution` (reverse order)

@@ -217,7 +217,7 @@ const plugin = definePlugin({
 });
 ```
 
-### `onPreCommandExecution`
+### `onBeforeCommandExecution`
 
 Runs before a command handler executes, after argument parsing and validation.
 
@@ -228,13 +228,13 @@ Runs before a command handler executes, after argument parsing and validation.
 - Access `cli` instance
 - Throw to prevent handler execution
 
-**Error handling:** If `onPreCommandExecution` throws, the handler does not run.
+**Error handling:** If `onBeforeCommandExecution` throws, the handler does not run.
 
 **Example:**
 ```typescript
 const authPlugin = definePlugin({
   name: "auth",
-  onPreCommandExecution: ({ command, cli }) => {
+  onBeforeCommandExecution: ({ command, cli }) => {
     // Check authentication before command runs
     if (!isAuthenticated() && command.name !== "login") {
       throw new Error("Authentication required");
@@ -376,7 +376,7 @@ type MiddlewareDefinition = Middleware;
 interface PluginDefinition {
   name: string;
   onInit?: PluginHook;
-  onPreCommandExecution?: PluginCommandHook;
+  onBeforeCommandExecution?: PluginCommandHook;
   onAfterCommandExecution?: PluginCommandHook;
   onDestroy?: PluginHook;
 }
@@ -396,7 +396,7 @@ type PluginHook = (params: PluginHookParams) => Promisable<void>;
 
 ### `PluginCommandHook`
 
-Called before (`onPreCommandExecution`) or after (`onAfterCommandExecution`) command execution.
+Called before (`onBeforeCommandExecution`) or after (`onAfterCommandExecution`) command execution.
 
 ```typescript
 type PluginCommandHook = (params: PluginCommandHookParams) => Promisable<void>;

@@ -16,7 +16,7 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
   onInit: async ({ cli, plugin }) => {
     // Called when CLI is created
   },
-  onPreCommandExecution: async ({ cli, plugin, command }) => {
+  onBeforeCommandExecution: async ({ cli, plugin, command }) => {
     if (options.level === 'debug') {
       console.debug('About to run', command.name);
     }
@@ -206,7 +206,7 @@ import { definePlugin, defineCommand, createCli } from 'cheloni';
 
 const timer = definePlugin({
   name: 'timer',
-  onPreCommandExecution: async ({ command }) => {
+  onBeforeCommandExecution: async ({ command }) => {
     console.time(command.name);
   },
   onAfterCommandExecution: async ({ command }) => {
@@ -275,4 +275,4 @@ const plugin = definePlugin({
 2. **Keep hooks focused** - Each hook should do one thing well
 3. **Handle errors gracefully** - `onAfterCommandExecution` and `onDestroy` should not throw
 4. **Use command plugins for command-specific behavior** - Global plugins for cross-cutting concerns
-5. **Avoid side effects in `onPreCommandExecution`** - Use it for validation/checks, not mutations
+5. **Avoid side effects in `onBeforeCommandExecution`** - Use it for validation/checks, not mutations

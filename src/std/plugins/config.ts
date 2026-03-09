@@ -49,8 +49,8 @@ const configPluginFactory = (pluginConfig: ConfigPluginConfig = {}) => ({
             bequeathOptions: [configOption],
         });
     },
-    onPreCommandExecution: async ({ cli, command }: Parameters<PluginCommandHook>[0]) => {
-        const options = command.options ?? {};
+    onBeforeCommandExecution: async ({ cli, parsedOptions }: Parameters<PluginCommandHook>[0]) => {
+        const options = parsedOptions ?? {};
         const explicitConfigPath = options.config;
         const cliName = cli.manifest.name;
 

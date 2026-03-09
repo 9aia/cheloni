@@ -13,6 +13,7 @@ import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
 import type { UnknownRecord } from "type-fest";
 import type { OptionSchema } from "~/core/definition/command/option";
+import type { CommandDefinition } from "~/core/definition/command";
 
 export function halt(): never {
     throw new HaltError();
@@ -201,18 +202,19 @@ function validateOptions<T extends OptionSchema>(
 async function executePreCommandHooks(
     allPlugins: ReturnType<typeof collectPlugins>,
     cli: Cli,
-    commandDef: Command["definition"]
+    commandDefinition: CommandDefinition,
+    parsedOptions?: Record<string, any>
 ): Promise<void> {
     for (const plugin of allPlugins) {
-        if (plugin.definition.onPreCommandExecution) {
+        if (plugin.definition.onBeforeCommandExecution) {
             try {
-                await plugin.definition.onPreCommandExecution({ cli, plugin, command: commandDef });
+                await plugin.definition.onBeforeCommandExecution({ cli, plugin, command: commandDefinition, parsedOptions });
             } catch (error) {
-                console.error(`Plugin ${plugin.manifest.name} onPreCommandExecution hook failed:`, error);
+                console.error(`Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed:`, error);
                 if (error instanceof Error) {
                     throw error;
                 }
-                throw new Error(`Plugin ${plugin.manifest.name} onPreCommandExecution hook failed: ${error}`);
+                throw new Error(`Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed: ${error}`);
             }
         }
     }
@@ -221,12 +223,12 @@ async function executePreCommandHooks(
 async function executePostCommandHooks(
     allPlugins: ReturnType<typeof collectPlugins>,
     cli: Cli,
-    commandDef: Command["definition"]
+    commandDefinition: CommandDefinition
 ): Promise<void> {
     for (const plugin of allPlugins) {
         if (plugin.definition.onAfterCommandExecution) {
             try {
-                await plugin.definition.onAfterCommandExecution({ cli, plugin, command: commandDef });
+                await plugin.definition.onAfterCommandExecution({ cli, plugin, command: commandDefinition });
             } catch (hookError) {
                 console.error(`Plugin ${plugin.manifest.name} onAfterCommandExecution hook failed:`, hookError);
             }
@@ -259,6 +261,8 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
     
     try {
+        await executePreCommandHooks(allPlugins, cli, def, rawOptions);
+        
         const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);
         
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? 'throw';
@@ -282,8 +286,6 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             extrageousOptionsBehavior,
             command.bequeathOptions
         );
-        
-        await executePreCommandHooks(allPlugins, cli, def);
         
         if (def.handler) {
             const handlerParams: CommandHandlerParams<typeof positionalSchema, typeof optionsSchema> = {

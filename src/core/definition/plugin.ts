@@ -4,7 +4,7 @@ import type { JsonObject } from "type-fest";
 export interface PluginDefinition {
     name: string;
     onInit?: PluginHook;
-    onPreCommandExecution?: PluginCommandHook;
+    onBeforeCommandExecution?: PluginCommandHook;
     onAfterCommandExecution?: PluginCommandHook;
     onDestroy?: PluginHook;
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
 import { defineCommand, defineRootCommand } from '~/core/definition/command';
-import { defineGlobalOption } from '~/core/definition/command/global-option';
+import { defineOption } from '~/core/definition/command/option';
 import { createCommand, createRootCommand } from '~/core/creation/command';
 
 describe('createCommand', () => {
@@ -46,7 +46,7 @@ describe('createCommand', () => {
     });
 
     const command = createCommand(definition);
-    expect(command.deprecated).toBe(true);
+    expect(command.manifest.deprecated).toBe(true);
   });
 
   it('includes deprecated message', () => {
@@ -57,7 +57,7 @@ describe('createCommand', () => {
     });
 
     const command = createCommand(definition);
-    expect(command.deprecated).toBe('Use new command');
+    expect(command.manifest.deprecated).toBe('Use new command');
   });
 
   it('handles missing deprecated flag', () => {
@@ -67,7 +67,7 @@ describe('createCommand', () => {
     });
 
     const command = createCommand(definition);
-    expect(command.deprecated).toBeUndefined();
+    expect(command.manifest.deprecated).toBeUndefined();
   });
 
   it('creates manifest with positional', () => {
@@ -186,7 +186,7 @@ describe('createCommand', () => {
     expect(command.manifest.name).toBe('convert');
     expect(command.paths).toEqual(['c', 'convert']);
     expect(command.manifest.description).toBe('Convert files');
-    expect(command.deprecated).toBe('Use transform');
+    expect(command.manifest.deprecated).toBe('Use transform');
     expect(command.manifest.positional).toBeDefined();
     expect(command.manifest.options).toBeDefined();
     expect(command.commands.size).toBe(1);
@@ -249,7 +249,7 @@ describe('bequeathOptions', () => {
   });
 
   it('creates command with bequeathOptions', () => {
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
@@ -268,7 +268,7 @@ describe('bequeathOptions', () => {
   });
 
   it('inherits bequeathOptions from parent to child', () => {
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
@@ -294,7 +294,7 @@ describe('bequeathOptions', () => {
   });
 
   it('inherits bequeathOptions through multiple levels', () => {
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
@@ -328,12 +328,12 @@ describe('bequeathOptions', () => {
   });
 
   it('merges bequeathOptions from multiple ancestors', () => {
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
 
-    const outputOption = defineGlobalOption({
+    const outputOption = defineOption({
       name: 'output',
       schema: z.string().optional(),
     });
@@ -367,12 +367,12 @@ describe('bequeathOptions', () => {
   });
 
   it('allows child to override parent bequeathOptions', () => {
-    const parentVerbose = defineGlobalOption({
+    const parentVerbose = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
 
-    const childVerbose = defineGlobalOption({
+    const childVerbose = defineOption({
       name: 'verbose',
       schema: z.string().optional(), // Different schema
     });
@@ -399,7 +399,7 @@ describe('bequeathOptions', () => {
 
   it('handles bequeathOptions with handlers', () => {
     const handler = vi.fn();
-    const option = defineGlobalOption({
+    const option = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
       handler,
@@ -417,7 +417,7 @@ describe('bequeathOptions', () => {
   });
 
   it('handles bequeathOptions without schema', () => {
-    const option = defineGlobalOption({
+    const option = defineOption({
       name: 'verbose',
     });
 
@@ -434,17 +434,17 @@ describe('bequeathOptions', () => {
   });
 
   it('handles multiple bequeathOptions', () => {
-    const verboseOption = defineGlobalOption({
+    const verboseOption = defineOption({
       name: 'verbose',
       schema: z.boolean().optional(),
     });
 
-    const outputOption = defineGlobalOption({
+    const outputOption = defineOption({
       name: 'output',
       schema: z.string().optional(),
     });
 
-    const countOption = defineGlobalOption({
+    const countOption = defineOption({
       name: 'count',
       schema: z.number().optional(),
     });

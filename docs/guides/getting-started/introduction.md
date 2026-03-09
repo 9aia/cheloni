@@ -69,7 +69,7 @@ const circuitBreakerOption = defineOption({
 const analytics = definePlugin({
   name: 'analytics',
   onInit: async ({ cli }) => { /* ... */ },
-  onPreCommandExecution: async ({ cli, command }) => { /* ... */ },
+  onBeforeCommandExecution: async ({ cli, command }) => { /* ... */ },
   onAfterCommandExecution: async ({ cli, command }) => { /* ... */ },
   onDestroy: async ({ cli }) => { /* ... */ },
 });
@@ -153,7 +153,7 @@ await executeCli({ cli });
 2. Args parsed into positional values and options (with alias resolution)
 3. Middleware chain runs sequentially
 4. Positional and options validated with Zod
-5. Plugin `onPreCommandExecution` hooks run
+5. Plugin `onBeforeCommandExecution` hooks run
 6. Command handler runs
 7. Plugin `onAfterCommandExecution` hooks run (even on error)
 8. Plugin `onDestroy` hooks run on shutdown
@@ -231,7 +231,7 @@ Plugins hook into the CLI lifecycle at specific points. They can be applied glob
 
 **Lifecycle hooks:**
 - `onInit` — runs during `createCli`, can mutate CLI structure
-- `onPreCommandExecution` — runs before command handler
+- `onBeforeCommandExecution` — runs before command handler
 - `onAfterCommandExecution` — runs after handler (even on error)
 - `onDestroy` — runs on CLI shutdown
 

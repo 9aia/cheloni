@@ -3,6 +3,7 @@ import { defineCli } from '~/core/definition/cli';
 import { defineCommand } from '~/core/definition/command';
 import { createCli } from '~/core/creation/cli';
 import { executeMiddleware } from '~/core/execution/command/middleware';
+import { defineMiddlewareArray } from '~/core/definition/command/middleware';
 
 describe('executeMiddleware', () => {
   it('returns empty data when no middleware', async () => {
@@ -20,6 +21,7 @@ describe('executeMiddleware', () => {
     const data = await executeMiddleware({
       middleware: [],
       command,
+      cli,
     });
 
     expect(data).toEqual({});
@@ -47,6 +49,7 @@ describe('executeMiddleware', () => {
         },
       ],
       command,
+      cli,
     });
 
     expect(executed).toBe(true);
@@ -83,6 +86,7 @@ describe('executeMiddleware', () => {
         },
       ],
       command,
+      cli,
     });
 
     expect(order).toEqual([1, 2, 3]);
@@ -111,6 +115,7 @@ describe('executeMiddleware', () => {
         },
       ],
       command,
+      cli,
     });
 
     expect(data).toEqual({ set: 'value1', added: 'value2' });
@@ -141,6 +146,7 @@ describe('executeMiddleware', () => {
         },
       ],
       command,
+      cli,
     });
 
     expect(seenValue).toBe('alice');
@@ -171,37 +177,9 @@ describe('executeMiddleware', () => {
         },
       ],
       command,
+      cli,
     });
 
     expect(secondExecuted).toBe(false);
-  });
-
-  it('works with compose()', async () => {
-    const { compose } = await import('~/core/creation/command/middleware');
-    const { defineMiddleware: defMw } = await import('~/core/definition/command/middleware');
-
-    const cli = await createCli(
-      defineCli({
-        name: 'test',
-        command: defineCommand({
-          name: 'root',
-          handler: async () => {},
-        }),
-      })
-    );
-
-    const command = cli.command!;
-
-    const m1 = defMw(async ({ next }) => next({ ctx: { user: 'alice' } }));
-    const m2 = defMw(async ({ next }) => next({ ctx: { role: 'admin' } }));
-
-    const chain = compose(m1, m2);
-
-    const data = await executeMiddleware({
-      middleware: chain,
-      command,
-    });
-
-    expect(data).toEqual({ user: 'alice', role: 'admin' });
   });
 });
