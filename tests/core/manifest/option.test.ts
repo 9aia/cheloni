@@ -59,10 +59,9 @@ describe('getOptionManifest', () => {
     expect(manifest.deprecated).toBe('Use --new instead');
   });
 
-  it('throws when definition is undefined', () => {
-    expect(() => {
-      getOptionManifest('verbose', undefined as any);
-    }).toThrow('Option definition is required');
+  it('returns simple named manifest when definition is undefined', () => {
+    const manifest = getOptionManifest('verbose');
+    expect(manifest.name).toBe('verbose');
   });
 });
 

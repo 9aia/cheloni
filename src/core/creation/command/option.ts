@@ -4,7 +4,7 @@ import type { Cli } from "~/core/creation/cli";
 import type { Promisable, UnknownRecord } from "type-fest";
 import type { HaltFunction } from "~/core/execution/command";
 import type { OptionDefinition, OptionSchema } from "~/core/definition/command/option";
-import { getOptionDefinitionManifest, type OptionManifest } from "~/core/manifest/command/option";
+import { getOptionManifest, type OptionManifest } from "~/core/manifest/command/option";
 import type { RuntimeObject } from "~/utils/creation";
 
 /**
@@ -54,7 +54,7 @@ export interface Option extends RuntimeObject<OptionManifest> {
 export function createOption(definition: OptionDefinition): Option {
     return {
         definition,
-        manifest: getOptionDefinitionManifest(definition),
+        manifest: getOptionManifest(definition.name, definition.schema),
     };
 }
 
