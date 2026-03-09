@@ -1,7 +1,7 @@
-import { defineGlobalOption } from "~/core/definition/command/global-option";
+import { defineOption } from "~/core/definition/command/option";
 import { dryRunOptionSchema } from "~/std/schemas/dry-run";
 
-export default defineGlobalOption({
+export default defineOption({
     name: "dry-run",
     schema: dryRunOptionSchema,
 });

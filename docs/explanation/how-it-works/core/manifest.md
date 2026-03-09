@@ -35,7 +35,7 @@ getCliManifest()
   │   │   └─ getOptionManifest() per field in the Zod object shape
   │   ├─ getPluginsManifest()
   │   └─ getCommandManifest() per subcommand (recursive)
-  ├─ getOptionManifest() per global option
+  ├─ getOptionManifest() per bequeath option
   └─ getPluginManifest() per plugin
 ```
 

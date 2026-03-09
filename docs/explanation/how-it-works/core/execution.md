@@ -11,7 +11,7 @@ argv
   ├─ 2. Parse ──────────── Extract positional args and options (resolve aliases)
   ├─ 3. Middleware ─────── Run middleware chain, build shared context
   ├─ 4. Validate ───────── Check for unknown options, then Zod-validate positional & options
-  ├─ 5. Global options ─── Execute global option handlers (may short-circuit)
+  ├─ 5. Bequeath opts ──── Execute bequeath option handlers (may short-circuit)
   ├─ 6. Plugin hooks ───── onPreCommandExecution (global + command plugins)
   ├─ 7. Handler ────────── Execute command handler with validated params
   └─ 8. Plugin hooks ───── onAfterCommandExecution (always runs, even on error)
@@ -43,7 +43,7 @@ This is the core of execution. Runs in this exact order:
 
 ### 1. Alias Map
 
-Merges command option aliases (from Zod `.meta({ aliases })`) with global option aliases into a single lookup map.
+Merges command option aliases (from Zod `.meta({ aliases })`) with bequeath option aliases into a single lookup map.
 
 ### 2. Argument Parsing
 
@@ -60,14 +60,14 @@ middleware[0]({ context, next }) → middleware[1]({ context, next }) → ... �
 
 ### 4. Extraneous Options
 
-Checks parsed options against the schema + global option names. Behavior depends on `throwOnExtrageousOptions`:
+Checks parsed options against the schema + bequeath option names. Behavior depends on `throwOnExtrageousOptions`:
 - `'throw'` (default): throws `InvalidOptionsError`
 - `'filter-out'`: silently drops unknown options
 - `'pass-through'`: keeps them for the handler
 
-### 5. Global Option Handlers
+### 5. Bequeath Option Handlers
 
-Iterates global options. If a global option is present in parsed args:
+Iterates bequeath options. If a bequeath option is present in parsed args:
 - Validates its value against its Zod schema
 - If it has a handler (e.g. `--help`, `--version`): executes it and **returns early** (short-circuits the rest of the pipeline)
 

@@ -6,7 +6,7 @@ How the standard library components.
 
 ### Short-Circuit Behavior
 
-Global options with handlers (like `--help` and `--version`) short-circuit the execution pipeline. When `executeCommand()` finds a global option present in parsed args with a handler, it calls the handler and **returns immediately** — skipping validation, plugin hooks, and the command handler entirely.
+Options with handlers (like `--help` and `--version`) short-circuit the execution pipeline. When `executeCommand()` finds a option present in parsed args with a handler, it calls the handler and **returns immediately** — skipping validation, plugin hooks, and the command handler entirely.
 
 ## Plugins
 
@@ -56,7 +56,7 @@ Note: The plugin does not merge multiple config files. It uses the first file th
 
 `showHelp()` dispatches based on whether a command name is provided:
 - **Root help** — prints usage, version, description, lists subcommands with paths and deprecation warnings
-- **Command help** — searches command tree by name or path, prints usage, aliases, positional, subcommands, options (merged with global options), and examples
+- **Command help** — searches command tree by name or path, prints usage, aliases, positional, subcommands, options (merged with bequeath options), and examples
 
 Option rendering reads Zod internals for aliases, descriptions, and deprecation flags — the same metadata the manifest layer extracts.
 

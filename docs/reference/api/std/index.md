@@ -34,11 +34,11 @@ const cli = await createCli({
 });
 ```
 
-## Global Options
+## Options
 
 ### `helpOption`
 
-The help global option definition.
+The help option definition.
 
 ```typescript
 import { defineRootCommand } from "cheloni";
@@ -56,7 +56,7 @@ const cli = await createCli({
 
 ### `versionOption`
 
-The version global option definition.
+The version option definition.
 
 ```typescript
 import { defineRootCommand } from "cheloni";
@@ -184,7 +184,7 @@ const { config, files } = await loadConfigForCli("my-cli", "./my-cli.config.json
 
 ### `helpPlugin`
 
-The help plugin that adds help command and `--help` / `-h` global option.
+The help plugin that adds help command and `--help` / `-h` option.
 
 ```typescript
 import { helpPlugin } from "cheloni/std";

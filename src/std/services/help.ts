@@ -1,12 +1,13 @@
 import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
+import type { OptionSchema } from "~/core/definition/command/option";
 import type { CommandManifest } from "~/core/manifest/command";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
 import { getSchemaAliases, getSchemaDeprecated, getSchemaDescription, getSchemaObject } from "~/utils/definition";
 import { findCommandInTree } from "~/utils/router";
 
-function showOptionHelp(name: string, schema: z.ZodTypeAny): void {
+function showOptionHelp(name: string, schema: OptionSchema): void {
     const description = getSchemaDescription(schema);
     const aliases = getSchemaAliases(schema);
     const deprecated = getSchemaDeprecated(schema);

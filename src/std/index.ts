@@ -3,12 +3,12 @@ export { default as helpCommand } from "./commands/help";
 export { default as versionCommand } from "./commands/version";
 
 // Global Options
-export { default as helpOption } from "./global-options/help";
-export { default as configOption } from "./global-options/config";
-export { default as verboseOption } from "./global-options/verbose";
-export { default as versionOption } from "./global-options/version";
-export { default as dryRunOption } from "./global-options/dry-run";
-export { default as jsonOption } from "./global-options/json";
+export { default as helpOption } from "./options/help";
+export { default as configOption } from "./options/config";
+export { default as verboseOption } from "./options/verbose";
+export { default as versionOption } from "./options/version";
+export { default as dryRunOption } from "./options/dry-run";
+export { default as jsonOption } from "./options/json";
 
 // Services
 export {

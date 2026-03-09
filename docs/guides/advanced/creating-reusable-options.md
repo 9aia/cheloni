@@ -1,21 +1,19 @@
-# Creating Global Options
+# Creating Reusable Options
 
-Global options are available to all commands. Use them for shared functionality like verbose logging, configuration files, or authentication tokens.
+Bequeath options are options that are inherited by subcommands. When defined on the root command, they are available to all commands — making them effectively "global" to the CLI. Use them for shared functionality like verbose logging, configuration files, or authentication tokens.
 
-**Note**: Global options are implemented using `bequeathOptions` on the root command. Options defined in `bequeathOptions` on the root command are available to the root command itself and all its subcommands, making them effectively "global" to the CLI.
-
-## Defining Global Options
+## Defining Options
 
 ```typescript
-import { defineGlobalOption, defineRootCommand } from 'cheloni';
+import { defineOption, defineRootCommand } from 'cheloni';
 import z from 'zod';
 
-const verboseOption = defineGlobalOption({
+const verboseOption = defineOption({
   name: 'verbose',
   schema: z.boolean().optional().meta({ aliases: ['V'] }),
 });
 
-const tokenOption = defineGlobalOption({
+const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
   handler: async ({ value, context }) => {
@@ -25,9 +23,9 @@ const tokenOption = defineGlobalOption({
 });
 ```
 
-## Registering Global Options
+## Registering Bequeath Options
 
-Register global options on the root command using `bequeathOptions`:
+Register bequeath options on a command using `bequeathOptions`:
 
 ```typescript
 const rootCommand = defineRootCommand({
@@ -41,12 +39,12 @@ const cli = await createCli({
 });
 ```
 
-## Global Options with Handlers
+## Options with Handlers
 
-Global options can have handlers that run before command execution. If a handler is provided, it can short-circuit the command execution (like `--help` or `--version`) by calling `halt()`:
+Options can have handlers that run before command execution. It can short-circuit the command execution (like `--help` or `--version`) by calling `halt()`:
 
 ```typescript
-const helpOption = defineGlobalOption({
+const helpOption = defineOption({
   name: 'help',
   schema: z.boolean().optional().meta({ aliases: ['h'] }),
   handler: ({ command, cli, halt }) => {
@@ -62,12 +60,12 @@ const rootCommand = defineRootCommand({
 });
 ```
 
-## Global Options Without Handlers
+## Options Without Handlers
 
-Global options without handlers are available to all commands:
+Bequeath options without handlers are available to all subcommands:
 
 ```typescript
-const verboseOption = defineGlobalOption({
+const verboseOption = defineOption({
   name: 'verbose',
   schema: z.boolean().optional(),
   // No handler - available to all commands
@@ -91,10 +89,10 @@ const rootCommand = defineRootCommand({
 
 ## Error Handling
 
-Global option handlers can throw errors to stop command execution. Errors are automatically displayed and cause the CLI to exit with a non-zero status code:
+Option handlers can throw errors to stop command execution. Errors are automatically displayed and cause the CLI to exit with a non-zero status code:
 
 ```typescript
-const tokenOption = defineGlobalOption({
+const tokenOption = defineOption({
   name: 'token',
   schema: z.string(),
   handler: async ({ value, context }) => {

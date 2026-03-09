@@ -70,26 +70,45 @@ const rootCommand = defineRootCommand({
 });
 ```
 
-### `defineOption(definition)`
+### `defineOption(schema)`
 
-Creates an option definition (typically used as a Zod schema).
+Creates an inline option schema for use inside a `z.object()`.
 
 **Parameters:**
-- `definition: OptionDefinition` - A Zod schema or `undefined`
+- `schema: OptionSchema` - A Zod schema
 
-**Returns:** `OptionDefinition`
+**Returns:** `OptionSchema`
 
 **Example:**
 ```typescript
 import { defineOption } from "cheloni";
 import { z } from "zod";
 
-const options = defineOption(
-  z.object({
-    verbose: z.boolean(),
-    output: z.string()
-  })
-);
+const force = defineOption(z.boolean().optional());
+defineCommand({ options: z.object({ force }) });
+```
+
+### `defineOption(definition)` (named option)
+
+Creates a reusable, named option definition that can be passed to `bequeathOptions` so subcommands inherit it automatically.
+
+**Parameters:**
+- `definition: OptionDefinition<TSchema>` - The option definition
+
+**Returns:** `OptionDefinition<TSchema>`
+
+**Example:**
+```typescript
+import { defineOption } from "cheloni";
+import { z } from "zod";
+
+const dryRun = defineOption({
+  name: "dry-run",
+  schema: z.boolean().default(false),
+  handler: ({ value, context }) => {
+    console.log('Dry run mode');
+  },
+});
 ```
 
 ### `definePositional(definition)`
@@ -109,28 +128,6 @@ import { z } from "zod";
 const positional = definePositional(z.string());
 ```
 
-### `defineGlobalOption(definition)`
-
-Creates a global option definition available to all commands.
-
-**Parameters:**
-- `definition: GlobalOptionDefinition<TSchema>` - The global option definition
-
-**Returns:** `GlobalOptionDefinition<TSchema>`
-
-**Example:**
-```typescript
-import { defineGlobalOption } from "cheloni";
-import { z } from "zod";
-
-const globalOption = defineGlobalOption({
-  name: "config",
-  schema: z.string().optional(),
-  handler: ({ value }) => {
-    console.log("Config:", value);
-  }
-});
-```
 
 ### `defineMiddleware(definition)`
 
@@ -209,36 +206,13 @@ Runs once during CLI creation, before any commands are executed. This is the onl
 
 **Example:**
 ```typescript
-import { definePlugin, createCommand, createGlobalOption } from "cheloni";
+import { definePlugin, createCommand, createOption, defineOption } from "cheloni";
 import z from "zod";
 
 const plugin = definePlugin({
   name: "my-plugin",
   onInit: ({ cli }) => {
-    // Add a bequeath option to root command (available to all commands)
-    if (cli.command) {
-      const existingDef = cli.command.definition;
-      const existingBequeathOptions = existingDef.bequeathOptions ?? [];
-      
-      cli.command = createCommand({
-        ...existingDef,
-        bequeathOptions: [
-          ...existingBequeathOptions,
-          createGlobalOption({
-            name: "debug",
-            schema: z.boolean().optional()
-          })
-        ],
-      });
-    }
-    
-    // Modify the root command
-    if (cli.command) {
-      cli.command = createCommand({
-        ...cli.command.definition,
-        // ... modifications
-      });
-    }
+    console.log('Plugin initialized');
   }
 });
 ```
@@ -338,7 +312,7 @@ interface CliDefinition {
 ```typescript
 interface CommandDefinition<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionDefinition = any
+  TOptionsDefinition extends OptionSchema = any
 > {
   name: string;
   paths?: string[];
@@ -352,6 +326,7 @@ interface CommandDefinition<
   throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
   plugins?: PluginDefinition[];
   commands?: CommandDefinition[];
+  bequeathOptions?: OptionDefinition[];
   handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition>;
 }
 ```
@@ -361,30 +336,32 @@ interface CommandDefinition<
 ```typescript
 type RootCommandDefinition<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionDefinition = any
+  TOptionsDefinition extends OptionSchema = any
 > = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition>, "name">;
 ```
 
-### `OptionDefinition`
+### `OptionSchema`
 
 ```typescript
-type OptionDefinition = z.ZodTypeAny | undefined;
+type OptionSchema = z.ZodTypeAny;
+```
+
+### `OptionDefinition<TSchema>`
+
+A reusable, named option that can be shared across commands via `bequeathOptions`.
+
+```typescript
+interface OptionDefinition<TSchema extends OptionSchema = OptionSchema> {
+  name: string;
+  schema?: TSchema;
+  handler?: OptionHandler<TSchema>;
+}
 ```
 
 ### `PositionalDefinition`
 
 ```typescript
 type PositionalDefinition = z.ZodTypeAny | undefined;
-```
-
-### `GlobalOptionDefinition<TSchema>`
-
-```typescript
-interface GlobalOptionDefinition<TSchema extends z.ZodTypeAny = any> {
-  name: string;
-  schema?: TSchema;
-  handler?: OptionHandler<TSchema>;
-}
 ```
 
 ### `MiddlewareDefinition`

@@ -1,6 +1,6 @@
 # Version
 
-Add version command and `--version` / `-v` global option to your CLI.
+Add version command and `--version` / `-v` option to your CLI.
 
 ## Using the Plugin
 
@@ -17,7 +17,7 @@ const cli = await createCli({
 ## What It Adds
 
 - `version` command — prints the CLI version
-- `--version` / `-v` global option — prints version (short-circuits execution)
+- `--version` / `-v` option — prints version (short-circuits execution)
 
 ## Behavior
 

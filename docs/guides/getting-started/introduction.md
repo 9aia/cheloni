@@ -13,7 +13,7 @@ Cheloni follows a four-phase architecture: **Definition** → **Manifest** → *
 Define your CLI structure using `define*` functions. These return plain objects with full type inference — nothing is created or executed yet.
 
 ```typescript
-import { defineCommand, defineRootCommand, defineGlobalOption, definePlugin, definePluginpack, defineCli } from 'cheloni';
+import { defineCommand, defineRootCommand, defineOption, definePlugin, definePluginpack, defineCli } from 'cheloni';
 import z from 'zod';
 
 const convert = defineCommand({
@@ -39,12 +39,12 @@ const convert = defineCommand({
 
 const root = defineRootCommand({ commands: [convert, ...otherCommands] });
 
-const verboseOption = defineGlobalOption({
+const verboseOption = defineOption({
   name: 'verbose',
   schema: z.boolean().optional().meta({ aliases: ['V'] }),
 });
 
-const tokenOption = defineGlobalOption({
+const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
   handler: async ({ value, context }) => {
@@ -57,7 +57,7 @@ const tokenOption = defineGlobalOption({
   },
 });
 
-const circuitBreakerOption = defineGlobalOption({
+const circuitBreakerOption = defineOption({
   name: 'circuit-breaker',
   handler: async ({ value, context, halt }) => {
     if (yourConditionToShortCircuitExecution) {
@@ -81,7 +81,7 @@ const pack = definePluginpack({
 
 const rootCommand = defineRootCommand({
   commands: [/* ... */],
-  bequeathOptions: [circuitBreakerOption, ...otherGlobalOptions], // Available to all commands
+  bequeathOptions: [circuitBreakerOption, ...otherBequeathOptions], // Available to all commands
 });
 
 const cli = defineCli({
@@ -211,16 +211,16 @@ defineCommand({
 });
 ```
 
-### Global Options
+### Bequeath Options
 
-Global options are available to all commands. They can short-circuit execution (handler won't run if handler is provided).
+Bequeath options are inherited by subcommands. When placed on the root command, they are available to all commands. They can short-circuit execution if a handler calls `halt()`.
 
 ```typescript
-defineGlobalOption({
+defineOption({
   name: 'verbose',
   schema: z.boolean().optional().meta({ aliases: ['V'] }),
-  handler: ({ value, command, cli }) => {
-    // Short-circuits — command handler won't run
+  handler: ({ value, command, cli, halt }) => {
+    // Can short-circuit via halt()
   },
 });
 ```
@@ -267,8 +267,8 @@ const cli = await createCli({
 **What it adds:**
 - `help` command — shows root help or help for a specific command
 - `version` command — prints the CLI version
-- `--help` / `-h` global option — shows help for the current command (short-circuits)
-- `--version` / `-v` global option — prints version (short-circuits)
+- `--help` / `-h` option — shows help for the current command (short-circuits)
+- `--version` / `-v` option — prints version (short-circuits)
 
 **Behavior:** If no root command exists, it creates one with help as the default handler. Otherwise, it injects `help` and `version` subcommands and merges `--version` into root options.
 

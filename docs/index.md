@@ -31,8 +31,8 @@ features:
     details: Lazy-loaded plugins, dynamic definition modification, and more
   - title: Advanced Schema-based Definition
     icon: 📝
-    details: Arbitrary key-value options, option bequeathing, global options, and more
+    details: Arbitrary key-value options, bequeathing, dependency, and more
   - title: Advanced Execution Pipeline
     icon: 🔄
-    details: Middleware, global option handling, halting, lazy-loading, and more
+    details: Middleware, bequeath handling, halting, lazy-loading, and more
 ---

@@ -1,7 +1,7 @@
-import { defineGlobalOption } from "~/core/definition/command/global-option";
+import { defineOption } from "~/core/definition/command/option";
 import { configOptionSchema } from "~/std/schemas/config";
 
-export default defineGlobalOption({
+export default defineOption({
     name: "config",
     schema: configOptionSchema,
 });

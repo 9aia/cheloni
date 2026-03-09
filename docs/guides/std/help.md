@@ -1,6 +1,6 @@
 # Help
 
-Add help command and `--help` / `-h` global option to your CLI.
+Add help command and `--help` / `-h` option to your CLI.
 
 ## Using the Plugin
 
@@ -17,7 +17,7 @@ const cli = await createCli({
 ## What It Adds
 
 - `help` command — shows root help or help for a specific command
-- `--help` / `-h` global option — shows help for the current command (short-circuits execution)
+- `--help` / `-h` option — shows help for the current command (short-circuits execution)
 
 ## Behavior
 

@@ -34,7 +34,7 @@ Executes a command with the provided arguments. This function:
 - Parses arguments
 - Executes middleware
 - Validates options and positional arguments
-- Executes global option handlers
+- Executes bequeath option handlers
 - Calls `onPreCommandExecution` hooks
 - Executes the command handler
 - Calls `onAfterCommandExecution` hooks
@@ -191,7 +191,7 @@ class InvalidPositionalError extends InvalidSchemaError {
 1. **Argument Parsing** - Parse raw arguments into positional and options
 2. **Middleware Execution** - Execute middleware chain, building context
 3. **Option Validation** - Validate options against schema and check for extrageous options
-4. **Global Option Handlers** - Execute global option handlers (may short-circuit)
+4. **Bequeath Option Handlers** - Execute bequeath option handlers (may short-circuit)
 5. **Positional Validation** - Extract and validate positional arguments
 6. **Option Schema Validation** - Validate options with Zod
 7. **Plugin Hooks (Pre)** - Call `onPreCommandExecution` hooks

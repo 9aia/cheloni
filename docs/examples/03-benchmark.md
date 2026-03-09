@@ -5,7 +5,7 @@ A benchmark tool demonstrating bequeath options (--verbose), positional argument
 ```typescript
 // cli.ts
 #!/usr/bin/env bun
-import { createCli, defineCommand, defineRootCommand, executeCli, defineGlobalOption, definePlugin } from 'cheloni';
+import { createCli, defineCommand, defineRootCommand, executeCli, defineOption, definePlugin } from 'cheloni';
 import { basePluginpack } from 'cheloni/std';
 import z from 'zod';
 import pkg from '../package.json' with { type: 'json' };
@@ -30,7 +30,7 @@ const timePlugin = definePlugin({
 });
 
 // Verbose option as bequeath option (inherited by all commands)
-const verboseOption = defineGlobalOption({
+const verboseOption = defineOption({
   name: 'verbose',
   schema: z.boolean().optional().meta({ aliases: ['V'] }),
   handler: ({ value, context }) => {

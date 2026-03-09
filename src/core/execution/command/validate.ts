@@ -26,16 +26,16 @@ export function validateOptionsExist(
     rawOptions: Record<string, any>,
     definedOptions: z.ZodTypeAny | undefined,
     behavior: 'throw' | 'filter-out' | 'pass-through',
-    globalOptionNames: Set<string> = new Set()
+    inheritedOptionNames: Set<string> = new Set()
 ): Record<string, any> {
     if (!definedOptions) {
         // Command defines no options — only global options are allowed (unless pass-through)
         const providedOptionNames = Object.keys(rawOptions);
-        const nonGlobalOptions = providedOptionNames.filter(opt => !globalOptionNames.has(opt));
+        const nonInheritedOptions = providedOptionNames.filter(opt => !inheritedOptionNames.has(opt));
 
-        if (nonGlobalOptions.length > 0 && behavior === 'throw') {
+        if (nonInheritedOptions.length > 0 && behavior === 'throw') {
             throw new InvalidOptionsError(
-                `Unknown options provided: ${nonGlobalOptions.map(opt => `--${opt}`).join(', ')}. This command does not accept any options.`,
+                `Unknown options provided: ${nonInheritedOptions.map(opt => `--${opt}`).join(', ')}. This command does not accept any options.`,
                 []
             );
         }
@@ -43,7 +43,7 @@ export function validateOptionsExist(
         if (behavior === 'filter-out') {
             const filtered: Record<string, any> = {};
             for (const [key, value] of Object.entries(rawOptions)) {
-                if (globalOptionNames.has(key)) {
+                if (inheritedOptionNames.has(key)) {
                     filtered[key] = value;
                 }
             }
@@ -57,7 +57,7 @@ export function validateOptionsExist(
 
     const validOptionNames = getValidOptionNames(definedOptions);
     // Merge command option names with global option names
-    const allValidOptionNames = new Set([...validOptionNames, ...globalOptionNames]);
+    const allValidOptionNames = new Set([...validOptionNames, ...inheritedOptionNames]);
     const providedOptionNames = Object.keys(rawOptions);
     const unknownOptions = providedOptionNames.filter(opt => !allValidOptionNames.has(opt));
 

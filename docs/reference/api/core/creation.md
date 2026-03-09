@@ -9,7 +9,6 @@ The Creation layer builds runtime instances from definitions, creating the comma
 Creates a CLI instance from a definition. This function:
 - Extracts the manifest
 - Creates the root command tree
-- Creates global options
 - Creates plugins
 - Calls `onInit` hooks for all plugins
 
@@ -71,26 +70,26 @@ const definition = defineRootCommand({
 const rootCommand = createRootCommand(definition);
 ```
 
-### `createGlobalOption(definition)`
+### `createOption(definition)`
 
-Creates a global option instance from a definition.
+Creates an option runtime object from a definition, attaching the computed manifest.
 
 **Parameters:**
-- `definition: GlobalOptionDefinition<TSchema>` - The global option definition
+- `definition: OptionDefinition` - The option definition
 
-**Returns:** `GlobalOption<TSchema>`
+**Returns:** `Option`
 
 **Example:**
 ```typescript
-import { defineGlobalOption, createGlobalOption } from "cheloni";
+import { defineOption, createOption } from "cheloni";
 import { z } from "zod";
 
-const definition = defineGlobalOption({
+const definition = defineOption({
   name: "config",
   schema: z.string()
 });
 
-const globalOption = createGlobalOption(definition);
+const option = createOption(definition);
 ```
 
 ### `createPlugin(definition)`
@@ -166,12 +165,13 @@ interface Cli {
 ```typescript
 interface Command<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionDefinition = any
+  TOptionsDefinition extends OptionSchema = any
 > {
   definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
   manifest: CommandManifest;
   commands: ManifestKeyedMap<Command>;
   paths: string[];
+  bequeathOptions: ManifestKeyedMap<Option>;
   deprecated?: boolean | string;
 }
 ```
@@ -181,7 +181,7 @@ interface Command<
 ```typescript
 type RootCommand<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionDefinition = any
+  TOptionsDefinition extends OptionSchema = any
 > = Command<TPositionalDefinition, TOptionsDefinition>;
 ```
 
@@ -190,7 +190,7 @@ type RootCommand<
 ```typescript
 interface CommandHandlerParams<
   TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionDefinition
+  TOptionsDefinition extends OptionSchema
 > {
   positional: InferPositionalType<TPositionalDefinition>;
   options: InferOptionsType<TOptionsDefinition>;
@@ -205,15 +205,17 @@ interface CommandHandlerParams<
 ```typescript
 type CommandHandler<
   TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionDefinition
+  TOptionsDefinition extends OptionSchema
 > = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => Promisable<void>;
 ```
 
-### `GlobalOption<TSchema>`
+### `Option`
+
+Runtime object of an `OptionDefinition`, used in `Command.bequeathOptions`.
 
 ```typescript
-interface GlobalOption<TSchema extends z.ZodTypeAny> {
-  definition: GlobalOptionDefinition<TSchema>;
+interface Option {
+  definition: OptionDefinition;
   manifest: OptionManifest;
 }
 ```
@@ -230,9 +232,9 @@ interface Plugin {
 ### `OptionHandlerParams<TSchema>`
 
 ```typescript
-interface OptionHandlerParams<TSchema extends z.ZodTypeAny> {
+interface OptionHandlerParams<TSchema extends OptionSchema> {
   value: z.infer<TSchema>;
-  option: Option<TSchema>;
+  option: Option;
   command: Command;
   cli: Cli;
   context: Context;
@@ -243,19 +245,9 @@ interface OptionHandlerParams<TSchema extends z.ZodTypeAny> {
 ### `OptionHandler<TSchema>`
 
 ```typescript
-type OptionHandler<TSchema extends z.ZodTypeAny> = (
+type OptionHandler<TSchema extends OptionSchema> = (
   params: OptionHandlerParams<TSchema>
 ) => Promisable<void>;
-```
-
-### `Option<TSchema>`
-
-```typescript
-interface Option<TSchema extends z.ZodTypeAny> {
-  name: string;
-  schema: TSchema;
-  handler?: OptionHandler<TSchema>;
-}
 ```
 
 ### `Context`
@@ -300,8 +292,8 @@ type HaltFunction = () => never;
 Infers the TypeScript type from an options Zod schema.
 
 ```typescript
-type InferOptionsType<TSchema extends z.ZodTypeAny | undefined> =
-  [TSchema] extends [z.ZodTypeAny] ? z.infer<TSchema> : {};
+type InferOptionsType<TSchema extends OptionSchema> =
+  [TSchema] extends [OptionSchema] ? z.infer<TSchema> : {};
 ```
 
 ### `InferPositionalType<TSchema>`
@@ -309,6 +301,6 @@ type InferOptionsType<TSchema extends z.ZodTypeAny | undefined> =
 Infers the TypeScript type from a positional Zod schema.
 
 ```typescript
-type InferPositionalType<TSchema extends z.ZodTypeAny | undefined> =
-  [TSchema] extends [z.ZodTypeAny] ? z.infer<TSchema> : undefined;
+type InferPositionalType<TSchema extends PositionalSchema> =
+  [TSchema] extends [PositionalSchema] ? z.infer<TSchema> : undefined;
 ```

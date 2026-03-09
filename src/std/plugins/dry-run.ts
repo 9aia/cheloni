@@ -1,6 +1,6 @@
 import { createCommand } from "~/core";
 import { definePlugin } from "~/core/definition/plugin";
-import dryRunOption from "~/std/global-options/dry-run";
+import dryRunOption from "~/std/options/dry-run";
 import defaultRootCommand from "~/std/commands/default-root";
 
 export default definePlugin({

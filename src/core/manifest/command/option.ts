@@ -1,5 +1,5 @@
 import type z from "zod";
-import type { OptionDefinition } from "~/core/definition/command/option";
+import type { OptionDefinition, OptionSchema } from "~/core/definition/command/option";
 import { getSchemaAliases, getSchemaDeprecated, getSchemaObject, type Manifest } from "~/utils/definition";
 
 export interface OptionManifest extends Manifest {
@@ -20,7 +20,7 @@ export function getOptionsManifest(schema: z.ZodTypeAny): OptionManifest[] {
     );
 }
 
-export function getOptionManifest(name: string, definition: OptionDefinition): OptionManifest {
+export function getOptionManifest(name: string, definition: OptionSchema): OptionManifest {
     if (!definition) {
         throw new Error("Option definition is required");
     }
@@ -32,4 +32,13 @@ export function getOptionManifest(name: string, definition: OptionDefinition): O
         aliases: getSchemaAliases(definition),
         deprecated: getSchemaDeprecated(definition),
     };
+}
+
+export function getOptionDefinitionManifest(optionDefinition: OptionDefinition): OptionManifest {
+    if (!optionDefinition.schema) {
+        return {
+            name: optionDefinition.name,
+        };
+    }
+    return getOptionManifest(optionDefinition.name, optionDefinition.schema);
 }

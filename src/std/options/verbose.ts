@@ -1,5 +1,5 @@
 import z from "zod";
-import { defineGlobalOption } from "~/core/definition/command/global-option";
+import { defineOption } from "~/core/definition/command/option";
 
 function coerceVerbosity(raw: unknown): unknown {
     // If the flag is not provided, mri won't include the key at all (undefined)
@@ -44,7 +44,7 @@ function createVerboseLogger(verbosity: number) {
     };
 }
 
-export default defineGlobalOption({
+export default defineOption({
     name: "verbose",
     // Intentionally keep the schema permissive so we can support all common
     // "verbose" patterns that `mri` produces (-V, -VV, --verbose=3, etc.)

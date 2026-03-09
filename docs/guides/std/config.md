@@ -2,7 +2,7 @@
 
 The standard library provides a simple but powerful configuration system built on top of:
 
-- A `--config` / `-c` **global option**
+- A `--config` / `-c` **option**
 - A `configPlugin` that wires the option into your CLI and handles the config file loading, merging and validation
 - A set of **services** and **utils** to resolve and merge config files if you need more control
 
@@ -93,15 +93,19 @@ Resolved via `getGlobalConfigPath(cliName)`.
 
 ### Adding the config option manually
 
-You can register the std `config` global option directly:
+You can register the std `config` option directly via `bequeathOptions` on the root command:
 
 ```ts
-import { createCli } from "cheloni";
+import { createCli, defineRootCommand } from "cheloni";
 import { configOption } from "cheloni/std";
+
+const rootCommand = defineRootCommand({
+  bequeathOptions: [configOption],
+  commands: [/* ... */],
+});
 
 const cli = await createCli({
   name: "my-cli",
-  globalOptions: [configOption],
   command: rootCommand,
 });
 ```
@@ -124,7 +128,7 @@ const cli = await createCli({
 
 `configPlugin`:
 
-- Registers the `config` global option on the CLI
+- Registers the `config` option on the CLI
 - Ensures `--config` / `-c` is available to all commands
 
 ### Plugin Options
@@ -229,7 +233,7 @@ const build = defineCommand({
 
 ## Using the high‑level service directly
 
-If you don’t want to rely on the global option handler, you can resolve config manually:
+If you don’t want to rely on the bequeath option handler, you can resolve config manually:
 
 ```ts
 import { resolveConfig } from "cheloni/std";

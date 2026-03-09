@@ -2,8 +2,8 @@ import type z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
 import type { AnyMiddleware } from "~/core/creation/command/middleware";
-import type { InferOptionsType } from "~/core/creation/command/option";
-import type { InferPositionalType } from "~/core/creation/command/positional";
+import { createOption, type InferOptionsType } from "~/core/creation/command/option";
+import type { InferPositionalType, PositionalSchema } from "~/core/creation/command/positional";
 import { createPlugin } from "~/core/creation/plugin";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
 import { getAliasMap, getSchemaAliases, getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
@@ -12,6 +12,7 @@ import { HaltError, InvalidOptionsError, InvalidPositionalError } from "./errors
 import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
 import type { UnknownRecord } from "type-fest";
+import type { OptionSchema } from "~/core/definition/command/option";
 
 export function halt(): never {
     throw new HaltError();
@@ -58,7 +59,7 @@ async function executeMiddlewareChain(
     });
 }
 
-async function validateAndExecuteGlobalOptions(
+async function validateAndExecuteOptions(
     validatedOptions: Record<string, any>,
     cli: Cli,
     command: Command,
@@ -87,13 +88,10 @@ async function validateAndExecuteGlobalOptions(
         }
         
         if (bequeathOpt.definition.handler) {
+            const option = createOption(bequeathOpt.definition);
             await bequeathOpt.definition.handler({
                 value: parsedValue,
-                option: {
-                    name: optName,
-                    schema: bequeathOpt.definition.schema,
-                    handler: bequeathOpt.definition.handler,
-                },
+                option,
                 command,
                 cli,
                 context,
@@ -103,7 +101,7 @@ async function validateAndExecuteGlobalOptions(
     }
 }
 
-function validatePositional<T extends z.ZodTypeAny | undefined>(
+function validatePositional<T extends PositionalSchema>(
     positionalSchema: T,
     positionalArgs: string[]
 ): InferPositionalType<T> {
@@ -164,7 +162,7 @@ function showDeprecationWarnings(
     }
 }
 
-function validateOptions<T extends z.ZodTypeAny | undefined>(
+function validateOptions<T extends OptionSchema>(
     optionsSchema: T,
     validatedOptions: Record<string, any>,
     extrageousOptionsBehavior: 'throw' | 'filter-out' | 'pass-through',
@@ -236,7 +234,7 @@ async function executePostCommandHooks(
     }
 }
 
-function buildGlobalOptionNames(cli: Cli, command: Command): Set<string> {
+function buildOptionNames(cli: Cli, command: Command): Set<string> {
     // mri returns BOTH the canonical key AND the alias key(s) in the parsed output.
     // Include global option aliases here so unknown-option validation doesn't reject `-h`, `-v`, etc.
     const names = new Set<string>();
@@ -264,15 +262,15 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);
         
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? 'throw';
-        const globalOptionNames = buildGlobalOptionNames(cli, command);
+        const optionNames = buildOptionNames(cli, command);
         const validatedOptions = validateOptionsExist(
             rawOptions,
             def.options,
             extrageousOptionsBehavior,
-            globalOptionNames
+            optionNames
         );
         
-        await validateAndExecuteGlobalOptions(validatedOptions, cli, command, middlewareContext);
+        await validateAndExecuteOptions(validatedOptions, cli, command, middlewareContext);
         
         const positionalSchema = def.positional;
         const positional = validatePositional(positionalSchema, positionalArgs);

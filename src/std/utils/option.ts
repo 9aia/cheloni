@@ -1,6 +1,6 @@
 import z from "zod";
 import { getSchemaObject } from "~/utils/definition";
-import versionOption from "~/std/global-options/version";
+import versionOption from "~/std/options/version";
 
 /**
  * Merge a option (with schema) into any Zod options schema.

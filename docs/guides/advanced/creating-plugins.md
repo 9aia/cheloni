@@ -34,24 +34,18 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
 
 ### `onInit`
 Runs once when the CLI is created, before any commands execute. Use it to:
-- Modify CLI structure (add commands, global options)
+- Modify CLI structure (add commands, options)
 - Initialize services
 - Set up configuration
 
 ```typescript
-import { createGlobalOption, defineGlobalOption } from 'cheloni';
+import { createOption, defineOption } from 'cheloni';
 import z from 'zod';
 
 const plugin = definePlugin({
   name: 'my-plugin',
   onInit: async ({ cli }) => {
-    // Add a global option
-    const verboseOption = defineGlobalOption({
-      name: 'verbose',
-      schema: z.boolean(),
-      handler: () => {},
-    });
-    cli.command.manifest.bequeathOptions.add(createGlobalOption(verboseOption));
+    console.log('CLI initialized');
   },
 });
 ```
