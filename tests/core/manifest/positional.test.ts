@@ -9,6 +9,25 @@ describe('getPositionalManifest', () => {
     expect(manifest).toBeDefined();
   });
 
+  it('extracts name from meta', () => {
+    const schema = z.string().meta({ name: 'file' });
+    const manifest = getPositionalManifest(schema);
+    expect(manifest.name).toBe('file');
+  });
+
+  it('extracts name alongside description', () => {
+    const schema = z.string().describe('The input file path').meta({ name: 'path' });
+    const manifest = getPositionalManifest(schema);
+    expect(manifest.name).toBe('path');
+    expect(manifest.description).toBe('The input file path');
+  });
+
+  it('returns undefined name when not set in meta', () => {
+    const schema = z.string().describe('input file');
+    const manifest = getPositionalManifest(schema);
+    expect(manifest.name).toBeUndefined();
+  });
+
   it.skip('extracts details from metadata', () => {
     const schema = z.string();
     Object.defineProperty(schema, '_def', {

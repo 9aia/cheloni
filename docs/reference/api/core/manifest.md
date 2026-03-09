@@ -232,11 +232,14 @@ interface OptionManifest {
 
 ```typescript
 interface PositionalManifest {
+  name?: string;
   description?: string;
   details?: string;
   deprecated?: boolean | string;
 }
 ```
+
+- `name` - Display name for the positional argument (used in help output, e.g. `<file>` instead of `<positional>`). Set via `.meta({ name: "file" })` on the Zod schema.
 
 ## Usage
 

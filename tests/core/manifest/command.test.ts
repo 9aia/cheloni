@@ -125,8 +125,20 @@ describe('getCommandManifest', () => {
 
     const manifest = getCommandManifest(definition);
     expect(manifest.positional).toBeDefined();
-    // Description extraction depends on Zod internals - just verify manifest exists
     expect(manifest.positional).toHaveProperty('description');
+  });
+
+  it('includes positional manifest with name from meta', () => {
+    const definition = defineCommand({
+      name: 'test',
+      positional: z.string().describe('input file').meta({ name: 'file' }),
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.positional).toBeDefined();
+    expect(manifest.positional?.name).toBe('file');
+    expect(manifest.positional?.description).toBe('input file');
   });
 
   it('handles positional without description', () => {

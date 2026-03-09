@@ -49,7 +49,8 @@ function showCommandHelp(cli: Cli, commandName: string): void {
     const paths = command.paths || [];
     const deprecated = command.deprecated;
 
-    console.log(`Usage: ${cliName} ${name}${command.positional ? ' <positional>' : ''} [options]\n`);
+    const posName = command.positional?.name || 'positional';
+    console.log(`Usage: ${cliName} ${name}${command.positional ? ` <${posName}>` : ''} [options]\n`);
 
     if (description) {
         console.log(description);
@@ -68,10 +69,11 @@ function showCommandHelp(cli: Cli, commandName: string): void {
     // Show positional argument
     if (actualCommand.definition.positional) {
         const posManifest = getPositionalManifest(actualCommand.definition.positional);
+        const posLabel = posManifest?.name || 'positional';
         const posDesc = posManifest?.description;
         const posDeprecated = posManifest?.deprecated;
         console.log(`\nPositional:`);
-        console.log(`  <positional>    ${posDesc || '(any)'}`);
+        console.log(`  <${posLabel}>    ${posDesc || '(any)'}`);
         if (posDeprecated) {
             const message = typeof posDeprecated === 'string' ? posDeprecated : 'This argument is deprecated';
             console.log(`    Deprecated: ${message}`);

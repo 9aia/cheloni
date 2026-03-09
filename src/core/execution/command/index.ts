@@ -199,7 +199,7 @@ function validateOptions<T extends OptionSchema>(
     return parsed;
 }
 
-async function executePreCommandHooks(
+async function executeBeforeCommandHooks(
     allPlugins: ReturnType<typeof collectPlugins>,
     cli: Cli,
     commandDefinition: CommandDefinition,
@@ -261,7 +261,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
     
     try {
-        await executePreCommandHooks(allPlugins, cli, def, rawOptions);
+        await executeBeforeCommandHooks(allPlugins, cli, def, rawOptions);
         
         const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);
         
