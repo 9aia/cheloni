@@ -59,7 +59,7 @@ export function createOption(definition: OptionDefinition): Option {
 }
 
 /** Infers the TypeScript type from an options schema (`z.infer`), or `{}` when undefined. */
-export type InferOptionsType<TSchema extends OptionSchema> =
+export type InferOptionsType<TSchema extends OptionSchema | undefined> =
     [TSchema] extends [OptionSchema] ? z.infer<TSchema> : {};
 
 /** Controls how unrecognized options are handled during execution. */

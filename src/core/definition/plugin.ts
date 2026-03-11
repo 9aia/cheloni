@@ -3,19 +3,51 @@ import type { JsonObject } from "type-fest";
 
 export interface PluginDefinition {
     name: string;
+    /** Hook that runs once CLI is created. */
     onInit?: PluginHook;
+    /** Hook that runs before a command is executed. */
     onBeforeCommandExecution?: PluginCommandHook;
+    /** Hook that runs after a command is executed. */
     onAfterCommandExecution?: PluginCommandHook;
+    /** Hook that runs once CLI is destroyed. */
     onDestroy?: PluginHook;
 }
 
 export type PluginConfig<TConfig extends JsonObject> = TConfig;
+
 export type PluginFactory<TConfig extends PluginConfig<T>, T extends JsonObject> = (config: TConfig) => PluginDefinition;
 
-// Overload 1: object form – returns a concrete PluginDefinition
+/**
+ * @example
+ * const plugin = definePlugin({
+ *   name: "my-plugin",
+ *   onInit: ({ cli }) => {
+ *     console.log("Plugin initialized");
+ *   }
+ * });
+ * 
+ * createCli({
+ *   plugins: [plugin],
+ * });
+ */
 export function definePlugin(definition: PluginDefinition): PluginDefinition
 
-// Overload 2: factory form – returns a typed plugin factory
+/**
+ * @example
+ * interface Config {
+ *   myOption: string;
+ * }
+ * const myPlugin = definePlugin<Config>((config) => ({
+ *   name: "my-plugin",
+ *   onInit: ({ cli }) => {
+ *     console.log("Plugin initialized", config.myOption);
+ *   }
+ * }));
+ * 
+ * createCli({
+ *   plugins: [myPlugin({ myOption: "myValue" })],
+ * });
+ */
 export function definePlugin<
     TConfig extends PluginConfig<T>,
     T extends JsonObject

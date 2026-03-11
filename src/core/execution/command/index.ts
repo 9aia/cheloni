@@ -1,19 +1,20 @@
-import type z from "zod";
+import type { UnknownRecord } from "type-fest";
+import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
 import type { AnyMiddleware } from "~/core/creation/command/middleware";
 import { createOption, type InferOptionsType } from "~/core/creation/command/option";
 import type { InferPositionalType, PositionalSchema } from "~/core/creation/command/positional";
 import { createPlugin } from "~/core/creation/plugin";
+import type { CommandDefinition } from "~/core/definition/command";
+import type { OptionsSchema } from "~/core/definition/command/option";
+import { getOptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
-import { getAliasMap, getSchemaAliases, getSchemaDeprecated, getSchemaObject } from "~/utils/definition";
+import { getAliasMap } from "~/utils/definition";
 import { extractPositionalValue, parseArgs } from "../parser";
 import { HaltError, InvalidOptionsError, InvalidPositionalError } from "./errors";
 import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
-import type { UnknownRecord } from "type-fest";
-import type { OptionSchema } from "~/core/definition/command/option";
-import type { CommandDefinition } from "~/core/definition/command";
 
 export function halt(): never {
     throw new HaltError();
@@ -38,10 +39,8 @@ function buildAliasMap(commandDef: Command["definition"], cli: Cli, command: Com
     
     // Include bequeathOptions from parent commands
     for (const bequeathOpt of command.bequeathOptions.values()) {
-        const aliases = getSchemaAliases(bequeathOpt.definition.schema);
-        if (aliases !== undefined) {
-            globalAliasMap[bequeathOpt.definition.name] = aliases;
-        }
+        const manifest = getOptionManifest(bequeathOpt.definition.name, bequeathOpt.definition.schema);
+        globalAliasMap[bequeathOpt.definition.name] = manifest.aliases;
     }
     
     return { ...commandAliasMap, ...globalAliasMap };
@@ -103,7 +102,7 @@ async function validateAndExecuteOptions(
 }
 
 function validatePositional<T extends PositionalSchema>(
-    positionalSchema: T,
+    positionalSchema: T | undefined,
     positionalArgs: string[]
 ): InferPositionalType<T> {
     if (!positionalSchema) {
@@ -134,12 +133,13 @@ function showDeprecationWarnings(
     validatedOptions: Record<string, any>,
     commandOptions: Record<string, z.ZodTypeAny> | null | undefined,
     bequeathOptions: Command["bequeathOptions"],
-    optionsSchema: z.ZodTypeAny | undefined
+    optionsSchema: OptionsSchema | undefined
 ): void {
     if (commandOptions) {
         for (const [optName, optSchema] of Object.entries(commandOptions)) {
             if (validatedOptions[optName] !== undefined) {
-                const optDeprecated = getSchemaDeprecated(optSchema);
+                const manifest = getOptionManifest(optName, optSchema);
+                const optDeprecated = manifest.deprecated;
                 if (optDeprecated) {
                     const message = typeof optDeprecated === 'string' 
                         ? optDeprecated 
@@ -152,7 +152,8 @@ function showDeprecationWarnings(
     
     for (const bequeathOpt of bequeathOptions.values()) {
         if (validatedOptions[bequeathOpt.definition.name] !== undefined) {
-            const bequeathOptDeprecated = getSchemaDeprecated(bequeathOpt.definition.schema);
+            const manifest = getOptionManifest(bequeathOpt.definition.name, bequeathOpt.definition.schema);
+            const bequeathOptDeprecated = manifest.deprecated;
             if (bequeathOptDeprecated) {
                 const message = typeof bequeathOptDeprecated === 'string' 
                     ? bequeathOptDeprecated 
@@ -163,8 +164,8 @@ function showDeprecationWarnings(
     }
 }
 
-function validateOptions<T extends OptionSchema>(
-    optionsSchema: T,
+function validateOptions<T extends OptionsSchema>(
+    optionsSchema: T | undefined,
     validatedOptions: Record<string, any>,
     extrageousOptionsBehavior: 'throw' | 'filter-out' | 'pass-through',
     bequeathOptions: Command["bequeathOptions"]
@@ -175,7 +176,7 @@ function validateOptions<T extends OptionSchema>(
     }
     
     const validOptionNames = getValidOptionNames(optionsSchema);
-    const commandOptions = getSchemaObject(optionsSchema);
+    const commandOptions = optionsSchema.shape;
     
     showDeprecationWarnings(validatedOptions, commandOptions, bequeathOptions, optionsSchema);
     
@@ -244,7 +245,8 @@ function buildOptionNames(cli: Cli, command: Command): Set<string> {
     // Include bequeathOptions from parent commands
     for (const opt of command.bequeathOptions.values()) {
         names.add(opt.definition.name);
-        for (const a of getSchemaAliases(opt.definition.schema) ?? []) {
+        const aliases = opt.manifest.aliases;
+        for (const a of aliases) {
             if (a) names.add(a);
         }
     }

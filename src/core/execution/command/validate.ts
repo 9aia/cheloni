@@ -1,11 +1,11 @@
 import type z from "zod";
 import { InvalidOptionsError } from "./errors";
-import { getSchemaAliases, getSchemaObject } from "~/utils/definition";
+import type { OptionsSchema } from "~/core/definition/command/option";
 
-export function getValidOptionNames(optionsSchema: z.ZodTypeAny): Set<string> {
+export function getValidOptionNames(optionsSchema: OptionsSchema | undefined): Set<string> {
     const validOptionNames = new Set<string>();
 
-    const object = getSchemaObject(optionsSchema);
+    const object = optionsSchema?.shape;
     if (!object) {
         return validOptionNames;
     }
@@ -13,8 +13,11 @@ export function getValidOptionNames(optionsSchema: z.ZodTypeAny): Set<string> {
     for (const [optionName, schema] of Object.entries(object)) {
         validOptionNames.add(optionName);
 
+        const meta = schema.meta() ?? {} as Record<string, unknown>;
+        const aliases = (meta.aliases as string[]) || [];
+
         // Add aliases to the valid set
-        for (const aliasName of getSchemaAliases(schema) ?? []) {
+        for (const aliasName of aliases) {
             validOptionNames.add(aliasName);
         }
     }
@@ -24,7 +27,7 @@ export function getValidOptionNames(optionsSchema: z.ZodTypeAny): Set<string> {
 
 export function validateOptionsExist(
     rawOptions: Record<string, any>,
-    definedOptions: z.ZodTypeAny | undefined,
+    definedOptions: OptionsSchema | undefined,
     behavior: 'throw' | 'filter-out' | 'pass-through',
     inheritedOptionNames: Set<string> = new Set()
 ): Record<string, any> {
@@ -63,12 +66,13 @@ export function validateOptionsExist(
 
     if (unknownOptions.length > 0 && behavior === 'throw') {
         // Build list of available options with their aliases
-        const object = getSchemaObject(definedOptions);
+        const object = definedOptions?.shape;
         const knownOptions = object 
             ? Object.entries(object).map(([name, schema]) => {
-                const aliases = getSchemaAliases(schema);
-                if (aliases && aliases.length > 0) {
-                    const aliasStr = aliases.map(a => `-${a}`).join(', ');
+                const meta = schema.meta() ?? {} as Record<string, unknown>;
+                const aliases = (meta.aliases as string[]) || [];
+                if (aliases.length > 0) {
+                    const aliasStr = aliases.map((a: string) => `-${a}`).join(', ');
                     return `--${name} (${aliasStr})`;
                 }
                 return `--${name}`;

@@ -1,19 +1,18 @@
-import type z from "zod";
-import { getSchemaDeprecated, getSchemaDescription, getSchemaMeta } from "~/utils/definition";
+import type { PositionalDefinition } from "~/core/definition/command/positional";
+import { type Manifest } from "~/utils/definition";
 
-export interface PositionalManifest {
-    name?: string;
+export interface PositionalManifest extends Manifest {
     description?: string;
     details?: string;
-    deprecated?: boolean | string;
+    deprecated: boolean | string;
 }
 
-export function getPositionalManifest(schema: z.ZodTypeAny): PositionalManifest {
-    const meta = getSchemaMeta(schema);
+export function getPositionalManifest(schema: PositionalDefinition): PositionalManifest {
+    const meta = schema.meta() ?? {} as Record<string, unknown>;
     return {
-        name: meta?.name,
-        description: getSchemaDescription(schema),
-        details: meta?.details,
-        deprecated: getSchemaDeprecated(schema),
+        name: (meta.name as string) ?? "positional",
+        description: meta.description as string | undefined,
+        details: meta.details as string | undefined,
+        deprecated: (meta.deprecated as boolean | string) ?? false,
     };
 }

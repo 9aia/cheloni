@@ -1,10 +1,13 @@
 import type { Middleware, MiddlewareResult, MiddlewareParams, AnyMiddleware } from "~/core/creation/command/middleware";
 import type { Promisable, UnknownRecord } from "type-fest";
 
+/**
+ * A function that runs sequentially before the command handler.
+ */
 export type MiddlewareDefinition = Middleware;
 
 /**
- * Define a standalone middleware function.
+ * Defines a standalone middleware function.
  *
  * The middleware must return the result of calling `next()`:
  * ```ts
@@ -34,11 +37,12 @@ export function defineMiddleware<
 
 
 /**
- * Define a middleware array.
+ * Defines a middleware array.
+ * Enables type inference for middleware arrays.
  * 
  * @example
  * ```ts
- * const middleware = defineMiddlewareArray([
+ * const myMiddleware = defineMiddlewareArray([
  *   loggerMiddleware,
  *   authMiddleware,
  *   ({ next, context }) => {
@@ -46,6 +50,10 @@ export function defineMiddleware<
  *     return next();
  *   },
  * ]);
+ * 
+ * defineCommand({
+ *   middleware: myMiddleware,
+ * });
  * 
  * @see {@link defineMiddleware}
  * ```

@@ -17,5 +17,5 @@ export interface Positional<TSchema extends PositionalSchema> {
     handler?: PositionalHandler<TSchema>;
 };
 
-export type InferPositionalType<TSchema extends PositionalSchema> =
-    [TSchema] extends [PositionalSchema] ? z.infer<TSchema> : undefined;
+export type InferPositionalType<TSchema extends PositionalSchema | undefined> =
+    [TSchema] extends [PositionalSchema | undefined] ? z.infer<TSchema> : undefined;

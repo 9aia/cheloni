@@ -7,6 +7,11 @@ import type { OptionHandler } from "~/core/creation/command/option";
 export type OptionSchema = z.ZodTypeAny;
 
 /**
+ * Zod schema defining a command options.
+ */
+export type OptionsSchema = z.ZodObject<Record<string, OptionSchema>>;
+
+/**
  * A reusable, named option that can be shared across commands
  * via `bequeathOptions`. Supports an optional Zod schema for
  * validation and an optional handler that runs when the option
@@ -19,7 +24,7 @@ export interface OptionDefinition<TSchema extends OptionSchema = OptionSchema> {
 }
 
 /**
- * Define an inline option schema for use inside a `z.object()`.
+ * Defines an inline option schema for use inside a `z.object()`.
  *
  * @example
  * const force = defineOption(z.boolean().optional());
@@ -27,7 +32,7 @@ export interface OptionDefinition<TSchema extends OptionSchema = OptionSchema> {
  */
 export function defineOption<T extends OptionSchema>(schema: T): T;
 /**
- * Define a reusable, named option that can be passed to
+ * Defines a reusable, named option that can be passed to
  * `bequeathOptions` so subcommands inherit it automatically.
  *
  * @example

@@ -5,14 +5,14 @@ import { getPluginsManifest, type PluginManifest } from "~/core/manifest/plugin"
 import type { Manifest } from "~/utils/definition";
 
 export interface CommandManifest extends Manifest {
-    paths?: string[];
-    deprecated?: boolean | string;
+    paths: string[];
+    deprecated: boolean | string;
     description?: string;
     examples?: string[];
-    options?: OptionManifest[];
+    options: OptionManifest[];
     positional?: PositionalManifest;
-    plugins?: PluginManifest[];
-    commands?: CommandManifest[];
+    plugins: PluginManifest[];
+    commands: CommandManifest[];
     details?: string;
 }
 
@@ -23,11 +23,11 @@ export function getCommandManifest(definition: CommandDefinition): CommandManife
         description: definition.description,
         details: definition.details,
         examples: definition.examples,
-        deprecated: definition.deprecated,
+        deprecated: definition.deprecated ?? false,
         positional: definition.positional ? getPositionalManifest(definition.positional) : undefined,
-        options: definition.options ? getOptionsManifest(definition.options) : undefined,
-        plugins: definition.plugins ? getPluginsManifest(definition.plugins) : undefined,
-        commands: (definition.commands ?? []).map(c => getCommandManifest(c)),
+        options: definition.options ? getOptionsManifest(definition.options) : [],
+        plugins: definition.plugins ? getPluginsManifest(definition.plugins) : [],
+        commands: definition.commands ? definition.commands.map(c => getCommandManifest(c)) : [],
     };
 }
 

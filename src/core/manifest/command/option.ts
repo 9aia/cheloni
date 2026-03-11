@@ -1,37 +1,43 @@
-import type z from "zod";
-import type { OptionSchema } from "~/core/definition/command/option";
-import { getSchemaAliases, getSchemaDeprecated, getSchemaDescription, getSchemaMeta, getSchemaObject, type Manifest } from "~/utils/definition";
+import type { OptionSchema, OptionsSchema } from "~/core/definition/command/option";
 
-export interface OptionManifest extends Manifest {
+export type OptionManifest = {
+    name: string;
     description?: string;
     details?: string;
-    aliases?: string[];
-    deprecated?: boolean | string;
-}
+    aliases: string[];
+    deprecated: boolean | string;
+};
 
-export function getOptionsManifest(schema: z.ZodTypeAny): OptionManifest[] {
-    const object = getSchemaObject(schema);
-    if (!object) {
-        throw new Error("Options schema is not a valid ZodObject");
+export type OptionsManifest = OptionManifest[];
+
+export function getOptionsManifest(schema: OptionsSchema): OptionManifest[] {
+    const object = schema.shape;
+
+    if(!object) {
+        return [];
     }
 
     return Object.entries(object).map(([name, optionSchema]) =>
-        getOptionManifest(name, optionSchema)
+        getOptionManifest(name, optionSchema as OptionSchema)
     );
 }
 
-export function getOptionManifest(name: string, definition?: OptionSchema): OptionManifest {
+export function getOptionManifest(fallbackName: string, definition?: OptionSchema): OptionManifest {
     if (!definition) {
         return {
-            name,
+            name: fallbackName,
+            deprecated: false,
+            aliases: [],
         };
     }
 
+    const meta = definition.meta() ?? {} as Record<string, unknown>;
+
     return {
-        name,
-        description: getSchemaDescription(definition),
-        details: getSchemaMeta(definition)?.details,
-        aliases: getSchemaAliases(definition),
-        deprecated: getSchemaDeprecated(definition),
+        name: (meta.name as string) ?? fallbackName,
+        description: meta.description as string | undefined,
+        details: meta.details as string | undefined,
+        aliases: (meta.aliases as string[]) ?? [],
+        deprecated: (meta.deprecated as boolean | string) ?? false,
     };
 }

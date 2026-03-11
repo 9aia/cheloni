@@ -1,13 +1,16 @@
 import type { CommandHandler } from "~/core/creation/command";
-import type { ExtrageousOptionsBehavior } from "~/core/creation/command/option";
 import type { AnyMiddleware, InferComposedContext } from "~/core/creation/command/middleware";
+import type { ExtrageousOptionsBehavior } from "~/core/creation/command/option";
+import type { OptionDefinition, OptionsSchema } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
-import type { OptionDefinition, OptionSchema } from "~/core/definition/command/option";
 import type { PluginDefinition } from "~/core/definition/plugin";
 
+/**
+ * A command definition.
+ */
 export interface CommandDefinition<
-    TPositionalDefinition extends PositionalDefinition = any,
-    TOptionsDefinition extends OptionSchema = any,
+    TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+    TOptionsDefinition extends OptionsSchema = OptionsSchema,
     TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 > {
     name: string;
@@ -30,15 +33,21 @@ export interface CommandDefinition<
     handler?: CommandHandler<TPositionalDefinition, TOptionsDefinition, InferComposedContext<TMiddleware>>;
 }
 
+/**
+ * A root command definition.
+ */
 export type RootCommandDefinition<
-    TPositionalDefinition extends PositionalDefinition = any,
-    TOptionsDefinition extends OptionSchema = any,
+    TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+    TOptionsDefinition extends OptionsSchema = OptionsSchema,
     TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 > = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>, "name">;
 
+/**
+ * Defines a command.
+ */
 export function defineCommand<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionSchema,
+    TOptionsDefinition extends OptionsSchema,
     TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 >(
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
@@ -46,9 +55,12 @@ export function defineCommand<
     return definition;
 }
 
+/**
+ * Defines a root command.
+ */
 export function defineRootCommand<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionSchema,
+    TOptionsDefinition extends OptionsSchema,
     TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
 >(
     definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,

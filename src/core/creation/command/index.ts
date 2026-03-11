@@ -1,18 +1,18 @@
+import type { Promisable, UnknownRecord } from "type-fest";
 import type { Cli } from "~/core/creation/cli";
 import type { InferOptionsType, Option } from "~/core/creation/command/option";
 import { createOption } from "~/core/creation/command/option";
 import type { InferPositionalType } from "~/core/creation/command/positional";
 import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
-import type { OptionSchema } from "~/core/definition/command/option";
+import type { OptionsSchema } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import { getCommandManifest, type CommandManifest } from "~/core/manifest/command";
-import type { Promisable, UnknownRecord } from "type-fest";
 import type { RuntimeObject } from "~/utils/creation";
 import { ManifestKeyedMap } from "~/utils/definition";
 
 export interface Command<
-    TPositionalDefinition extends PositionalDefinition = any,
-    TOptionsDefinition extends OptionSchema = any
+    TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+    TOptionsDefinition extends OptionsSchema = OptionsSchema
 > extends RuntimeObject<CommandManifest> {
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
     commands: ManifestKeyedMap<Command>;
@@ -25,13 +25,13 @@ export interface Command<
 }
 
 export type RootCommand<
-    TPositionalDefinition extends PositionalDefinition = any,
-    TOptionsDefinition extends OptionSchema = any
+    TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+    TOptionsDefinition extends OptionsSchema = OptionsSchema
 > = Command<TPositionalDefinition, TOptionsDefinition>;
 
 export interface CommandHandlerParams<
-    TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionSchema,
+    TPositionalDefinition extends PositionalDefinition | undefined,
+    TOptionsDefinition extends OptionsSchema | undefined,
     TContext extends UnknownRecord = UnknownRecord,
 > {
     positional: InferPositionalType<TPositionalDefinition>;
@@ -43,13 +43,13 @@ export interface CommandHandlerParams<
 
 export type CommandHandler<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionSchema,
+    TOptionsDefinition extends OptionsSchema,
     TContext extends UnknownRecord = UnknownRecord,
 > = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition, TContext>) => Promisable<void>;
 
 export function createCommand<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionSchema
+    TOptionsDefinition extends OptionsSchema
 >(
     definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>,
     inheritedBequeathOptions: Option[] = []
@@ -88,7 +88,7 @@ export function createCommand<
 
 export function createRootCommand<
     TPositionalDefinition extends PositionalDefinition,
-    TOptionsDefinition extends OptionSchema
+    TOptionsDefinition extends OptionsSchema
 >(
     definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>
 ): RootCommand<TPositionalDefinition, TOptionsDefinition> {

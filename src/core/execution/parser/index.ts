@@ -2,10 +2,16 @@ import mri from "mri";
 import type z from "zod";
 
 export function parseArgs(args: string[], aliasMap: Record<string, string[]> = {}) {
+    // mri mutates alias arrays via .shift() — clone to protect schema metadata
+    const clonedAliasMap: Record<string, string[]> = {};
+    for (const [key, value] of Object.entries(aliasMap)) {
+        clonedAliasMap[key] = [...value];
+    }
+
     const argv = mri(args, {
         boolean: [],
         string: [],
-        alias: aliasMap,
+        alias: clonedAliasMap,
         default: {},
     });
 
