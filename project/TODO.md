@@ -13,6 +13,7 @@
 - Add pluginpack config (disable/enable plugins, change config for each plugin)
 - Add validation to definition to ensure that the definition is valid
 - Add variadics
+- Add error handler (middleware? plugin?)
 
 - Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
 - Add test utils package
