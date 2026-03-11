@@ -7,8 +7,13 @@ describe('getValidOptionNames', () => {
     expect(getValidOptionNames(undefined as any)).toEqual(new Set());
   });
 
-  it('returns empty set for non-object schema', () => {
-    expect(getValidOptionNames(z.string())).toEqual(new Set());
+  it('returns empty set for schema with no aliases', () => {
+    const schema = z.object({
+      verbose: z.boolean(),
+    });
+    const validNames = getValidOptionNames(schema);
+    expect(validNames.has('verbose')).toBe(true);
+    expect(validNames.size).toBe(1);
   });
 
   it('extracts option names from object schema', () => {

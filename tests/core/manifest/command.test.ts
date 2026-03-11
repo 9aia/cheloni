@@ -113,7 +113,7 @@ describe('getCommandManifest', () => {
     });
 
     const manifest = getCommandManifest(definition);
-    expect(manifest.deprecated).toBeUndefined();
+    expect(manifest.deprecated).toBe(false);
   });
 
   it('includes positional manifest with description', () => {
@@ -185,7 +185,8 @@ describe('getCommandManifest', () => {
     });
 
     const manifest = getCommandManifest(definition);
-    expect(manifest.options).toBeUndefined();
+    expect(manifest.options).toBeDefined();
+    expect(manifest.options).toHaveLength(0);
   });
 
   it('includes nested commands in manifest', () => {
@@ -287,7 +288,8 @@ describe('getCommandManifest', () => {
     });
 
     const manifest = getCommandManifest(definition);
-    expect(manifest.plugins).toBeUndefined();
+    expect(manifest.plugins).toBeDefined();
+    expect(manifest.plugins).toHaveLength(0);
   });
 
   it('extracts complete command manifest with all fields', () => {

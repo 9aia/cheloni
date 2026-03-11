@@ -22,10 +22,10 @@ describe('getPositionalManifest', () => {
     expect(manifest.description).toBe('The input file path');
   });
 
-  it('returns undefined name when not set in meta', () => {
+  it('returns default name when not set in meta', () => {
     const schema = z.string().describe('input file');
     const manifest = getPositionalManifest(schema);
-    expect(manifest.name).toBeUndefined();
+    expect(manifest.name).toBe('positional');
   });
 
   it.skip('extracts details from metadata', () => {
@@ -61,9 +61,12 @@ describe('getPositionalManifest', () => {
     expect(manifest.deprecated).toBe('Use new format');
   });
 
-  it('returns empty manifest when no metadata', () => {
+  it('returns default manifest when no metadata', () => {
     const schema = z.string();
     const manifest = getPositionalManifest(schema);
-    expect(manifest).toEqual({});
+    expect(manifest).toEqual({
+      name: 'positional',
+      deprecated: false,
+    });
   });
 });

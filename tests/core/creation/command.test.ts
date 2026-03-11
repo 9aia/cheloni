@@ -67,7 +67,7 @@ describe('createCommand', () => {
     });
 
     const command = createCommand(definition);
-    expect(command.manifest.deprecated).toBeUndefined();
+    expect(command.manifest.deprecated).toBe(false);
   });
 
   it('creates manifest with positional', () => {

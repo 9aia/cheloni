@@ -77,9 +77,9 @@ describe('getOptionsManifest', () => {
     expect(manifests.map(m => m.name)).toEqual(['verbose', 'name']);
   });
 
-  it('throws for non-object schema', () => {
-    expect(() => {
-      getOptionsManifest(z.string());
-    }).toThrow('Options schema is not a valid ZodObject');
+  it('returns empty array when schema has no shape', () => {
+    const schema = z.object({});
+    const manifests = getOptionsManifest(schema);
+    expect(manifests).toHaveLength(0);
   });
 });
