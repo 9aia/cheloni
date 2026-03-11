@@ -1,26 +1,29 @@
-import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
-import type { OptionSchema } from "~/core/definition/command/option";
-import type { CommandManifest } from "~/core/manifest/command";
-import { getPositionalManifest } from "~/core/manifest/command/positional";
-import { getSchemaAliases, getSchemaDeprecated, getSchemaDescription, getSchemaObject } from "~/utils/definition";
+import type { OptionManifest } from "~/core/manifest/command/option";
+import type { PositionalManifest } from "~/core/manifest/command/positional";
 import { findCommandInTree } from "~/utils/router";
 
-function showOptionHelp(name: string, schema: OptionSchema): void {
-    const description = getSchemaDescription(schema);
-    const aliases = getSchemaAliases(schema);
-    const deprecated = getSchemaDeprecated(schema);
-
-    let line = `  --${name}`;
-    if (aliases && aliases.length > 0) {
-        line += `, ${aliases.map(a => `-${a}`).join(', ')}`;
+function showOptionHelp(option: OptionManifest): void {
+    let line = `  --${option.name}`;
+    if (option.aliases && option.aliases.length > 0) {
+        line += `, ${option.aliases.map(a => `-${a}`).join(', ')}`;
     }
-    line += `    ${description || ''}`;
+    line += `    ${option.description || ''}`;
     console.log(line);
 
-    if (deprecated) {
-        const message = typeof deprecated === 'string' ? deprecated : 'This option is deprecated';
+    if (option.deprecated) {
+        const message = typeof option.deprecated === 'string' ? option.deprecated : 'This option is deprecated';
+        console.log(`    Deprecated: ${message}`);
+    }
+}
+
+function showPositionalHelp(positional: PositionalManifest): void {
+    const label = positional.name || 'positional';
+    console.log(`\nPositional:`);
+    console.log(`  <${label}>    ${positional.description || '(any)'}`);
+    if (positional.deprecated) {
+        const message = typeof positional.deprecated === 'string' ? positional.deprecated : 'This argument is deprecated';
         console.log(`    Deprecated: ${message}`);
     }
 }
@@ -28,7 +31,6 @@ function showOptionHelp(name: string, schema: OptionSchema): void {
 function showCommandHelp(cli: Cli, commandName: string): void {
     const cliName = cli.manifest.name;
 
-    // Find command by name or path in the command tree
     let actualCommand: Command | undefined;
 
     if (cli.command) {
@@ -43,14 +45,10 @@ function showCommandHelp(cli: Cli, commandName: string): void {
         throw new Error(`Internal error: Command "${commandName}" not found`);
     }
 
-    const command: CommandManifest = actualCommand.manifest;
-    const name = command.name;
-    const description = command.description || '';
-    const paths = command.paths || [];
-    const deprecated = command.deprecated;
+    const { name, description, paths = [], deprecated, positional, options, examples } = actualCommand.manifest;
 
-    const posName = command.positional?.name || 'positional';
-    console.log(`Usage: ${cliName} ${name}${command.positional ? ` <${posName}>` : ''} [options]\n`);
+    const posName = positional?.name || 'positional';
+    console.log(`Usage: ${cliName} ${name}${positional ? ` <${posName}>` : ''} [options]\n`);
 
     if (description) {
         console.log(description);
@@ -66,18 +64,8 @@ function showCommandHelp(cli: Cli, commandName: string): void {
         console.log(`Deprecated: ${message}`);
     }
 
-    // Show positional argument
-    if (actualCommand.definition.positional) {
-        const posManifest = getPositionalManifest(actualCommand.definition.positional);
-        const posLabel = posManifest?.name || 'positional';
-        const posDesc = posManifest?.description;
-        const posDeprecated = posManifest?.deprecated;
-        console.log(`\nPositional:`);
-        console.log(`  <${posLabel}>    ${posDesc || '(any)'}`);
-        if (posDeprecated) {
-            const message = typeof posDeprecated === 'string' ? posDeprecated : 'This argument is deprecated';
-            console.log(`    Deprecated: ${message}`);
-        }
+    if (positional) {
+        showPositionalHelp(positional);
     }
 
     // Show subcommands if any
@@ -94,31 +82,24 @@ function showCommandHelp(cli: Cli, commandName: string): void {
         }
     }
 
-    // Show command options (merged with bequeath options)
-    const commandOptions = getSchemaObject(actualCommand.definition.options ?? z.object({}));
-
-    const hasCommandOptions = commandOptions && Object.keys(commandOptions).length > 0;
+    const hasCommandOptions = options && options.length > 0;
     const hasBequeathOptions = actualCommand.bequeathOptions.size > 0;
 
     if (hasCommandOptions || hasBequeathOptions) {
         console.log(`\nOptions:`);
 
-        // Show command-specific options
-        if (commandOptions) {
-            for (const [optName, optSchema] of Object.entries(commandOptions)) {
-                showOptionHelp(optName, optSchema);
+        if (options) {
+            for (const opt of options) {
+                showOptionHelp(opt);
             }
         }
 
-        // Show bequeath options (inherited from parent commands)
         for (const bequeathOpt of actualCommand.bequeathOptions.values()) {
-            showOptionHelp(bequeathOpt.definition.name, bequeathOpt.definition.schema ?? z.any());
+            showOptionHelp(bequeathOpt.manifest);
         }
     }
 
-    // Show examples
-    if (command.examples && command.examples.length > 0) {
-        const examples = command.examples;
+    if (examples && examples.length > 0) {
         console.log(`\nExamples:`);
         for (const example of examples) {
             console.log(`  ${example}`);

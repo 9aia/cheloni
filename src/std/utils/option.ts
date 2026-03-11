@@ -1,19 +1,19 @@
 import z from "zod";
-import { getSchemaObject } from "~/utils/definition";
 import versionOption from "~/std/options/version";
+import type { OptionSchema, OptionsSchema } from "~/core";
 
 /**
  * Merge a option (with schema) into any Zod options schema.
  */
 export function mergeOptionsWith(
-    existingOptions: z.ZodTypeAny | undefined,
+    existingOptions: OptionsSchema | undefined,
     name: string,
-    schema: z.ZodTypeAny
-): z.ZodTypeAny {
+    schema: OptionSchema
+): OptionsSchema {
     if (!existingOptions) {
         return z.object({ [name]: schema });
     }
-    const existingShape = getSchemaObject(existingOptions);
+    const existingShape = existingOptions.shape;
     if (existingShape) {
         return z.object({
             ...existingShape,
@@ -25,8 +25,8 @@ export function mergeOptionsWith(
 }
 
 export function mergeOptionsWithVersion(
-    existingOptions: z.ZodTypeAny | undefined
-): z.ZodTypeAny {
+    existingOptions: OptionsSchema | undefined
+): OptionsSchema {
     if (!versionOption.schema) {
         throw new TypeError("versionOption.schema is not defined");
     }

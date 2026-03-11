@@ -33,10 +33,10 @@ export {
 export { helpPositionalSchema, helpOptionSchema } from "./schemas/help";
 export { versionOptionSchema } from "./schemas/version";
 export { configOptionSchema } from "./schemas/config";
-export { dryRunOptionSchema } from "./schemas/dry-run";
-export { pathSchema, outputOptionSchema } from "./schemas/file";
+export { dryRunOptionSchema } from "./schemas/dev-tooling";
+export { pathSchema, outputOptionSchema } from "./schemas/path";
 export { forceOptionSchema } from "./schemas/force";
-export { jsonOptionSchema, prettyOptionSchema } from "./schemas/out";
+export { jsonOptionSchema, prettyOptionSchema } from "./schemas/stdout";
 export { interactiveOptionSchema } from "./schemas/interactive";
 
 // Plugins
