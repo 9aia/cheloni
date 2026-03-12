@@ -1,6 +1,6 @@
 # Defining Options
 
-> For creating options, see [Creating Options](../advanced/creating-options.md).
+> For creating options, see [Creating Options](../advanced/creating-reusable-options.md).
 
 ## Option Aliases
 
