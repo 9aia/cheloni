@@ -3,7 +3,7 @@ import { defineCli } from '~/core/definition/cli';
 import { defineCommand } from '~/core/definition/command';
 import { createCli } from '~/core/creation/cli';
 import { executeCli } from '~/core/execution/cli';
-import z from 'zod';
+import deprecationPlugin from '~/std/plugins/deprecation';
 
 describe('executeCli', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
@@ -89,6 +89,7 @@ describe('executeCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
+        plugins: [deprecationPlugin],
         command: defineCommand({
           name: 'root',
           commands: [
@@ -114,6 +115,7 @@ describe('executeCli', () => {
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
+        plugins: [deprecationPlugin],
         command: defineCommand({
           name: 'root',
           commands: [

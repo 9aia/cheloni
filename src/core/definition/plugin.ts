@@ -1,4 +1,4 @@
-import type { PluginCommandHook, PluginHook } from "~/core/creation/plugin/hook";
+import type { PluginCommandHook, PluginErrorHook, PluginHook } from "~/core/creation/plugin/hook";
 import type { JsonObject } from "type-fest";
 
 export interface PluginDefinition {
@@ -9,6 +9,8 @@ export interface PluginDefinition {
     onBeforeCommandExecution?: PluginCommandHook;
     /** Hook that runs after a command is executed. */
     onAfterCommandExecution?: PluginCommandHook;
+    /** Hook that runs when any error occurs in the CLI. Return `true` to mark it as handled. */
+    onError?: PluginErrorHook;
     /** Hook that runs once CLI is destroyed. */
     onDestroy?: PluginHook;
 }

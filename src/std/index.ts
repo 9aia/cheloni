@@ -15,6 +15,14 @@ export {
     showHelp
 } from "./services/help";
 export { showVersion } from "./services/version";
+export { showCliDeprecationWarning, showCommandDeprecationWarning } from "./services/deprecation";
+export {
+    showError,
+    showInvalidSchemaErrorWithIssues,
+    showInvalidSchemaError,
+    showGenericError,
+    showUnknownError,
+} from "./services/error-handling";
 export { resolveConfig, type ConfigResolutionResult } from "./services/config";
 
 // Utils
@@ -40,11 +48,13 @@ export { jsonOptionSchema, prettyOptionSchema } from "./schemas/stdout";
 export { interactiveOptionSchema } from "./schemas/interactive";
 
 // Plugins
+export { default as deprecationPlugin } from "./plugins/deprecation";
 export { default as helpPlugin } from "./plugins/help";
 export { default as configPlugin } from "./plugins/config";
 export { default as verbosePlugin } from "./plugins/verbose";
 export { default as versionPlugin } from "./plugins/version";
 export { default as dryRunPlugin } from "./plugins/dry-run";
+export { default as errorHandlerPlugin } from "./plugins/error-handler";
 
 // Pluginpacks
 export { default as basePluginpack } from "./packs/base";

@@ -1,4 +1,5 @@
 import type { Cli } from "~/core/creation/cli";
+import type { Command } from "~/core/creation/command";
 import type { CommandDefinition } from "~/core/definition/command";
 import type { Plugin } from "~/core/creation/plugin";
 import type { Promisable } from "type-fest";
@@ -12,5 +13,12 @@ export interface PluginCommandHookParams extends PluginHookParams {
     parsedOptions?: Record<string, any>;
 }
 
+export interface PluginErrorHookParams extends PluginHookParams {
+    error: unknown;
+    command?: Command;
+}
+
 export type PluginHook = (params: PluginHookParams) => Promisable<void>;
 export type PluginCommandHook = (params: PluginCommandHookParams) => Promisable<void>;
+/** Return `true` to indicate the error was handled and stop further propagation. */
+export type PluginErrorHook = (params: PluginErrorHookParams) => Promisable<boolean | void>;

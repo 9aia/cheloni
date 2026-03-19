@@ -2,17 +2,21 @@ import type { RootCommand } from "~/core/creation/command";
 import { createRootCommand } from "~/core/creation/command";
 import type { Plugin } from "~/core/creation/plugin";
 import { createPlugin } from "~/core/creation/plugin";
-import type { CliDefinition } from "~/core/definition/cli";
+import type { CliDefinition, CliErrorHandler } from "~/core/definition/cli";
 import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
 import type { PluginDefinition } from "~/core/definition/plugin";
 import type { RuntimeObject } from "~/utils/creation";
 import { ManifestKeyedMap } from "~/utils/definition";
+import { PluginInitError } from "~/core/execution/plugin/errors";
+import { getErrorMessage } from "~/utils/errors";
 
 export interface Cli extends RuntimeObject<CliManifest> {
     /** The root command of the CLI */
     command?: RootCommand;
     /** Plugins applied to all commands */
     plugins: ManifestKeyedMap<Plugin>;
+    /** Custom error handler called when no plugin handles the error. */
+    onError?: CliErrorHandler;
 }
 
 export async function createCli(definition: CliDefinition): Promise<Cli> {
@@ -43,6 +47,7 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
         manifest,
         command,
         plugins: pluginMap,
+        onError: definition.onError,
     };
 
     // Call onInit hooks for all plugins
@@ -50,15 +55,9 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
         if (plugin.definition.onInit) {
             try {
                 await plugin.definition.onInit({ cli, plugin });
-            } catch (error) {
-                // Log hook errors and rethrow - CLI initialization should fail if onInit fails
-                console.error(`Plugin ${plugin.manifest.name} onInit hook failed:`, error);
-                // Ensure we throw a proper error if the caught value is not an Error instance
-                if (error instanceof Error) {
-                    throw error;
-                } else {
-                    throw new Error(`Plugin ${plugin.manifest.name} onInit hook failed: ${error}`);
-                }
+            } catch (hookError) {
+                const message = getErrorMessage(hookError);
+                throw new PluginInitError(`Plugin ${plugin.manifest.name} onInit hook failed: ${message}`, hookError);
             }
         }
     }

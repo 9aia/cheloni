@@ -8,18 +8,18 @@ import type { InferPositionalType, PositionalSchema } from "~/core/creation/comm
 import { createPlugin } from "~/core/creation/plugin";
 import type { CommandDefinition } from "~/core/definition/command";
 import type { OptionsSchema } from "~/core/definition/command/option";
+import { PluginAfterCommandExecutionError, PluginBeforeCommandExecutionError } from "~/core/execution/plugin/errors";
 import { getOptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
 import { getAliasMap } from "~/utils/definition";
+import { getErrorMessage } from "~/utils/errors";
 import { extractPositionalValue, parseArgs } from "../parser";
 import { HaltError, InvalidOptionsError, InvalidPositionalError } from "./errors";
+import { halt } from "./halt";
 import { executeMiddleware } from "./middleware";
 import { getValidOptionNames, validateOptionsExist } from "./validate";
 
-export function halt(): never {
-    throw new HaltError();
-}
-export type HaltFunction = typeof halt;
+export { halt, type HaltFunction } from "./halt";
 
 export interface ExecuteCommandOptions {
     args: string[];
@@ -210,12 +210,12 @@ async function executeBeforeCommandHooks(
         if (plugin.definition.onBeforeCommandExecution) {
             try {
                 await plugin.definition.onBeforeCommandExecution({ cli, plugin, command: commandDefinition, parsedOptions });
-            } catch (error) {
-                console.error(`Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed:`, error);
-                if (error instanceof Error) {
-                    throw error;
-                }
-                throw new Error(`Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed: ${error}`);
+            } catch (hookError) {
+                const message = getErrorMessage(hookError);
+                throw new PluginBeforeCommandExecutionError(
+                    `Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed: ${message}`,
+                    hookError
+                );
             }
         }
     }
@@ -231,7 +231,13 @@ async function executePostCommandHooks(
             try {
                 await plugin.definition.onAfterCommandExecution({ cli, plugin, command: commandDefinition });
             } catch (hookError) {
-                console.error(`Plugin ${plugin.manifest.name} onAfterCommandExecution hook failed:`, hookError);
+                const message = getErrorMessage(hookError);
+                // Log hook errors but don't throw (post hooks are best-effort)
+                const error = new PluginAfterCommandExecutionError(
+                    `Plugin ${plugin.manifest.name} onAfterCommandExecution hook failed: ${message}`,
+                    hookError
+                );
+                console.error(error);
             }
         }
     }

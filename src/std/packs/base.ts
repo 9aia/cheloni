@@ -1,8 +1,9 @@
 import { definePluginpack } from "~/core/definition/pack";
+import deprecationPlugin from "~/std/plugins/deprecation";
 import helpPlugin from "~/std/plugins/help";
 import versionPlugin from "~/std/plugins/version";
 
 export default definePluginpack({
     name: "base",
-    plugins: [helpPlugin, versionPlugin],
+    plugins: [deprecationPlugin, helpPlugin, versionPlugin],
 });

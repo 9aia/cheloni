@@ -1,6 +1,20 @@
+import { CheloniError } from "~/utils/errors";
 import type { z } from "zod";
 
-export class InvalidSchemaError extends Error {
+export class CommandExecutionError extends CheloniError {
+    constructor(message: string) {
+        super(message);
+        this.name = "CommandExecutionError";
+    }
+}
+
+export class CommandNotFoundError extends CommandExecutionError {
+    constructor() {
+        super("Command not found");
+    }
+}
+
+export class InvalidSchemaError extends CommandExecutionError {
     readonly issues: ReadonlyArray<z.core.$ZodIssue>;
     
     constructor(message: string, issues: ReadonlyArray<z.core.$ZodIssue>) {
@@ -27,7 +41,7 @@ export class InvalidPositionalError extends InvalidSchemaError {
     }
 }
 
-export class HaltError extends Error {
+export class HaltError extends CommandExecutionError {
     constructor() {
         super("Execution halted");
         this.name = "HaltError";
