@@ -224,7 +224,8 @@ async function executeBeforeCommandHooks(
 async function executePostCommandHooks(
     allPlugins: ReturnType<typeof collectPlugins>,
     cli: Cli,
-    commandDefinition: CommandDefinition
+    commandDefinition: CommandDefinition,
+    command?: Command
 ): Promise<void> {
     for (const plugin of allPlugins) {
         if (plugin.definition.onAfterCommandExecution) {
@@ -232,11 +233,22 @@ async function executePostCommandHooks(
                 await plugin.definition.onAfterCommandExecution({ cli, plugin, command: commandDefinition });
             } catch (hookError) {
                 const message = getErrorMessage(hookError);
-                // Log hook errors but don't throw (post hooks are best-effort)
                 const error = new PluginAfterCommandExecutionError(
                     `Plugin ${plugin.manifest.name} onAfterCommandExecution hook failed: ${message}`,
                     hookError
                 );
+
+                // Plugin errors go straight to CLI onError to avoid onError-plugin loops.
+                if (cli.onError) {
+                    try {
+                        await cli.onError({ error, cli, command });
+                        continue;
+                    } catch (handlerError) {
+                        console.error("CLI onError handler failed:", handlerError);
+                    }
+                }
+
+                // Best-effort: log but never throw.
                 console.error(error);
             }
         }
@@ -311,6 +323,6 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         }
         throw error;
     } finally {
-        await executePostCommandHooks(allPlugins, cli, def);
+        await executePostCommandHooks(allPlugins, cli, def, command);
     }
 }

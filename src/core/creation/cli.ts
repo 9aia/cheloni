@@ -51,16 +51,34 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
     };
 
     // Call onInit hooks for all plugins
+    executePluginInitHooks(cli, pluginMap);
+
+    return cli;
+}
+
+async function executePluginInitHooks(
+    cli: Cli,
+    pluginMap: ManifestKeyedMap<Plugin>,
+): Promise<void> {
     for (const plugin of pluginMap.values()) {
         if (plugin.definition.onInit) {
             try {
                 await plugin.definition.onInit({ cli, plugin });
             } catch (hookError) {
                 const message = getErrorMessage(hookError);
-                throw new PluginInitError(`Plugin ${plugin.manifest.name} onInit hook failed: ${message}`, hookError);
+                const error = new PluginInitError(`Plugin ${plugin.manifest.name} onInit hook failed: ${message}`, hookError);
+
+                // Plugin errors go straight to CLI onError to avoid onError-plugin loops.
+                if (cli.onError) {
+                    try {
+                        await cli.onError({ error, cli });
+                    } catch (handlerError) {
+                        console.error("CLI onError handler failed:", handlerError);
+                    }
+                }
+
+                throw error;
             }
         }
     }
-
-    return cli;
 }

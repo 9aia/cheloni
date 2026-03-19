@@ -1,8 +1,8 @@
 import process from "node:process";
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
-import { handleError } from "~/core/execution/command/handle-error";
 import { CommandNotFoundError, HaltError } from "~/core/execution/command/errors";
+import { handleError } from "~/core/execution/command/handle-error";
 import { PluginDestroyError, PluginError, PluginHookError } from "~/core/execution/plugin/errors";
 import { getErrorMessage } from "~/utils/errors";
 import { executeCommand } from "./command";
@@ -49,15 +49,14 @@ async function runErrorHandlers(cli: Cli, error: unknown, command?: Command): Pr
                 if (cli.onError) {
                     try {
                         await cli.onError({ error: pluginError, cli, command });
-                        return;
+                        // keep going so another plugin can still handle the original `error`
                     } catch (handlerError) {
                         console.error("CLI onError handler failed:", handlerError);
                     }
                 }
 
-                // Last resort: log it and stop propagating.
+                // Last resort: log it but continue, so another plugin can still handle the original `error`.
                 console.error(pluginError);
-                return;
             }
         }
     }
@@ -106,18 +105,36 @@ export async function executeCli(options: ExecuteCliOptions): Promise<void> {
         await runErrorHandlers(cli, error, match?.command);
         process.exit(1);
     } finally {
-        // Call onDestroy hooks for all plugins (always called, even on error)
-        for (const plugin of cli.plugins.values()) {
-            if (plugin.definition.onDestroy) {
-                try {
-                    await plugin.definition.onDestroy({ cli, plugin });
-                } catch (hookError) {
-                    // Log hook errors but don't throw
-                    const message = getErrorMessage(hookError);
-                    console.error(
-                        new PluginDestroyError(`Plugin ${plugin.manifest.name} onDestroy hook failed: ${message}`, hookError)
-                    );
+        executePluginDestroyHooks(cli);
+    }
+}
+
+async function executePluginDestroyHooks(
+    cli: Cli,
+): Promise<void> {
+    // Call onDestroy hooks for all plugins (always called, even on error)
+    for (const plugin of cli.plugins.values()) {
+        if (plugin.definition.onDestroy) {
+            try {
+                await plugin.definition.onDestroy({ cli, plugin });
+            } catch (hookError) {
+                const message = getErrorMessage(hookError);
+                const error = new PluginDestroyError(
+                    `Plugin ${plugin.manifest.name} onDestroy hook failed: ${message}`,
+                    hookError
+                );
+
+                // Plugin errors go straight to CLI onError to avoid onError-plugin loops.
+                if (cli.onError) {
+                    try {
+                        await cli.onError({ error, cli });
+                        continue;
+                    } catch (handlerError) {
+                        console.error("CLI onError handler failed:", handlerError);
+                    }
                 }
+
+                console.error(error);
             }
         }
     }
