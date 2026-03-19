@@ -51,7 +51,7 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
     };
 
     // Call onInit hooks for all plugins
-    executePluginInitHooks(cli, pluginMap);
+    await executePluginInitHooks(cli, pluginMap);
 
     return cli;
 }
