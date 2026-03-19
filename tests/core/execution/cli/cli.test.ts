@@ -4,6 +4,7 @@ import { defineCommand } from '~/core/definition/command';
 import { createCli } from '~/core/creation/cli';
 import { executeCli } from '~/core/execution/cli';
 import deprecationPlugin from '~/std/plugins/deprecation';
+import z from 'zod';
 import {
   PluginBeforeCommandExecutionError,
   PluginAfterCommandExecutionError,
@@ -139,6 +140,63 @@ describe('executeCli', () => {
     await executeCli({ cli, args: ['test'] });
 
     expect(consoleWarnSpy.mock.calls[0]?.[0]).toContain('Use new command instead');
+  });
+
+  it('shows deprecation warning for deprecated option when provided', async () => {
+    const handler = vi.fn();
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [deprecationPlugin],
+        command: defineCommand({
+          name: 'root',
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              options: z.object({
+                old: z.boolean().optional().meta({ deprecated: 'Use --new instead' }),
+              }),
+              handler,
+            }),
+          ],
+        }),
+      })
+    );
+
+    await executeCli({ cli, args: ['test', '--old'] });
+
+    const warnMessages = consoleWarnSpy.mock.calls.map((call: unknown[]) => String(call[0]));
+    expect(warnMessages.some((m: string) => m.includes('Deprecated: --old'))).toBe(true);
+    expect(warnMessages.some((m: string) => m.includes('Use --new instead'))).toBe(true);
+    expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it('shows deprecation warning for deprecated positional when provided', async () => {
+    const handler = vi.fn();
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [deprecationPlugin],
+        command: defineCommand({
+          name: 'root',
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              positional: z.string().meta({ deprecated: 'Use new argument' }),
+              handler,
+            }),
+          ],
+        }),
+      })
+    );
+
+    await executeCli({ cli, args: ['test', 'value'] });
+
+    const warnMessages = consoleWarnSpy.mock.calls.map((call: unknown[]) => String(call[0]));
+    expect(warnMessages.some((m: string) => m.includes('Deprecated:') && m.includes('Use new argument'))).toBe(true);
+    expect(handler).toHaveBeenCalledOnce();
   });
 
   it('calls onDestroy hooks', async () => {
