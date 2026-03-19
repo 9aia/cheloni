@@ -134,8 +134,7 @@ const cli = await createCli({
 1. Manifest is extracted from the definition (metadata for help/introspection)
 2. Root command tree is built recursively (`createCommand` / `createRootCommand`)
 3. Plugins are created
-4. Plugins are created
-5. Plugin `onInit` hooks run — they can modify the CLI structure (e.g. `basePluginpack` injects help/version commands)
+4. Plugin `onInit` hooks run — they can modify the CLI structure (e.g. `basePluginpack` injects deprecation/help/version behavior)
 
 ### Execution
 
@@ -252,7 +251,7 @@ The standard library (`cheloni/std`) provides ready-to-use components for common
 
 ### Base Pluginpack
 
-The `basePluginpack` automatically adds help and version support:
+The `basePluginpack` automatically adds deprecation warnings plus help and version support:
 
 ```typescript
 import { basePluginpack } from 'cheloni/std';
@@ -265,6 +264,7 @@ const cli = await createCli({
 ```
 
 **What it adds:**
+- Deprecation warnings — warns when the CLI or a command is marked deprecated
 - `help` command — shows root help or help for a specific command
 - `version` command — prints the CLI version
 - `--help` / `-h` option — shows help for the current command (short-circuits)

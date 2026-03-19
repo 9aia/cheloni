@@ -8,10 +8,11 @@ The Execution layer handles command routing, argument parsing, validation, middl
 
 Executes a CLI with the provided arguments. This function:
 - Resolves the command from the argument list
-- Shows deprecation warnings if needed
 - Executes the command
 - Handles errors
 - Calls `onDestroy` hooks for all plugins
+
+Note: deprecation warnings are typically provided via plugins (e.g. the standard library `deprecationPlugin`).
 
 **Parameters:**
 - `options: ExecuteCliOptions` - Execution options
@@ -38,6 +39,8 @@ Executes a command with the provided arguments. This function:
 - Calls `onBeforeCommandExecution` hooks
 - Executes the command handler
 - Calls `onAfterCommandExecution` hooks
+
+Note: plugin hook failures (e.g. `onInit`, `onBeforeCommandExecution`, `onError` throwing) are wrapped as plugin errors and routed directly to `cli.onError` to avoid error-handler plugin loops.
 
 **Parameters:**
 - `options: ExecuteCommandOptions` - Command execution options

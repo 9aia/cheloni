@@ -73,7 +73,7 @@ import { basePluginpack } from 'cheloni/std';
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  pluginpacks: [basePluginpack], // Includes help and version plugins
+  pluginpacks: [basePluginpack], // Includes deprecation, help, and version plugins
 });
 ```
 
