@@ -7,7 +7,7 @@ import type { CommandDefinition, RootCommandDefinition } from "~/core/definition
 import type { OptionsSchema } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import { getCommandManifest, type CommandManifest } from "~/core/manifest/command";
-import type { RuntimeObject } from "~/utils/creation";
+import type { RuntimeObject } from "~/utils/creation/runtime-object";
 import { ManifestKeyedMap } from "~/utils/definition";
 
 export interface Command<

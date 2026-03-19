@@ -1,4 +1,4 @@
-import { CheloniError } from "~/utils/errors";
+import { CheloniError } from "~/utils/execution/errors";
 import type { z } from "zod";
 
 export class CommandExecutionError extends CheloniError {

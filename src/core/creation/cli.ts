@@ -5,10 +5,10 @@ import { createPlugin } from "~/core/creation/plugin";
 import type { CliDefinition, CliErrorHandler } from "~/core/definition/cli";
 import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
 import type { PluginDefinition } from "~/core/definition/plugin";
-import type { RuntimeObject } from "~/utils/creation";
+import type { RuntimeObject } from "~/utils/creation/runtime-object";
 import { ManifestKeyedMap } from "~/utils/definition";
 import { PluginInitError } from "~/core/execution/plugin/errors";
-import { getErrorMessage } from "~/utils/errors";
+import { getErrorMessage } from "~/utils/execution/errors";
 
 export interface Cli extends RuntimeObject<CliManifest> {
     /** The root command of the CLI */

@@ -5,7 +5,7 @@ import type { Promisable, UnknownRecord } from "type-fest";
 import type { HaltFunction } from "~/core/execution/command";
 import type { OptionDefinition, OptionSchema } from "~/core/definition/command/option";
 import { getOptionManifest, type OptionManifest } from "~/core/manifest/command/option";
-import type { RuntimeObject } from "~/utils/creation";
+import type { RuntimeObject } from "~/utils/creation/runtime-object";
 
 /**
  * Parameters passed to an option handler when its flag is provided.

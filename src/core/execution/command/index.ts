@@ -3,21 +3,16 @@ import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
 import type { AnyMiddleware } from "~/core/creation/command/middleware";
-import { createOption, type InferOptionsType } from "~/core/creation/command/option";
-import type { InferPositionalType, PositionalSchema } from "~/core/creation/command/positional";
+import { createOption } from "~/core/creation/command/option";
 import { createPlugin } from "~/core/creation/plugin";
-import type { CommandDefinition } from "~/core/definition/command";
-import type { OptionsSchema } from "~/core/definition/command/option";
-import { PluginAfterCommandExecutionError, PluginBeforeCommandExecutionError } from "~/core/execution/plugin/errors";
-import { getOptionManifest } from "~/core/manifest/command/option";
-import { getPositionalManifest } from "~/core/manifest/command/positional";
-import { getAliasMap } from "~/utils/definition";
-import { getErrorMessage } from "~/utils/errors";
-import { extractPositionalValue, parseArgs } from "../parser";
-import { HaltError, InvalidOptionsError, InvalidPositionalError } from "./errors";
+import { executeBeforeCommandHooks, executePostCommandHooks } from "~/core/execution/plugin/command-hooks";
+import { buildAliasMap } from "~/utils/execution/alias";
+import { parseArgs } from "../parser";
+import { HaltError, InvalidOptionsError } from "./errors";
 import { halt } from "./halt";
 import { executeMiddleware } from "./middleware";
-import { getValidOptionNames, validateOptionsExist } from "./validate";
+import { buildOptionNames } from "./option";
+import { validateOptions, validateOptionsExist, validatePositional } from "./validate";
 
 export { halt, type HaltFunction } from "./halt";
 
@@ -31,19 +26,6 @@ function collectPlugins(cli: Cli, commandDef: Command["definition"]) {
     const globalPlugins = Array.from(cli.plugins.values());
     const commandPlugins = (commandDef.plugins ?? []).map(createPlugin);
     return [...globalPlugins, ...commandPlugins];
-}
-
-function buildAliasMap(commandDef: Command["definition"], cli: Cli, command: Command): Record<string, string[]> {
-    const commandAliasMap = commandDef.options ? getAliasMap(commandDef.options) : {};
-    const globalAliasMap: Record<string, string[]> = {};
-    
-    // Include bequeathOptions from parent commands
-    for (const bequeathOpt of command.bequeathOptions.values()) {
-        const manifest = getOptionManifest(bequeathOpt.definition.name, bequeathOpt.definition.schema);
-        globalAliasMap[bequeathOpt.definition.name] = manifest.aliases;
-    }
-    
-    return { ...commandAliasMap, ...globalAliasMap };
 }
 
 async function executeMiddlewareChain(
@@ -101,177 +83,6 @@ async function validateAndExecuteOptions(
     }
 }
 
-function validatePositional<T extends PositionalSchema>(
-    positionalSchema: T | undefined,
-    positionalArgs: string[]
-): InferPositionalType<T> {
-    if (!positionalSchema) {
-        return undefined as InferPositionalType<T>;
-    }
-    
-    const positionalValue = extractPositionalValue(positionalSchema, positionalArgs, 0);
-    
-    if (positionalValue !== undefined) {
-        const posDeprecated = getPositionalManifest(positionalSchema)?.deprecated;
-        if (posDeprecated) {
-            const message = typeof posDeprecated === 'string' 
-                ? posDeprecated 
-                : 'This positional argument is deprecated';
-            console.warn(`Deprecated: ${message}`);
-        }
-    }
-    
-    try {
-        return positionalSchema.parse(positionalValue) as InferPositionalType<T>;
-    } catch (error) {
-        const zodError = error as z.ZodError;
-        throw new InvalidPositionalError(zodError.message, zodError.issues);
-    }
-}
-
-function showDeprecationWarnings(
-    validatedOptions: Record<string, any>,
-    commandOptions: Record<string, z.ZodTypeAny> | null | undefined,
-    bequeathOptions: Command["bequeathOptions"],
-    optionsSchema: OptionsSchema | undefined
-): void {
-    if (commandOptions) {
-        for (const [optName, optSchema] of Object.entries(commandOptions)) {
-            if (validatedOptions[optName] !== undefined) {
-                const manifest = getOptionManifest(optName, optSchema);
-                const optDeprecated = manifest.deprecated;
-                if (optDeprecated) {
-                    const message = typeof optDeprecated === 'string' 
-                        ? optDeprecated 
-                        : 'This option is deprecated';
-                    console.warn(`Deprecated: --${optName}: ${message}`);
-                }
-            }
-        }
-    }
-    
-    for (const bequeathOpt of bequeathOptions.values()) {
-        if (validatedOptions[bequeathOpt.definition.name] !== undefined) {
-            const manifest = getOptionManifest(bequeathOpt.definition.name, bequeathOpt.definition.schema);
-            const bequeathOptDeprecated = manifest.deprecated;
-            if (bequeathOptDeprecated) {
-                const message = typeof bequeathOptDeprecated === 'string' 
-                    ? bequeathOptDeprecated 
-                    : 'This option is deprecated';
-                console.warn(`Deprecated: --${bequeathOpt.definition.name}: ${message}`);
-            }
-        }
-    }
-}
-
-function validateOptions<T extends OptionsSchema>(
-    optionsSchema: T | undefined,
-    validatedOptions: Record<string, any>,
-    extrageousOptionsBehavior: 'throw' | 'filter-out' | 'pass-through',
-    bequeathOptions: Command["bequeathOptions"]
-): InferOptionsType<T> {
-    if (!optionsSchema) {
-        showDeprecationWarnings(validatedOptions, null, bequeathOptions, undefined);
-        return validatedOptions as InferOptionsType<T>;
-    }
-    
-    const validOptionNames = getValidOptionNames(optionsSchema);
-    const commandOptions = optionsSchema.shape;
-    
-    showDeprecationWarnings(validatedOptions, commandOptions, bequeathOptions, optionsSchema);
-    
-    const optionsForZod: Record<string, any> = {};
-    const extraOptions: Record<string, any> = {};
-    
-    for (const [key, value] of Object.entries(validatedOptions)) {
-        if (validOptionNames.has(key)) {
-            optionsForZod[key] = value;
-        } else if (extrageousOptionsBehavior === 'pass-through') {
-            extraOptions[key] = value;
-        }
-    }
-    
-    const parsed = optionsSchema.parse(optionsForZod) as InferOptionsType<T>;
-    
-    if (extrageousOptionsBehavior === 'pass-through') {
-        return Object.assign({}, parsed, extraOptions) as InferOptionsType<T>;
-    }
-    
-    return parsed;
-}
-
-async function executeBeforeCommandHooks(
-    allPlugins: ReturnType<typeof collectPlugins>,
-    cli: Cli,
-    commandDefinition: CommandDefinition,
-    parsedOptions?: Record<string, any>
-): Promise<void> {
-    for (const plugin of allPlugins) {
-        if (plugin.definition.onBeforeCommandExecution) {
-            try {
-                await plugin.definition.onBeforeCommandExecution({ cli, plugin, command: commandDefinition, parsedOptions });
-            } catch (hookError) {
-                const message = getErrorMessage(hookError);
-                throw new PluginBeforeCommandExecutionError(
-                    `Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed: ${message}`,
-                    hookError
-                );
-            }
-        }
-    }
-}
-
-async function executePostCommandHooks(
-    allPlugins: ReturnType<typeof collectPlugins>,
-    cli: Cli,
-    commandDefinition: CommandDefinition,
-    command?: Command
-): Promise<void> {
-    for (const plugin of allPlugins) {
-        if (plugin.definition.onAfterCommandExecution) {
-            try {
-                await plugin.definition.onAfterCommandExecution({ cli, plugin, command: commandDefinition });
-            } catch (hookError) {
-                const message = getErrorMessage(hookError);
-                const error = new PluginAfterCommandExecutionError(
-                    `Plugin ${plugin.manifest.name} onAfterCommandExecution hook failed: ${message}`,
-                    hookError
-                );
-
-                // Plugin errors go straight to CLI onError to avoid onError-plugin loops.
-                if (cli.onError) {
-                    try {
-                        await cli.onError({ error, cli, command });
-                        continue;
-                    } catch (handlerError) {
-                        console.error("CLI onError handler failed:", handlerError);
-                    }
-                }
-
-                // Best-effort: log but never throw.
-                console.error(error);
-            }
-        }
-    }
-}
-
-function buildOptionNames(cli: Cli, command: Command): Set<string> {
-    // mri returns BOTH the canonical key AND the alias key(s) in the parsed output.
-    // Include global option aliases here so unknown-option validation doesn't reject `-h`, `-v`, etc.
-    const names = new Set<string>();
-    
-    // Include bequeathOptions from parent commands
-    for (const opt of command.bequeathOptions.values()) {
-        names.add(opt.definition.name);
-        const aliases = opt.manifest.aliases;
-        for (const a of aliases) {
-            if (a) names.add(a);
-        }
-    }
-
-    return names;
-}
-
 export async function executeCommand(options: ExecuteCommandOptions): Promise<void> {
     const { command, args, cli } = options;
     const def = command.definition;
@@ -281,7 +92,12 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
     
     try {
-        await executeBeforeCommandHooks(allPlugins, cli, def, rawOptions);
+        await executeBeforeCommandHooks({
+            plugins: allPlugins,
+            cli,
+            command: def,
+            parsedOptions: rawOptions,
+        });
         
         const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);
         
@@ -323,6 +139,11 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         }
         throw error;
     } finally {
-        await executePostCommandHooks(allPlugins, cli, def, command);
+        await executePostCommandHooks({
+            plugins: allPlugins,
+            cli,
+            command: def,
+            commandInstance: command,
+        });
     }
 }

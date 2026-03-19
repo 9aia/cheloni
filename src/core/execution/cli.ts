@@ -4,7 +4,7 @@ import type { Command } from "~/core/creation/command";
 import { CommandNotFoundError, HaltError } from "~/core/execution/command/errors";
 import { handleError } from "~/core/execution/command/handle-error";
 import { PluginDestroyError, PluginError, PluginHookError } from "~/core/execution/plugin/errors";
-import { getErrorMessage } from "~/utils/errors";
+import { getErrorMessage } from "~/utils/execution/errors";
 import { executeCommand } from "./command";
 import { resolveCommand, type CommandMatch } from "./command/router";
 

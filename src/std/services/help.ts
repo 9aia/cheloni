@@ -2,7 +2,7 @@ import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { OptionManifest } from "~/core/manifest/command/option";
 import type { PositionalManifest } from "~/core/manifest/command/positional";
-import { findCommandInTree } from "~/utils/router";
+import { findCommandInTree } from "~/utils/execution/router";
 
 function showOptionHelp(option: OptionManifest): void {
     let line = `  --${option.name}`;

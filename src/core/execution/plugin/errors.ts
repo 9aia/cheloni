@@ -1,4 +1,4 @@
-import { CheloniError } from "~/utils/errors";
+import { CheloniError } from "~/utils/execution/errors";
 
 export class PluginError extends CheloniError {
     override readonly cause?: unknown;
