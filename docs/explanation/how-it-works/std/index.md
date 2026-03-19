@@ -60,6 +60,12 @@ Note: The plugin does not merge multiple config files. It uses the first file th
 
 Option rendering reads Zod internals for aliases, descriptions, and deprecation flags — the same metadata the manifest layer extracts.
 
+### `deprecationService`
+
+The std deprecation service emits warnings for deprecated CLIs, commands, options, and positional arguments. It is typically used via `deprecationPlugin` (or `basePluginpack`).
+
+See: `docs/guides/std/deprecation.md`.
+
 ### `versionService`
 
 `showVersion()` reads `cli.manifest.version` and prints it. If no version is set, it throws. The `--version` global option and `version` subcommand both delegate to this function.

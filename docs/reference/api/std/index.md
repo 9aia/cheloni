@@ -88,6 +88,17 @@ showHelp(cli);
 showHelp(cli, "build");
 ```
 
+### Deprecation warnings
+
+These helpers **print deprecation warnings** (to stderr via `console.warn`) based on the CLI/command definition metadata and which args/options were actually provided.
+
+- `showCliDeprecationWarning(cli)`
+- `showCommandDeprecationWarning(command)`
+- `showOptionDeprecationWarnings(command, parsedOptions)`
+- `showPositionalDeprecationWarning(command, parsedPositionals)`
+
+Note: core does not emit deprecation warnings; install `deprecationPlugin` (below) to run these at the appropriate lifecycle hooks.
+
 ### `showVersion(cliManifest)`
 
 Shows the CLI version.
@@ -181,6 +192,17 @@ const { config, files } = await loadConfigForCli("my-cli", "./my-cli.config.json
 ```
 
 ## Plugins
+
+### `deprecationPlugin`
+
+Emits deprecation warnings via plugin hooks:
+
+- `onInit`: warns if `cli.manifest.deprecated` is set
+- `onBeforeCommandExecution`: warns if the matched command is deprecated, and warns for **provided** deprecated options/positionals
+
+This plugin does not change routing or validation; it only emits warnings.
+
+See also: `docs/guides/std/deprecation.md`.
 
 ### `helpPlugin`
 
