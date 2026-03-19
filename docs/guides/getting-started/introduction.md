@@ -264,7 +264,7 @@ const cli = await createCli({
 ```
 
 **What it adds:**
-- Deprecation warnings — warns when the CLI or a command is marked deprecated
+- Deprecation warnings — warns when the CLI, a command, or provided args/options are marked deprecated
 - `help` command — shows root help or help for a specific command
 - `version` command — prints the CLI version
 - `--help` / `-h` option — shows help for the current command (short-circuits)

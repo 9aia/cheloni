@@ -262,6 +262,6 @@ const cli = await createCli({
 The pluginpack provides:
 
 - Help and version support (`help` / `version`, plus `--help` / `--version`)
-- Deprecation warnings for deprecated CLIs and commands
+- Deprecation warnings for deprecated CLIs, commands, and deprecated provided args/options
 
 This is the recommended way to add standard library functionality.

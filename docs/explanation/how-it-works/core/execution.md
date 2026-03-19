@@ -21,12 +21,12 @@ argv
 
 `executeCli()` receives `{ cli, args }` (args default to `process.argv.slice(2)`).
 
-1. Shows deprecation warning if CLI is deprecated
-2. Resolves the command from the tree
-3. Shows deprecation warning if the matched command is deprecated
-4. Runs the command pipeline
-5. On error: formats and logs via `handleError()`, then `process.exit(1)`
-6. **Finally**: runs `onDestroy` plugin hooks (always, even on error)
+1. Resolves the command from the tree
+2. Runs the command pipeline
+3. On error: formats and logs via `handleError()`, then `process.exit(1)`
+4. **Finally**: runs `onDestroy` plugin hooks (always, even on error)
+
+Deprecation warnings are not emitted by the core execution layer. If you install the standard library `deprecationPlugin`, it will emit warnings via plugin hooks (e.g. `onInit` for the CLI and `onBeforeCommandExecution` for the matched command).
 
 ## Routing
 
@@ -73,11 +73,11 @@ Iterates bequeath options. If a bequeath option is present in parsed args:
 
 ### 6. Positional Validation
 
-Extracts the positional value, shows deprecation warning if applicable, then runs `schema.parse()`. Throws `InvalidPositionalError` on failure.
+Extracts the positional value, then runs `schema.parse()`. Throws `InvalidPositionalError` on failure.
 
 ### 7. Options Validation
 
-Separates valid vs. extra options, shows deprecation warnings, then runs `schema.parse()` on valid options. For `'pass-through'` mode, extra options are merged back into the result.
+Separates valid vs. extra options, then runs `schema.parse()` on valid options. For `'pass-through'` mode, extra options are merged back into the result.
 
 ### 8. Pre-Execution Plugin Hooks
 
