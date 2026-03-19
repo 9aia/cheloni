@@ -4,6 +4,12 @@ import { defineCommand } from '~/core/definition/command';
 import { createCli } from '~/core/creation/cli';
 import { executeCli } from '~/core/execution/cli';
 import deprecationPlugin from '~/std/plugins/deprecation';
+import {
+  PluginBeforeCommandExecutionError,
+  PluginAfterCommandExecutionError,
+  PluginDestroyError,
+  PluginHookError,
+} from '~/core/execution/plugin/errors';
 
 describe('executeCli', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
@@ -219,5 +225,160 @@ describe('executeCli', () => {
     await executeCli({ cli, args: ['test'] });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('routes onBeforeCommandExecution failures to cli.onError (bypassing onError plugins)', async () => {
+    const onErrorPlugin = vi.fn().mockReturnValue(true);
+    const cliOnError = vi.fn();
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [
+          {
+            name: 'before-throws',
+            onBeforeCommandExecution: async () => {
+              throw new Error('before boom');
+            },
+          },
+          {
+            name: 'error-handler-plugin',
+            onError: onErrorPlugin,
+          },
+        ],
+        onError: cliOnError,
+        command: defineCommand({
+          name: 'root',
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              handler: async () => {},
+            }),
+          ],
+        }),
+      })
+    );
+
+    await expect(executeCli({ cli, args: ['test'] })).rejects.toThrow('process.exit called');
+
+    expect(onErrorPlugin).not.toHaveBeenCalled();
+    expect(cliOnError).toHaveBeenCalledOnce();
+    const params = cliOnError.mock.calls[0]![0];
+    expect(params.error).toBeInstanceOf(PluginBeforeCommandExecutionError);
+    expect(String((params.error as Error).message)).toContain('onBeforeCommandExecution');
+  });
+
+  it('routes onAfterCommandExecution failures to cli.onError without failing the command', async () => {
+    const handler = vi.fn();
+    const cliOnError = vi.fn();
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [
+          {
+            name: 'after-throws',
+            onAfterCommandExecution: async () => {
+              throw new Error('after boom');
+            },
+          },
+        ],
+        onError: cliOnError,
+        command: defineCommand({
+          name: 'root',
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              handler,
+            }),
+          ],
+        }),
+      })
+    );
+
+    await executeCli({ cli, args: ['test'] });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(cliOnError).toHaveBeenCalledOnce();
+    const params = cliOnError.mock.calls[0]![0];
+    expect(params.error).toBeInstanceOf(PluginAfterCommandExecutionError);
+    expect(String((params.error as Error).message)).toContain('onAfterCommandExecution');
+  });
+
+  it('routes onDestroy failures to cli.onError', async () => {
+    const handler = vi.fn();
+    const cliOnError = vi.fn();
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [
+          {
+            name: 'destroy-throws',
+            onDestroy: async () => {
+              throw new Error('destroy boom');
+            },
+          },
+        ],
+        onError: cliOnError,
+        command: defineCommand({
+          name: 'root',
+          commands: [
+            defineCommand({
+              name: 'test',
+              paths: ['test'],
+              handler,
+            }),
+          ],
+        }),
+      })
+    );
+
+    await executeCli({ cli, args: ['test'] });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(cliOnError).toHaveBeenCalledOnce();
+    const params = cliOnError.mock.calls[0]![0];
+    expect(params.error).toBeInstanceOf(PluginDestroyError);
+    expect(String((params.error as Error).message)).toContain('onDestroy');
+  });
+
+  it('continues error-handler plugins if an onError hook throws (and reports hook error to cli.onError)', async () => {
+    const cliOnError = vi.fn();
+    const handler = vi.fn(async () => {
+      throw new Error('handler boom');
+    });
+
+    const throwingOnError = vi.fn(async () => {
+      throw new Error('onError boom');
+    });
+    const handlingOnError = vi.fn(() => true);
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test-cli',
+        plugins: [
+          { name: 'throwing', onError: throwingOnError },
+          { name: 'handling', onError: handlingOnError },
+        ],
+        onError: cliOnError,
+        command: defineCommand({
+          name: 'root',
+          handler,
+        }),
+      })
+    );
+
+    await expect(executeCli({ cli, args: [] })).rejects.toThrow('process.exit called');
+
+    expect(throwingOnError).toHaveBeenCalledOnce();
+    expect(handlingOnError).toHaveBeenCalledOnce();
+
+    // hook failure was reported to cli.onError
+    expect(cliOnError).toHaveBeenCalled();
+    const hookErrorCall = cliOnError.mock.calls.find(call => call[0]?.error instanceof PluginHookError);
+    expect(hookErrorCall).toBeTruthy();
   });
 });
