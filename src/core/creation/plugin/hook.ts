@@ -11,6 +11,7 @@ export interface PluginHookParams {
 export interface PluginCommandHookParams extends PluginHookParams {
     command: CommandDefinition;
     parsedOptions?: Record<string, any>;
+    parsedPositionals?: string[];
 }
 
 export interface PluginErrorHookParams extends PluginHookParams {

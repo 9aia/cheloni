@@ -1,12 +1,19 @@
 import { definePlugin } from "~/core/definition/plugin";
-import { showCliDeprecationWarning, showCommandDeprecationWarning } from "~/std/services/deprecation";
+import {
+    showCliDeprecationWarning,
+    showCommandDeprecationWarning,
+    showOptionDeprecationWarnings,
+    showPositionalDeprecationWarning,
+} from "~/std/services/deprecation";
 
 export default definePlugin({
     name: "deprecation",
     onInit: ({ cli }) => {
         showCliDeprecationWarning(cli);
     },
-    onBeforeCommandExecution: ({ command }) => {
+    onBeforeCommandExecution: ({ command, parsedOptions, parsedPositionals }) => {
         showCommandDeprecationWarning(command);
+        showOptionDeprecationWarnings(command, parsedOptions);
+        showPositionalDeprecationWarning(command, parsedPositionals);
     },
 });

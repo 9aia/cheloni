@@ -97,6 +97,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             cli,
             command: def,
             parsedOptions: rawOptions,
+            parsedPositionals: positionalArgs,
         });
         
         const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);

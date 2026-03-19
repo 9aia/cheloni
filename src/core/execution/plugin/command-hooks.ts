@@ -9,8 +9,9 @@ export async function executeBeforeCommandHooks(options: {
     cli: Cli;
     command: CommandDefinition;
     parsedOptions?: Record<string, any>;
+    parsedPositionals?: string[];
 }): Promise<void> {
-    const { plugins, cli, command, parsedOptions } = options;
+    const { plugins, cli, command, parsedOptions, parsedPositionals } = options;
 
     for (const plugin of plugins) {
         if (plugin.definition.onBeforeCommandExecution) {
@@ -20,6 +21,7 @@ export async function executeBeforeCommandHooks(options: {
                     plugin,
                     command,
                     parsedOptions,
+                    parsedPositionals,
                 });
             } catch (hookError) {
                 const message = getErrorMessage(hookError);
