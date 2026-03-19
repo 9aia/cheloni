@@ -1,9 +1,9 @@
 # TODO
 
 - Ensure error handling by throwing errors instead of `process.exit(1)`
-- Improve deprecation warnings by decoupling from core to std
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
 - Add shell completion plugin
+- Rename pluginpack to plugin-kit
 
 - Add dependencies for commands, so it can inherit types
 
