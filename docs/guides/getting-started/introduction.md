@@ -74,8 +74,8 @@ const analytics = definePlugin({
   onDestroy: async ({ cli }) => { /* ... */ },
 });
 
-const pack = definePluginpack({
-  name: 'my-pack',
+const pluginpack = definePluginpack({
+  name: 'my-pluginpack',
   plugins: [analytics, ...otherPlugins],
 });
 
@@ -88,7 +88,7 @@ const cli = defineCli({
   name: 'my-cli',
   version: '1.0.0',
   command: rootCommand,
-  pluginpacks: [pack],
+  pluginpacks: [pluginpack],
 });
 ```
 

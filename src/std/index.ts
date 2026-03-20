@@ -18,8 +18,15 @@ export { mergeOptionsWith, mergeOptionsWithVersion } from "./utils/option";
 
 // Schemas
 export { configOptionSchema } from "./schemas/config";
-export { dryRunOptionSchema } from "./schemas/dev-tooling";
+export { dryRunOptionSchema } from "./schemas/dry-run";
 export { forceOptionSchema } from "./schemas/force";
+export {
+    branchNameSchema,
+    commitHashSchema,
+    commitHashShortSchema,
+    gitRefSchema,
+    gitTagSchema
+} from "./schemas/git";
 export { helpOptionSchema, helpPositionalSchema } from "./schemas/help";
 export { interactiveOptionSchema } from "./schemas/interactive";
 export { outputOptionSchema, pathSchema } from "./schemas/path";
@@ -48,4 +55,4 @@ export { default as verbosePlugin } from "./plugins/verbose";
 export { default as versionPlugin } from "./plugins/version";
 
 // Pluginpacks
-export { default as basePluginpack } from "./packs/base";
+export { default as basePluginpack } from "./pluginpacks/base";

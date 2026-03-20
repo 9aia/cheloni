@@ -38,14 +38,14 @@ const cli = await createCli({
   name: 'my-cli',
   command: rootCommand,
   pluginpacks: [monitoringPack],
-  // You can also add individual plugins alongside packs
+  // You can also add individual plugins alongside pluginpacks
   plugins: [customPlugin],
 });
 ```
 
 ## Multiple Plugins
 
-Packs can contain a single plugin or multiple plugins:
+Pluginpacks can contain a single plugin or multiple plugins:
 
 ```typescript
 // Single plugin
@@ -129,9 +129,9 @@ const cli = await createCli({
 });
 ```
 
-## Combining Packs and Plugins
+## Combining Pluginpacks and Plugins
 
-You can use both packs and individual plugins together. Plugins from both sources are merged:
+You can use both pluginpacks and individual plugins together. Plugins from both sources are merged:
 
 ```typescript
 const cli = await createCli({
@@ -147,9 +147,9 @@ const cli = await createCli({
 
 - **Group related plugins**: Packs should contain plugins that work together or provide a cohesive feature set
 - **Use descriptive names**: Pack names should clearly indicate their purpose
-- **Export packs for reuse**: Export packs from dedicated files for easy sharing
-- **Keep packs focused**: Don't bundle unrelated plugins just for convenience
-- **Document pack contents**: Include comments or documentation about what each pack provides
+- **Export pluginpacks for reuse**: Export pluginpacks from dedicated files for easy sharing
+- **Keep pluginpacks focused**: Don't bundle unrelated plugins just for convenience
+- **Document pluginpack contents**: Include comments or documentation about what each pluginpack provides
 
 ## Error Handling
 
