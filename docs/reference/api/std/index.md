@@ -109,21 +109,6 @@ import { showVersion } from "cheloni/std";
 showVersion({ cliManifest: cli.manifest });
 ```
 
-### `resolveConfig(cli, explicitPath?)`
-
-Resolves configuration for a CLI instance.
-
-- Reads JSON from global + local config files, plus an optional explicit path.
-- Merges them in order: global < local < explicit.
-
-```typescript
-import { resolveConfig } from "cheloni/std";
-
-const { config, files } = await resolveConfig(cli);
-// config -> merged configuration object (or undefined)
-// files  -> [{ path: string, scope: "global" | "local" | "explicit" }, ...]
-```
-
 ## Utilities
 
 ### `mergeOptionsWith(existingOptions, name, schema)`
@@ -156,39 +141,6 @@ const options = mergeOptionsWithVersion(
     verbose: z.boolean()
   })
 );
-```
-
-### `getLocalConfigPath(cliName)`
-
-Returns the default local JSON config path `<cwd>/<cli-name>.config.json`.
-
-```typescript
-import { getLocalConfigPath } from "cheloni/std";
-
-const path = getLocalConfigPath("my-cli"); // $CWD/my-cli.config.json
-```
-
-### `getGlobalConfigPath(cliName)`
-
-Returns the default global JSON config path:
-
-- Unix: `$XDG_CONFIG_HOME/<cli-name>/config.json` or `~/.config/<cli-name>/config.json`
-- Windows: `%APPDATA%\\<cli-name>\\config.json` or `<home>\\AppData\\Roaming\\<cli-name>\\config.json`
-
-```typescript
-import { getGlobalConfigPath } from "cheloni/std";
-
-const path = getGlobalConfigPath("my-cli");
-```
-
-### `loadConfigForCli(cliName, explicitPath?)`
-
-Low‑level helper to read and merge config without a `Cli` instance.
-
-```typescript
-import { loadConfigForCli } from "cheloni/std";
-
-const { config, files } = await loadConfigForCli("my-cli", "./my-cli.config.json");
 ```
 
 ## Plugins
@@ -249,8 +201,9 @@ const cli = await createCli({
   version: "1.0.0",
   plugins: [
     configPlugin({
-      defaultFilename: "sample.config.json",
-      defaultConfig: { outputDir: "dist" },
+      c12Options: {
+        dotenv: true,
+      },
       schema: z.object({ outputDir: z.string() }),
     }),
   ],
@@ -259,11 +212,10 @@ const cli = await createCli({
 
 #### Options
 
-- `defaultFilename?: string` - Override the default config filename (defaults to `<cli-name>.config.json`)
-- `defaultConfig?: unknown` - Default configuration object; properties not present in the loaded config file will inherit from this
+- `c12Options?: LoadConfigOptions` - options forwarded to `c12.loadConfig`
 - `schema?: z.ZodTypeAny` - Zod schema to validate the merged configuration
 
-The plugin looks for config files in precedence order (explicit → local → global), uses the first file that exists, merges it with `defaultConfig`, validates against `schema` if provided, and exposes the result on `context.config` and `context.configFiles`.
+The plugin delegates loading/merging to `c12` and exposes the resolved config on `context.config` (and the resolved main config path as `context.configFile` when available).
 
 ## Packs
 

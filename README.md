@@ -42,7 +42,7 @@ const cli = await createCli({
     bequeathOptions: [], // Options inherited by subcommands
   }),
   plugins: [configPlugin, verbosePlugin], // Individual plugins
-  pluginpacks: [basePluginpack], // Plugin packs (adds help and version commands)
+  pluginpacks: [basePluginpack], // Plugin packs (adds deprecation warnings, help/version commands, and error handling)
 });
 
 await executeCli({ cli });

@@ -43,7 +43,7 @@ const cli = await createCli({
   version: pkg.version,
   command: rootCommand,
   plugins: [configPlugin({
-    defaultFilename: 'tasks.json',
+    c12Options: { configFile: 'tasks' }, // looks for tasks.{json,ts,yaml,...}
     schema: tasksConfigSchema,
   })],
   pluginpacks: [basePluginpack],

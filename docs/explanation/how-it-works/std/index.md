@@ -37,18 +37,13 @@ The option handler then:
 
 - Looks for config files in precedence order (explicit → local → global):
   - Checks explicit path if `--config` is provided
-  - If not found, checks local (cwd) using `defaultFilename` or `<cli-name>.config.json`
-  - If not found, checks global (OS-specific location)
-  - Uses the **first file that exists** (no merging between files)
-- Merges the matched file config with `defaultConfig`:
-  - File config takes precedence over `defaultConfig`
-  - If no file exists, uses `defaultConfig` (defaults to `{}`)
+  - Uses `c12.loadConfig` rules (with options from `c12Options`)
 - Validates against `schema` if provided
 - Exposes the result on the context:
   - `context.config` — merged configuration object (always defined, at least `{}`)
-  - `context.configFiles` — list of `{ path, scope }` for the loaded file (scope is `"explicit" | "local" | "global"`)
+  - `context.configFile` — the resolved main config file (when available)
 
-Note: The plugin does not merge multiple config files. It uses the first file that exists in the precedence order. For merging behavior, use the `resolveConfig` service directly.
+Note: config merging is handled by `c12`. For full control, pass more options through `c12Options` or call `loadConfig` from `c12` directly.
 
 ## Services
 
