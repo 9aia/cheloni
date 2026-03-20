@@ -53,6 +53,16 @@ export type Middleware<
 /** Any middleware function (for untyped/dynamic use). */
 export type AnyMiddleware = Middleware<any>;
 
+/**
+ * Factory for creating a middleware function from some configuration.
+ *
+ * Useful for std helpers that want to return a middleware parameterized by options.
+ */
+export type MiddlewareFactory<
+    TOptions extends Record<string, any>,
+    TMiddleware extends AnyMiddleware
+> = (options: TOptions) => TMiddleware;
+
 /** Extracts the output context type from a middleware function. */
 export type InferMiddlewareContext<T> =
     T extends (...args: any[]) => Promisable<MiddlewareResult<infer R>> ? R : UnknownRecord;

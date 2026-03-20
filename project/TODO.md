@@ -2,7 +2,8 @@
 
 - Ensure error handling by throwing errors instead of `process.exit(1)`
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
-- Refactor config plugin to use c12
+- Add support for config caching (avoid reloading the config file for subcommands that also use the config)
+- Add support for controlling when the config is loaded (eagerly or lazily)?
 - Add shell completion plugin
 - Rename pluginpack to plugin-kit
   - Implement plugin-kit generation via Cheloni CLI
