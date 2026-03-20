@@ -2,19 +2,20 @@
 
 - Ensure error handling by throwing errors instead of `process.exit(1)`
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
+- Refactor config plugin to use c12
 - Add shell completion plugin
 - Rename pluginpack to plugin-kit
+  - Implement plugin-kit generation via Cheloni CLI
 - Add dependencies for commands, so it can inherit types
 - Global user-extendable option types, useful for programmatic CLI definition global types
 - Improve option inference to include global options
 - Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
 - Add option(schema, meta), positional(schema, meta)
-- Add plugin-kit config (disable/enable plugins, change config for each plugin)
-- Add validation to definition to ensure that the definition is valid
+- Abstract validation and introspection (maybe as a plugin "hook" so we can create a zodPlugin)
+- Add validation to definition usage to ensure that the definition is valid
 - Add variadics
-- Refactor config plugin to use c12
-- Add test utils package
-- Add and publish agent skills
 - Refactor src to monorepo (3 main packages: packages/core, packages/cli, packages/create (create-cheloni))
   - Add examples/ (monorepo)
 - Improve instrumentation
+- Add test utils package
+- Add and publish agent skills
