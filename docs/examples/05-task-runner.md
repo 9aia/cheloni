@@ -11,15 +11,16 @@ import z from 'zod';
 import pkg from '../package.json' with { type: 'json' };
 
 const tasksConfigSchema = z.record(z.string(), z.string());
+type TasksConfig = z.infer<typeof tasksConfigSchema>;
 
 const rootCommand = defineRootCommand({
   description: 'Run tasks defined in tasks.json',
   positional: z.string().describe('Task name to execute'),
   handler: async ({ positional, context }) => {
     const taskName = positional;
-    const config = context.config as TasksConfig | undefined;
+    const config = context.config as TasksConfig;
     
-    if (!config) {
+    if (Object.keys(config).length === 0) {
       console.error('No tasks.json found. Create a tasks.json file with your task definitions.');
       process.exit(1);
     }

@@ -4,6 +4,7 @@
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
 - Add support for config caching (avoid reloading the config file for subcommands that also use the config)
 - Add support for controlling when the config is loaded (eagerly or lazily)?
+- Add type-safety to config
 - Add shell completion plugin
 - Rename pluginpack to plugin-kit
   - Implement plugin-kit generation via Cheloni CLI

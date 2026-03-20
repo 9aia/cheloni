@@ -264,6 +264,16 @@ type Context = {
 type Middleware = (params?: MiddlewareParams) => Promisable<void>;
 ```
 
+### `MiddlewareFactory<TOptions, TMiddleware>`
+A helper type for creating a middleware from some configuration/options.
+
+```typescript
+type MiddlewareFactory<
+  TOptions extends Record<string, any>,
+  TMiddleware extends Middleware = Middleware
+> = (options: TOptions) => TMiddleware;
+```
+
 ### `MiddlewareParams`
 
 ```typescript

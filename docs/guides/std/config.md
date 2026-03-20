@@ -14,7 +14,7 @@ The `configPlugin` provides a simplified configuration system that:
 
 - Delegates config loading and merging to `c12.loadConfig` (via `c12Options`)
 - Supports an explicit config file via `--config` / `-c`
-- Validates the final resolved configuration against a Zod schema if `schema` is provided
+- Validates the final resolved configuration against a Zod schema if `schema` is provided (via `validateConfig()`, throwing `ConfigValidationError` on failure)
 
 ### Configuration Sources (c12)
 
@@ -90,8 +90,8 @@ const cli = await createCli({
 The std `configPlugin` handler:
 
 - Delegates config resolution/merging to `c12.loadConfig` using `c12Options` (and uses `--config` as the main config file when provided)
-- Validates against `schema` (if provided) and throws on validation failure
-- Exposes the result on the execution context:
+- Validates against `schema` (if provided) using `validateConfig()` and throws a `ConfigValidationError` on failure (the original Zod error is kept as the `cause`)
+- Exposes the validated result on the execution context via `configMiddleware`:
   - `context.config` – merged configuration object (always defined, at least `{}`)
   - `context.configFile` – the resolved main config file (when available)
 
@@ -101,7 +101,7 @@ Example handler usage:
 const build = defineCommand({
   name: "build",
   handler: async ({ context }) => {
-    const cfg = context.config as any | undefined;
+    const cfg = context.config as any;
     const outputDir = cfg?.outputDir ?? "dist";
 
     console.log(`Building into: ${outputDir}`);
@@ -126,3 +126,12 @@ const { config } = await loadConfig({
 });
 ```
 
+If you also want to validate a resolved config yourself, `cheloni/std` exports `validateConfig()`:
+
+```ts
+import { validateConfig } from "cheloni/std";
+import z from "zod";
+
+const schema = z.object({ outputDir: z.string() });
+const validatedConfig = validateConfig(config, schema);
+```

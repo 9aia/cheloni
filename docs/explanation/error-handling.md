@@ -18,6 +18,7 @@ The framework automatically handles and formats several types of errors:
 - **Invalid option values**: Values don't match schema
 - **Missing required options**: Required options not provided
 - **Invalid positional arguments**: Positional args don't match schema
+- **Invalid config values**: Configuration loaded by `configPlugin` is validated against a Zod schema; failures are rendered as prettified Zod issue output
 
 ## Error Display
 
@@ -32,5 +33,6 @@ Validation error:
 ### Error Format
 
 - **Validation errors** (`ZodError`): Formatted with field names, descriptions, and validation messages
+- **Config validation errors** (`ConfigValidationError` wrapping a `ZodError` as `cause`): rendered with Zod's pretty output
 - **Application errors** (`Error`): Displayed directly
 - All errors cause CLI to exit with a non-zero status code

@@ -38,8 +38,8 @@ The option handler then:
 - Looks for config files in precedence order (explicit → local → global):
   - Checks explicit path if `--config` is provided
   - Uses `c12.loadConfig` rules (with options from `c12Options`)
-- Validates against `schema` if provided
-- Exposes the result on the context:
+- Validates against `schema` if provided (via `validateConfig()`); on failure it throws a `ConfigValidationError` with the original Zod error attached as `cause`
+- Injects the (validated) result into the middleware chain via `configMiddleware`:
   - `context.config` — merged configuration object (always defined, at least `{}`)
   - `context.configFile` — the resolved main config file (when available)
 
