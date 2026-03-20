@@ -1,8 +1,8 @@
 import { createCommand } from "~/core";
 import { definePlugin } from "~/core/definition/plugin";
 import helpCommand from "~/std/commands/help";
-import helpOption from "~/std/options/help";
 import rootCommand from "~/std/commands/root";
+import helpOption from "~/std/options/help";
 
 export default definePlugin({
     name: "help",

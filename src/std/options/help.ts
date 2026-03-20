@@ -1,6 +1,6 @@
 import { defineOption } from "~/core/definition/command/option";
-import { showHelp } from "~/std/services/help";
 import { helpOptionSchema } from "~/std/schemas/help";
+import { showHelp } from "~/std/services/help";
 
 export default defineOption({
     name: "help",

@@ -1,7 +1,7 @@
+import * as _ from "lodash-es";
+import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import fs from "node:fs/promises";
-import * as _ from "lodash-es";
 
 export type ConfigScope = "global" | "local" | "explicit";
 

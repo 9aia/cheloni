@@ -1,6 +1,6 @@
 import { defineCommand } from "~/core/definition/command";
+import { helpPositionalSchema } from "~/std/schemas/help";
 import { showHelp } from "~/std/services/help";
-import { helpPositionalSchema } from "../schemas/help";
 
 export default defineCommand({
     name: "help",

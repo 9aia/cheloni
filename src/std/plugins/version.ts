@@ -1,9 +1,9 @@
 import { createCommand } from "~/core";
 import { definePlugin } from "~/core/definition/plugin";
-import versionCommand from "~/std/commands/version";
 import helpCommand from "~/std/commands/help";
-import { mergeOptionsWithVersion } from "~/std/utils/option";
 import rootCommand from "~/std/commands/root";
+import versionCommand from "~/std/commands/version";
+import { mergeOptionsWithVersion } from "~/std/utils/option";
 
 export default definePlugin({
     name: "version",
