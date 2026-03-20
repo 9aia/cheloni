@@ -4,16 +4,16 @@ import {
     showCommandDeprecationWarning,
     showOptionDeprecationWarnings,
     showPositionalDeprecationWarning,
-} from "~/std/services/deprecation";
+} from "~/std/views/deprecation";
 
 export default definePlugin({
     name: "deprecation",
     onInit: ({ cli }) => {
-        showCliDeprecationWarning(cli);
+        showCliDeprecationWarning({ cli });
     },
     onBeforeCommandExecution: ({ command, parsedOptions, parsedPositionals }) => {
-        showCommandDeprecationWarning(command);
-        showOptionDeprecationWarnings(command, parsedOptions);
-        showPositionalDeprecationWarning(command, parsedPositionals);
+        showCommandDeprecationWarning({ command });
+        showOptionDeprecationWarnings({ command, parsedOptions });
+        showPositionalDeprecationWarning({ command, parsedPositionals });
     },
 });

@@ -4,7 +4,11 @@ import { extractPositionalValue } from "~/core/execution/parser";
 import { getOptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
 
-export function showCliDeprecationWarning(cli: Cli): void {
+interface CliDeprecationWarningParams {
+    cli: Cli;
+}
+
+export function showCliDeprecationWarning({ cli }: CliDeprecationWarningParams): void {
     if (!cli.manifest.deprecated) return;
 
     const message = typeof cli.manifest.deprecated === "string"
@@ -14,7 +18,11 @@ export function showCliDeprecationWarning(cli: Cli): void {
     console.warn(`Deprecated: ${message}`);
 }
 
-export function showCommandDeprecationWarning(command: CommandDefinition): void {
+interface CommandDeprecationWarningParams {
+    command: CommandDefinition;
+}
+
+export function showCommandDeprecationWarning({ command }: CommandDeprecationWarningParams): void {
     if (!command.deprecated) return;
 
     const message = typeof command.deprecated === "string"
@@ -24,10 +32,15 @@ export function showCommandDeprecationWarning(command: CommandDefinition): void 
     console.warn(`Deprecated: ${message}`);
 }
 
-export function showOptionDeprecationWarnings(
-    command: CommandDefinition,
-    parsedOptions: Record<string, any> | undefined,
-): void {
+interface OptionDeprecationWarningsParams {
+    command: CommandDefinition;
+    parsedOptions: Record<string, any> | undefined;
+}
+
+export function showOptionDeprecationWarnings({
+    command,
+    parsedOptions,
+}: OptionDeprecationWarningsParams): void {
     if (!parsedOptions) return;
 
     const shape = command.options?.shape;
@@ -42,10 +55,15 @@ export function showOptionDeprecationWarnings(
     }
 }
 
-export function showPositionalDeprecationWarning(
-    command: CommandDefinition,
-    parsedPositionals: string[] | undefined,
-): void {
+interface PositionalDeprecationWarningParams {
+    command: CommandDefinition;
+    parsedPositionals: string[] | undefined;
+}
+
+export function showPositionalDeprecationWarning({
+    command,
+    parsedPositionals,
+}: PositionalDeprecationWarningParams): void {
     const schema = command.positional;
     if (!schema) return;
     if (!parsedPositionals || parsedPositionals.length === 0) return;

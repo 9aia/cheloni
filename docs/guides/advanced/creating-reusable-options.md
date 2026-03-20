@@ -49,7 +49,7 @@ const helpOption = defineOption({
   schema: z.boolean().optional().meta({ aliases: ['h'] }),
   handler: ({ command, cli, halt }) => {
     // Show help and exit
-    showHelp(cli, command.manifest.name);
+    showHelp({ cli, commandName: command.manifest.name });
     halt(); // Short-circuit command execution
   },
 });

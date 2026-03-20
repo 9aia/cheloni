@@ -1,10 +1,10 @@
 import { definePlugin } from "~/core/definition/plugin";
-import { showError } from "~/std/services/error-handling";
+import { showError } from "~/std/views";
 
 export default definePlugin({
     name: "error-handler",
     onError: ({ error }) => {
-        showError(error);
+        showError({ error });
         return true;
     },
 });

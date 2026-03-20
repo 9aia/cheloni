@@ -74,7 +74,7 @@ const cli = await createCli({
 
 ## Services
 
-### `showHelp(cli, commandName?)`
+### `showHelp({ cli, commandName? })`
 
 Shows help for the CLI or a specific command.
 
@@ -82,31 +82,31 @@ Shows help for the CLI or a specific command.
 import { showHelp } from "cheloni/std";
 
 // Show root help
-showHelp(cli);
+showHelp({ cli });
 
 // Show command help
-showHelp(cli, "build");
+showHelp({ cli, commandName: "build" });
 ```
 
 ### Deprecation warnings
 
 These helpers **print deprecation warnings** (to stderr via `console.warn`) based on the CLI/command definition metadata and which args/options were actually provided.
 
-- `showCliDeprecationWarning(cli)`
-- `showCommandDeprecationWarning(command)`
-- `showOptionDeprecationWarnings(command, parsedOptions)`
-- `showPositionalDeprecationWarning(command, parsedPositionals)`
+- `showCliDeprecationWarning({ cli })`
+- `showCommandDeprecationWarning({ command })`
+- `showOptionDeprecationWarnings({ command, parsedOptions })`
+- `showPositionalDeprecationWarning({ command, parsedPositionals })`
 
 Note: core does not emit deprecation warnings; install `deprecationPlugin` (below) to run these at the appropriate lifecycle hooks.
 
-### `showVersion(cliManifest)`
+### `showVersion({ cliManifest })`
 
 Shows the CLI version.
 
 ```typescript
 import { showVersion } from "cheloni/std";
 
-showVersion(cli.manifest);
+showVersion({ cliManifest: cli.manifest });
 ```
 
 ### `resolveConfig(cli, explicitPath?)`

@@ -1,7 +1,11 @@
 import z from "zod";
 import { InvalidOptionsError, InvalidPositionalError, InvalidSchemaError } from "~/core/execution/command/errors";
 
-export function showInvalidSchemaErrorWithIssues(error: InvalidSchemaError): void {
+interface InvalidSchemaErrorWithIssuesParams {
+    error: InvalidSchemaError;
+}
+
+export function showInvalidSchemaErrorWithIssues({ error }: InvalidSchemaErrorWithIssuesParams): void {
     const label = error instanceof InvalidPositionalError
         ? "Invalid positional argument"
         : error instanceof InvalidOptionsError
@@ -12,11 +16,19 @@ export function showInvalidSchemaErrorWithIssues(error: InvalidSchemaError): voi
     console.error(z.prettifyError({ issues: error.issues } as z.ZodError));
 }
 
-export function showInvalidSchemaError(error: InvalidSchemaError): void {
+interface InvalidSchemaErrorParams {
+    error: InvalidSchemaError;
+}
+
+export function showInvalidSchemaError({ error }: InvalidSchemaErrorParams): void {
     console.error(error.message);
 }
 
-export function showGenericError(error: Error): void {
+interface GenericErrorParams {
+    error: Error;
+}
+
+export function showGenericError({ error }: GenericErrorParams): void {
     console.error(`Error: ${error.message}`);
 }
 
@@ -24,21 +36,26 @@ export function showUnknownError(): void {
     console.error("An unknown error occurred");
 }
 
-export function showError(error: unknown): void {
+interface ShowErrorParams {
+    error: unknown;
+}
+
+export function showError({ error }: ShowErrorParams): void {
     if (error instanceof InvalidSchemaError && error.issues.length > 0) {
-        showInvalidSchemaErrorWithIssues(error);
+        showInvalidSchemaErrorWithIssues({ error });
         return;
     }
 
     if (error instanceof InvalidSchemaError) {
-        showInvalidSchemaError(error);
+        showInvalidSchemaError({ error });
         return;
     }
 
     if (error instanceof Error) {
-        showGenericError(error);
+        showGenericError({ error });
         return;
     }
 
     showUnknownError();
 }
+
