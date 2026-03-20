@@ -2,7 +2,7 @@ import { createCommand } from "~/core";
 import { definePlugin } from "~/core/definition/plugin";
 import helpCommand from "~/std/commands/help";
 import helpOption from "~/std/options/help";
-import defaultRootCommand from "~/std/commands/default-root";
+import rootCommand from "~/std/commands/root";
 
 export default definePlugin({
     name: "help",
@@ -25,7 +25,7 @@ export default definePlugin({
 
         // No root command registered
         cli.command = createCommand({
-            ...defaultRootCommand,
+            ...rootCommand,
             bequeathOptions: [helpOption],
             commands: [helpCommand],
         });

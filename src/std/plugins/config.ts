@@ -5,7 +5,7 @@ import type z from "zod";
 import { createCommand, type AnyMiddleware } from "~/core";
 import type { PluginCommandHook, PluginHook } from "~/core/creation/plugin/hook";
 import { definePlugin, type PluginDefinition } from "~/core/definition/plugin";
-import defaultRootCommand from "~/std/commands/default-root";
+import rootCommand from "~/std/commands/root";
 import configOption from "~/std/options/config";
 import { getGlobalConfigPath, getLocalConfigPath } from "~/std/utils/config";
 
@@ -45,7 +45,7 @@ const configPluginFactory = (pluginConfig: ConfigPluginConfig = {}) => ({
         }
 
         cli.command = createCommand({
-            ...defaultRootCommand,
+            ...rootCommand,
             bequeathOptions: [configOption],
         });
     },

@@ -3,7 +3,7 @@ import { definePlugin } from "~/core/definition/plugin";
 import versionCommand from "~/std/commands/version";
 import helpCommand from "~/std/commands/help";
 import { mergeOptionsWithVersion } from "~/std/utils/option";
-import defaultRootCommand from "~/std/commands/default-root";
+import rootCommand from "~/std/commands/root";
 
 export default definePlugin({
     name: "version",
@@ -24,7 +24,7 @@ export default definePlugin({
         }
 
         cli.command = createCommand({
-            ...defaultRootCommand,
+            ...rootCommand,
             options: mergeOptionsWithVersion(helpCommand.options),
             commands: [versionCommand],
         });
