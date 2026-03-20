@@ -251,7 +251,7 @@ The standard library (`cheloni/std`) provides ready-to-use components for common
 
 ### Base Pluginpack
 
-The `basePluginpack` automatically adds deprecation warnings plus help and version support:
+The `basePluginpack` automatically adds deprecation warnings plus help and version support, and installs default error handling:
 
 ```typescript
 import { basePluginpack } from 'cheloni/std';
@@ -269,6 +269,7 @@ const cli = await createCli({
 - `version` command — prints the CLI version
 - `--help` / `-h` option — shows help for the current command (short-circuits)
 - `--version` / `-v` option — prints version (short-circuits)
+- `error-handler` plugin — displays unhandled errors via a CLI-level `onError` hook
 
 **Behavior:** If no root command exists, it creates one with help as the default handler. Otherwise, it injects `help` and `version` subcommands and merges `--version` into root options.
 

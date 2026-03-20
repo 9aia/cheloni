@@ -36,7 +36,7 @@ $ my-cli --version
 
 ## Using the Base Pluginpack
 
-For most CLIs, use `basePluginpack` which includes deprecation warnings plus help and version:
+For most CLIs, use `basePluginpack` which includes deprecation warnings, help/version support, and default error handling:
 
 ```typescript
 import { basePluginpack } from 'cheloni/std';

@@ -73,7 +73,7 @@ import { basePluginpack } from 'cheloni/std';
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  pluginpacks: [basePluginpack], // Includes deprecation, help, and version plugins
+  pluginpacks: [basePluginpack], // Includes deprecation, help, version, and error handling
 });
 ```
 
@@ -137,7 +137,7 @@ You can use both pluginpacks and individual plugins together. Plugins from both 
 const cli = await createCli({
   name: 'my-cli',
   command: rootCommand,
-  pluginpacks: [basePluginpack], // Adds help and version plugins
+  pluginpacks: [basePluginpack], // Adds help, version, and error handling plugins
   plugins: [customPlugin], // Adds custom plugin
   // All plugins are combined
 });

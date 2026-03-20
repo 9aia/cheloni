@@ -269,7 +269,7 @@ The plugin looks for config files in precedence order (explicit → local → gl
 
 ### `basePluginpack`
 
-The standard library pluginpack that includes `deprecationPlugin`, `helpPlugin`, and `versionPlugin`.
+The standard library pluginpack that includes `deprecationPlugin`, `helpPlugin`, `versionPlugin`, and `errorHandlerPlugin`.
 
 ```typescript
 import { basePluginpack } from "cheloni/std";
@@ -285,5 +285,6 @@ The pluginpack provides:
 
 - Help and version support (`help` / `version`, plus `--help` / `--version`)
 - Deprecation warnings for deprecated CLIs, commands, and deprecated provided args/options
+- Error display via the `error-handler` plugin (handles `onError` at the CLI plugin layer)
 
 This is the recommended way to add standard library functionality.
