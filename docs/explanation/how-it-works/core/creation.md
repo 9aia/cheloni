@@ -17,11 +17,12 @@ OptionDefinition    → Option    { definition, manifest }
 
 `createCli()` is the main orchestrator. It runs in this order:
 
-1. Extracts the CLI manifest via `getCliManifest()`
-2. Creates the root command tree (if a command definition is provided), including bequeath options
-3. Creates plugins from `plugins` (in array order)
-4. Assembles the `Cli` object
-5. Runs `onInit` hooks for each plugin, passing the `Cli` object
+1. When `metaUrl` is set and any of `name`, `version`, or `description` are omitted, reads the nearest `package.json` (walking up from that module’s directory) and fills those fields
+2. Extracts the CLI manifest via `getCliManifest()`
+3. Creates the root command tree (if a command definition is provided), including bequeath options
+4. Creates plugins from `plugins` (in array order)
+5. Assembles the `Cli` object
+6. Runs `onInit` hooks for each plugin, passing the `Cli` object
 
 If any `onInit` hook throws, creation fails immediately — the error is logged and re-thrown.
 

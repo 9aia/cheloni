@@ -7,6 +7,7 @@ The Creation layer builds runtime instances from definitions, creating the comma
 ### `createCli(definition)`
 
 Creates a CLI instance from a definition. This function:
+- Resolves optional `name`, `version`, and `description` from the nearest `package.json` when `metaUrl` is set (see below)
 - Extracts the manifest
 - Creates the root command tree
 - Creates plugins
@@ -16,6 +17,8 @@ Creates a CLI instance from a definition. This function:
 - `definition: CliDefinition` - The CLI definition
 
 **Returns:** `Promise<Cli>`
+
+**Package metadata:** If `definition.metaUrl` is set (typically `import.meta.url` from your CLI entry file), any of `name`, `version`, or `description` that are omitted are read from the closest `package.json` found by walking parent directories from that module’s path. Omitted fields are not merged if you do not set `metaUrl`. If `name` and `version` are both set explicitly, `package.json` is not read unless `description` is still omitted. Explicit definition values always override `package.json`.
 
 **Example:**
 ```typescript
@@ -27,6 +30,18 @@ const definition = defineCli({
 });
 
 const cli = await createCli(definition);
+```
+
+**Example (defaults from `package.json`):**
+```typescript
+import { createCli, defineRootCommand } from "cheloni";
+
+const rootCommand = defineRootCommand({ handler: async () => {} });
+
+const cli = await createCli({
+  metaUrl: import.meta.url,
+  command: rootCommand,
+});
 ```
 
 ### `createCommand(definition)`

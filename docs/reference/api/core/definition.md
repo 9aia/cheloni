@@ -45,6 +45,8 @@ const cli = defineCli({
 
 When you call `createCli()` with this definition, `plugins` is a single list. `onInit` hooks run in **array order**. Reusable bundles are plain arrays (for example `basicPluginKit` from the standard library, or a local `src/plugin-kits/` module you maintain).
 
+**Default metadata from `package.json`:** You can omit `name`, `version`, and/or `description` when you pass `metaUrl: import.meta.url` (from your CLI entry module). `createCli()` walks up from that file’s directory, reads the nearest `package.json`, and fills any of those fields you left out. Values you set on the definition always win. If `name` is still missing after resolution, `createCli()` throws. See [`createCli()`](./creation.md).
+
 ### `defineCommand(definition)`
 
 Creates a command definition.
@@ -298,15 +300,19 @@ const plugin = definePlugin({
 
 ```typescript
 interface CliDefinition {
-  name: string;
+  name?: string;
   version?: string;
+  metaUrl?: string | URL;
   description?: string;
   details?: string;
   deprecated?: boolean | string;
   command?: RootCommandDefinition;
   plugins?: PluginDefinition[];
+  onError?: CliErrorHandler;
 }
 ```
+
+`name` is required for a runnable CLI, but it may be omitted on the definition when `metaUrl` is set so `createCli()` can read it from `package.json`. The same applies to `version` and `description`.
 
 ### `CommandDefinition<TPositionalDefinition, TOptionsDefinition>`
 

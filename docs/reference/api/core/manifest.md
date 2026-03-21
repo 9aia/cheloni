@@ -9,7 +9,7 @@ The Manifest layer extracts serializable metadata from definitions for introspec
 Extracts the manifest from a CLI definition.
 
 **Parameters:**
-- `definition: CliDefinition` - The CLI definition
+- `definition: CliDefinition & { name: string }` - The CLI definition after optional `package.json` resolution; `name` must be present (as produced internally by `createCli()`, or set explicitly when calling `getCliManifest()` yourself)
 
 **Returns:** `CliManifest`
 

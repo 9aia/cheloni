@@ -226,7 +226,7 @@ The plugin delegates loading/merging to `c12`, validates against `schema` using 
 
 ### `basicPluginKit`
 
-Read-only array of the standard plugins: `errorHandlerPlugin`, `helpPlugin`, `versionPlugin`, and `deprecationPlugin`. Spread it into `plugins` (same pattern as `examples/task-runner`).
+Read-only array of the standard plugins: `errorHandlerPlugin`, `helpPlugin`, `versionPlugin`, and `deprecationPlugin`. Spread it into `plugins` (same pattern as `examples/05-task-runner`).
 
 ```typescript
 import { basicPluginKit } from "cheloni/std/core";
