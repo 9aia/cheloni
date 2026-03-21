@@ -27,17 +27,8 @@ export async function createCli(definition: CliDefinition): Promise<Cli> {
     // Create root command from definition (if provided)
     const command = definition.command ? createRootCommand(definition.command) : undefined;
 
-    // Create plugins from definitions and pluginpacks
-    const pluginDefinitions: PluginDefinition[] = [];
-    
-    // Add plugins from plugin field
-    pluginDefinitions.push(...(definition.plugins ?? []));
-    
-    // Add plugins from pluginpack field
-    for (const pluginpackDef of definition.pluginpacks ?? []) {
-        pluginDefinitions.push(...(pluginpackDef.plugins ?? []));
-    }
-    
+    const pluginDefinitions: PluginDefinition[] = definition.plugins ?? [];
+
     for (const pluginDef of pluginDefinitions) {
         const plugin = createPlugin(pluginDef);
         pluginMap.set(plugin);

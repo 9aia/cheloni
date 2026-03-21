@@ -5,7 +5,6 @@ export * from "./definition/command/middleware";
 export * from "./definition/command/option";
 export * from "./definition/command/positional";
 export * from "./definition/plugin";
-export * from "./definition/pack";
 
 // Creation
 export * from "./creation/cli";
@@ -33,4 +32,3 @@ export * from "./manifest/command/index";
 export * from "./manifest/command/option";
 export * from "./manifest/command/positional";
 export * from "./manifest/plugin";
-

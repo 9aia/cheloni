@@ -4,6 +4,22 @@ import type { OptionManifest } from "~/core/manifest/command/option";
 import type { PositionalManifest } from "~/core/manifest/command/positional";
 import { findCommandInTree } from "~/utils/execution/router";
 
+function formatDefaultValue(value: unknown): string {
+    if (typeof value === "string") {
+        return `"${value}"`;
+    }
+
+    if (value === undefined) {
+        return "undefined";
+    }
+
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return String(value);
+    }
+}
+
 interface ShowOptionHelpParams {
     option: OptionManifest;
 }
@@ -20,6 +36,10 @@ function showOptionHelp({ option }: ShowOptionHelpParams): void {
         const message = typeof option.deprecated === "string" ? option.deprecated : "This option is deprecated";
         console.log(`    Deprecated: ${message}`);
     }
+
+    if (option.defaultValue !== undefined) {
+        console.log(`    Default: ${formatDefaultValue(option.defaultValue)}`);
+    }
 }
 
 interface ShowPositionalHelpParams {
@@ -30,6 +50,9 @@ function showPositionalHelp({ positional }: ShowPositionalHelpParams): void {
     const label = positional.name || "positional";
     console.log(`\nPositional:`);
     console.log(`  <${label}>    ${positional.description || "(any)"}`);
+    if (positional.defaultValue !== undefined) {
+        console.log(`    Default: ${formatDefaultValue(positional.defaultValue)}`);
+    }
     if (positional.deprecated) {
         const message = typeof positional.deprecated === "string" ? positional.deprecated : "This argument is deprecated";
         console.log(`    Deprecated: ${message}`);
@@ -59,14 +82,16 @@ function showCommandHelp({ cli, commandName }: ShowCommandHelpParams): void {
     }
 
     const { name, description, paths = [], deprecated, positional, options, examples } = actualCommand.manifest;
-
-    const posName = positional?.name || "positional";
-    console.log(`Usage: ${cliName} ${name}${positional ? ` <${posName}>` : ""} [options]\n`);
-
+    
     if (description) {
         console.log(description);
         console.log("");
     }
+
+    const posName = positional?.name || "positional";
+    const usageCommandPart = name === "root" ? "" : ` ${name}`;
+    const usagePositionalPart = positional ? ` <${posName}>` : "";
+    console.log(`Usage: ${cliName}${usageCommandPart}${usagePositionalPart} [options]\n`);
 
     if (paths.length > 0) {
         console.log(`Aliases: ${paths.join(", ")}`);
@@ -75,10 +100,6 @@ function showCommandHelp({ cli, commandName }: ShowCommandHelpParams): void {
     if (deprecated) {
         const message = typeof deprecated === "string" ? deprecated : "This command is deprecated";
         console.log(`Deprecated: ${message}`);
-    }
-
-    if (positional) {
-        showPositionalHelp({ positional });
     }
 
     if (actualCommand.commands.size > 0) {
@@ -92,6 +113,10 @@ function showCommandHelp({ cli, commandName }: ShowCommandHelpParams): void {
             cmdLine += `    ${sub.description || ""}`;
             console.log(cmdLine);
         }
+    }
+
+    if (positional) {
+        showPositionalHelp({ positional });
     }
 
     const hasCommandOptions = options && options.length > 0;

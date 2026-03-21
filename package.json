@@ -47,9 +47,9 @@
       "types": "./dist/std/ui/index.d.ts",
       "import": "./dist/std/ui/index.js"
     },
-    "./pluginpacks": {
-      "types": "./dist/pluginpacks/index.d.ts",
-      "import": "./dist/pluginpacks/index.js"
+    "./plugin-kits": {
+      "types": "./dist/plugin-kits/index.d.ts",
+      "import": "./dist/plugin-kits/index.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",

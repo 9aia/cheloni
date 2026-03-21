@@ -77,11 +77,18 @@ export function createCommand<
         commands.set(childCommand);
     }
 
+    const resolvedPaths =
+        definition.paths !== undefined && definition.paths !== null
+            ? definition.paths
+            : definition.name === "root"
+              ? []
+              : [definition.name];
+
     return {
         definition,
         manifest: getCommandManifest(definition),
         commands,
-        paths: definition.paths ?? [definition.name],
+        paths: resolvedPaths,
         bequeathOptions: bequeathOptionsMap,
     };
 }
@@ -92,5 +99,8 @@ export function createRootCommand<
 >(
     definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>
 ): RootCommand<TPositionalDefinition, TOptionsDefinition> {
-    return createCommand({ ...definition, name: "root" });
+    return createCommand({
+        ...definition,
+        name: "root",
+    });
 }

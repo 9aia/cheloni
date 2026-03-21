@@ -16,10 +16,21 @@ export interface CommandManifest extends Manifest {
     details?: string;
 }
 
+function defaultPathsForCommand(definition: CommandDefinition): string[] {
+    if (definition.paths !== undefined && definition.paths !== null) {
+        return definition.paths;
+    }
+    // CLI root (`defineRootCommand`) is not invoked as a "root" argv segment.
+    if (definition.name === "root") {
+        return [];
+    }
+    return [definition.name];
+}
+
 export function getCommandManifest(definition: CommandDefinition): CommandManifest {
     return {
         name: definition.name,
-        paths: definition.paths ?? [definition.name],
+        paths: defaultPathsForCommand(definition),
         description: definition.description,
         details: definition.details,
         examples: definition.examples,

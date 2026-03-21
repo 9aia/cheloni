@@ -1,7 +1,6 @@
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { RootCommandDefinition } from "~/core/definition/command";
-import type { PluginpackDefinition } from "~/core/definition/pack";
 import type { PluginDefinition } from "~/core/definition/plugin";
 import type { Promisable } from "type-fest";
 
@@ -16,7 +15,6 @@ export interface CliDefinition {
     deprecated?: boolean | string;
     command?: RootCommandDefinition;
     plugins?: PluginDefinition[];
-    pluginpacks?: PluginpackDefinition[];
     /**
      * Custom error handler invoked as a final fallback.
      *

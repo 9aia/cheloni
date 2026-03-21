@@ -9,9 +9,11 @@
 
 ```typescript
 import { createCli, defineCommand, defineRootCommand, executeCli } from 'cheloni';
-import { basePluginpack, dryRunOptionSchema, configPlugin, verbosePlugin } from 'cheloni/std';
-import z from 'zod';
+import { configPlugin } from 'cheloni/std/config';
+import { dryRunOptionSchema } from 'cheloni/std/core';
+import { basicPluginKit } from './plugin-kits/basic-kit';
 import { authMiddleware, loggerMiddleware } from 'your-lib';
+import z from 'zod';
 
 const deploy = defineCommand({
   name: 'deploy',
@@ -24,9 +26,14 @@ const deploy = defineCommand({
   }),
   examples: ['deploy staging', 'deploy production --force'],
   details: 'Deploys your application to the specified environment.',
-  middleware: [authMiddleware], // Handle auth and provides it to the handler
+  middleware: [authMiddleware],
   handler: async ({ positional, options, context }) => {
-    // Full type inference: { positional: string, options: { dryRun?: boolean, force?: boolean }, context: { session: Session } }
+    // Full type inference:
+    // {
+    //   positional: string,
+    //   options: { dryRun?: boolean, force?: boolean },
+    //   context: { session: Session }
+    // }
     console.log(`Deploying to ${positional}...`);
     if (options.dryRun) console.log('Dry run mode');
     if (options.force) console.log('Force mode enabled');
@@ -41,8 +48,10 @@ const cli = await createCli({
     middleware: [loggerMiddleware], // Runs for all commands
     bequeathOptions: [], // Options inherited by subcommands
   }),
-  plugins: [configPlugin, verbosePlugin], // Individual plugins
-  pluginpacks: [basePluginpack], // Plugin packs (adds deprecation warnings, help/version commands, and error handling)
+  plugins: [
+    configPlugin,
+    ...basicPluginKit // Adds deprecation warnings, help/version support, and default error handling
+  ], 
 });
 
 await executeCli({ cli });

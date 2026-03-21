@@ -1,4 +1,5 @@
 import type { OptionSchema, OptionsSchema } from "~/core/definition/command/option";
+import { getSchemaDefaultValue } from "~/core/manifest/command/schema";
 
 export type OptionManifest = {
     name: string;
@@ -6,6 +7,8 @@ export type OptionManifest = {
     details?: string;
     aliases: string[];
     deprecated: boolean | string;
+    // TODO: infer default value from schema
+    defaultValue?: unknown;
 };
 
 export type OptionsManifest = OptionManifest[];
@@ -28,6 +31,7 @@ export function getOptionManifest(fallbackName: string, definition?: OptionSchem
             name: fallbackName,
             deprecated: false,
             aliases: [],
+            defaultValue: undefined,
         };
     }
 
@@ -39,5 +43,6 @@ export function getOptionManifest(fallbackName: string, definition?: OptionSchem
         details: meta.details as string | undefined,
         aliases: (meta.aliases as string[]) ?? [],
         deprecated: (meta.deprecated as boolean | string) ?? false,
+        defaultValue: getSchemaDefaultValue(definition),
     };
 }
