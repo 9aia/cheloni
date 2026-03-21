@@ -11,9 +11,41 @@
       "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.js"
     },
-    "./std": {
-      "types": "./dist/std/index.d.ts",
-      "import": "./dist/std/index.js"
+    "./std/config": {
+      "types": "./dist/std/config/index.d.ts",
+      "import": "./dist/std/config/index.js"
+    },
+    "./std/core": {
+      "types": "./dist/std/core/index.d.ts",
+      "import": "./dist/std/core/index.js"
+    },
+    "./std/git": {
+      "types": "./dist/std/git/index.d.ts",
+      "import": "./dist/std/git/index.js"
+    },
+    "./std/log": {
+      "types": "./dist/std/log/index.d.ts",
+      "import": "./dist/std/log/index.js"
+    },
+    "./std/npm": {
+      "types": "./dist/std/npm/index.d.ts",
+      "import": "./dist/std/npm/index.js"
+    },
+    "./std/os": {
+      "types": "./dist/std/os/index.d.ts",
+      "import": "./dist/std/os/index.js"
+    },
+    "./std/parse": {
+      "types": "./dist/std/parse/index.d.ts",
+      "import": "./dist/std/parse/index.js"
+    },
+    "./std/semver": {
+      "types": "./dist/std/semver/index.d.ts",
+      "import": "./dist/std/semver/index.js"
+    },
+    "./std/ui": {
+      "types": "./dist/std/ui/index.d.ts",
+      "import": "./dist/std/ui/index.js"
     },
     "./pluginpacks": {
       "types": "./dist/pluginpacks/index.d.ts",

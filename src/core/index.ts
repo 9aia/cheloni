@@ -25,6 +25,7 @@ export * from "./execution/command/middleware";
 export * from "./execution/command/router";
 export * from "./execution/command/validate";
 export * from "./execution/parser/index";
+export * from "./execution/plugin/errors";
 
 // Manifest
 export * from "./manifest/cli";
