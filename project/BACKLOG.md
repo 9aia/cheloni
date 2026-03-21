@@ -41,6 +41,7 @@
 
 ## DX
 
+- Refactor option handler and middleware execution/ctx/next into a single mechanism (command pipeline)
 - Refactor plugins to use immerjs
 - Refactor read nearest package.json using an external library
 - Add linter and formatter to the repo
