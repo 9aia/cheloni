@@ -27,3 +27,14 @@ export const inputOptionSchema = pathSchema.describe('Input file path').meta({ a
  * @see {@link pathSchema}
  */
 export const outputOptionSchema = pathSchema.describe('Output file path').optional().meta({ aliases: ['o'] });
+
+/**
+ * A schema for one or more file paths as a positional argument (e.g. `files...`).
+ * @see {@link pathSchema}
+ */
+export const filesPositionalSchema = z
+    .array(pathSchema)
+    .min(1, "At least one file path is required")
+    .describe("One or more file paths")
+    .meta({ name: "files" });
+

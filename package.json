@@ -15,6 +15,10 @@
       "types": "./dist/std/index.d.ts",
       "import": "./dist/std/index.js"
     },
+    "./pluginpacks": {
+      "types": "./dist/pluginpacks/index.d.ts",
+      "import": "./dist/pluginpacks/index.js"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js"

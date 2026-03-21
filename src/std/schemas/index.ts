@@ -10,6 +10,10 @@ export {
 } from "./git";
 export { helpOptionSchema, helpPositionalSchema } from "./help";
 export { interactiveOptionSchema } from "./interactive";
-export { outputOptionSchema, pathSchema } from "./path";
+export { hostSchema, hostnameSchema, portOptionSchema, portSchema } from "./network";
+export { packageNameSchema } from "./npm";
+export { jsonDataSchema, yamlDataSchema } from "./parse";
+export { dirnameSchema, filesPositionalSchema, inputOptionSchema, outputOptionSchema, pathSchema } from "./path";
+export { semverSchema } from "./semver";
 export { jsonOptionSchema, prettyOptionSchema } from "./stdout";
 export { versionOptionSchema } from "./version";

@@ -16,7 +16,9 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: ["zod", "mri", /^node:/],
+      // This package targets Node CLIs; keep runtime deps external.
+      // Bundling c12 drags browser-incompatible transitive deps (tinyexec/giget).
+      external: ["zod", "mri", "c12", "defu", "semver", "yaml", /^node:/],
     },
     target: "esnext",
     minify: true,
