@@ -13,12 +13,20 @@ export interface CliDefinition {
      * if {@link CliDefinition.metaUrl} is set.
      */
     name?: string;
+    /**
+     * Version for help and errors. When omitted, resolved from the nearest `package.json`
+     * if {@link CliDefinition.metaUrl} is set.
+     */
     version?: string;
     /**
-     * Module URL used to find the nearest `package.json` when `name` and/or `version` are omitted.
-     * Set to `import.meta.url` from your CLI entry file.
+     * Module URL used to find the nearest `package.json` when `name`, `version`, and/or `description`
+     * are omitted. Set to `import.meta.url` from your CLI entry file.
      */
     metaUrl?: string | URL;
+    /**
+     * Short summary for help. When omitted, resolved from the nearest `package.json`
+     * if {@link CliDefinition.metaUrl} is set.
+     */
     description?: string;
     details?: string;
     deprecated?: boolean | string;

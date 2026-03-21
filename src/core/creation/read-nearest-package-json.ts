@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 export interface PackageJsonCliFields {
     name?: string;
     version?: string;
+    description?: string;
 }
 
 /**
@@ -24,7 +25,8 @@ export async function readNearestPackageJson(metaUrl: string | URL): Promise<Pac
             const rec = parsed as Record<string, unknown>;
             const name = typeof rec.name === "string" ? rec.name : undefined;
             const version = typeof rec.version === "string" ? rec.version : undefined;
-            return { name, version };
+            const description = typeof rec.description === "string" ? rec.description : undefined;
+            return { name, version, description };
         } catch (err) {
             if (
                 err &&

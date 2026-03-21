@@ -23,14 +23,21 @@ export interface Cli extends RuntimeObject<CliManifest> {
 async function resolveCliManifestSource(definition: CliDefinition): Promise<CliManifestSource> {
     let name = definition.name;
     let version = definition.version;
+    let description = definition.description;
 
-    if (definition.metaUrl && (name === undefined || version === undefined)) {
+    if (
+        definition.metaUrl &&
+        (name === undefined || version === undefined || description === undefined)
+    ) {
         const pkg = await readNearestPackageJson(definition.metaUrl);
         if (name === undefined) {
             name = pkg.name;
         }
         if (version === undefined) {
             version = pkg.version;
+        }
+        if (description === undefined) {
+            description = pkg.description;
         }
     }
 
@@ -41,7 +48,7 @@ async function resolveCliManifestSource(definition: CliDefinition): Promise<CliM
     }
 
     const { metaUrl: _metaUrl, ...rest } = definition;
-    return { ...rest, name, version };
+    return { ...rest, name, version, description };
 }
 
 export async function createCli(definition: CliDefinition): Promise<Cli> {
