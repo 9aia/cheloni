@@ -14,7 +14,10 @@ export interface CliManifest extends Manifest {
     plugins: PluginManifest[];
 }
 
-export function getCliManifest(definition: CliDefinition): CliManifest {
+/** CLI definition with required `name` (after optional package.json resolution). */
+export type CliManifestSource = Omit<CliDefinition, "metaUrl"> & { name: string };
+
+export function getCliManifest(definition: CliDefinition & { name: string }): CliManifest {
     return {
         name: definition.name,
         version: definition.version,

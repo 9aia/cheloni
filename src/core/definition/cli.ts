@@ -8,8 +8,17 @@ export type CliErrorHandlerParams = { error: unknown; cli: Cli; command?: Comman
 export type CliErrorHandler = (params: CliErrorHandlerParams) => Promisable<void>;
 
 export interface CliDefinition {
-    name: string;
+    /**
+     * Display name for help and errors. When omitted, resolved from the nearest `package.json`
+     * if {@link CliDefinition.metaUrl} is set.
+     */
+    name?: string;
     version?: string;
+    /**
+     * Module URL used to find the nearest `package.json` when `name` and/or `version` are omitted.
+     * Set to `import.meta.url` from your CLI entry file.
+     */
+    metaUrl?: string | URL;
     description?: string;
     details?: string;
     deprecated?: boolean | string;
@@ -25,6 +34,6 @@ export interface CliDefinition {
     onError?: CliErrorHandler;
 }
 
-export function defineCli(definition: CliDefinition): CliDefinition {
+export function defineCli<const T extends CliDefinition>(definition: T): T {
     return definition;
 }

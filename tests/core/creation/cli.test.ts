@@ -1,3 +1,7 @@
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { pathToFileURL } from 'node:url';
 import { describe, it, expect, vi } from 'vitest';
 import { createCli, defineCli, defineCommand, definePlugin, defineRootCommand } from '~/core';
 import z from 'zod';
@@ -410,5 +414,103 @@ describe('createCli', () => {
 
     expect(cli.command).toBeDefined();
     expect(cli.command?.commands.size).toBe(1);
+  });
+
+  it('resolves name and version from nearest package.json via metaUrl', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cheloni-create-cli-'));
+    try {
+      await writeFile(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'pkg-cli', version: '9.8.7', private: true }),
+      );
+      const srcDir = join(root, 'src', 'nested');
+      await mkdir(srcDir, { recursive: true });
+      const entryFile = join(srcDir, 'cli.ts');
+      await writeFile(entryFile, '//');
+      const metaUrl = pathToFileURL(entryFile).href;
+
+      const cli = await createCli(
+        defineCli({
+          metaUrl,
+        }),
+      );
+
+      expect(cli.manifest.name).toBe('pkg-cli');
+      expect(cli.manifest.version).toBe('9.8.7');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('fills only missing name or version from package.json when metaUrl is set', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cheloni-create-cli-partial-'));
+    try {
+      await writeFile(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'from-pkg', version: '2.0.0' }),
+      );
+      const entryFile = join(root, 'cli.ts');
+      await writeFile(entryFile, '//');
+      const metaUrl = pathToFileURL(entryFile).href;
+
+      const cli = await createCli(
+        defineCli({
+          metaUrl,
+          name: 'custom-name',
+        }),
+      );
+
+      expect(cli.manifest.name).toBe('custom-name');
+      expect(cli.manifest.version).toBe('2.0.0');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('does not read package.json when name and version are both set', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cheloni-create-cli-skip-read-'));
+    try {
+      await writeFile(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'wrong', version: '0.0.0' }),
+      );
+      const metaUrl = pathToFileURL(join(root, 'cli.ts')).href;
+      await writeFile(join(root, 'cli.ts'), '//');
+
+      const cli = await createCli(
+        defineCli({
+          name: 'right',
+          version: '1.2.3',
+          metaUrl,
+        }),
+      );
+
+      expect(cli.manifest.name).toBe('right');
+      expect(cli.manifest.version).toBe('1.2.3');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('throws when name is missing and metaUrl is not set', async () => {
+    await expect(createCli(defineCli({}))).rejects.toThrow(/missing CLI `name`/);
+  });
+
+  it('throws when metaUrl cannot reach a package.json', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cheloni-no-pkg-'));
+    try {
+      const metaUrl = pathToFileURL(join(root, 'solo.ts')).href;
+      await writeFile(join(root, 'solo.ts'), '//');
+
+      await expect(
+        createCli(
+          defineCli({
+            metaUrl,
+          }),
+        ),
+      ).rejects.toThrow(/no package\.json found/);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

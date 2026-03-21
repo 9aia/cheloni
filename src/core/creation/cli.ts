@@ -3,7 +3,8 @@ import { createRootCommand } from "~/core/creation/command";
 import type { Plugin } from "~/core/creation/plugin";
 import { createPlugin } from "~/core/creation/plugin";
 import type { CliDefinition, CliErrorHandler } from "~/core/definition/cli";
-import { getCliManifest, type CliManifest } from "~/core/manifest/cli";
+import { getCliManifest, type CliManifest, type CliManifestSource } from "~/core/manifest/cli";
+import { readNearestPackageJson } from "~/core/creation/read-nearest-package-json";
 import type { PluginDefinition } from "~/core/definition/plugin";
 import type { RuntimeObject } from "~/utils/creation/runtime-object";
 import { ManifestKeyedMap } from "~/utils/definition";
@@ -19,8 +20,32 @@ export interface Cli extends RuntimeObject<CliManifest> {
     onError?: CliErrorHandler;
 }
 
+async function resolveCliManifestSource(definition: CliDefinition): Promise<CliManifestSource> {
+    let name = definition.name;
+    let version = definition.version;
+
+    if (definition.metaUrl && (name === undefined || version === undefined)) {
+        const pkg = await readNearestPackageJson(definition.metaUrl);
+        if (name === undefined) {
+            name = pkg.name;
+        }
+        if (version === undefined) {
+            version = pkg.version;
+        }
+    }
+
+    if (name === undefined || name === "") {
+        throw new TypeError(
+            'createCli: missing CLI `name`. Set `name`, or pass `metaUrl: import.meta.url` so it can be read from the nearest package.json.',
+        );
+    }
+
+    const { metaUrl: _metaUrl, ...rest } = definition;
+    return { ...rest, name, version };
+}
+
 export async function createCli(definition: CliDefinition): Promise<Cli> {
-    const manifest = getCliManifest(definition);
+    const manifest = getCliManifest(await resolveCliManifestSource(definition));
 
     const pluginMap = new ManifestKeyedMap<Plugin>();
 
