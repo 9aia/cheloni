@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
-import { defineCommand, defineRootCommand } from '~/core/definition/command';
-import { defineOption } from '~/core/definition/command/option';
-import { createCommand, createRootCommand } from '~/core/creation/command';
+import { createCommand, createRootCommand, defineCommand, defineOption, defineRootCommand } from '~/core';
 
 describe('createCommand', () => {
   it('creates command from definition', () => {

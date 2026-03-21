@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { definePlugin } from '~/core/definition/plugin';
-import { createPlugin } from '~/core/creation/plugin';
+import { createPlugin, definePlugin } from '~/core';
 
 describe('createPlugin', () => {
   it('creates plugin from definition', () => {

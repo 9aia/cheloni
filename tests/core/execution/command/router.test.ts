@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { createCli } from '~/core/creation/cli';
-import { createCommand } from '~/core/creation/command';
-import { findCommandByPath, resolveCommand } from '~/core/execution/command/router';
+import { createCli, createCommand, defineCli, defineCommand, findCommandByPath, resolveCommand } from '~/core';
 
 describe('findCommandByPath', () => {
   it('finds command by path', () => {

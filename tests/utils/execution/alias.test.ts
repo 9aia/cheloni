@@ -9,7 +9,7 @@ vi.mock("~/core/manifest/command/option", () => ({
 }));
 
 import { getAliasMap } from "~/utils/definition";
-import { getOptionManifest } from "~/core/manifest/command/option";
+import { getOptionManifest } from "~/core";
 import { buildAliasMap } from "~/utils/execution";
 
 describe("utils/execution/buildAliasMap", () => {

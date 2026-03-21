@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import z from 'zod';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { createCli } from '~/core/creation/cli';
-import { InvalidPositionalError, InvalidOptionsError } from '~/core/execution/command/errors';
-import { handleError } from '~/core/execution/command/handle-error';
+import { createCli, defineCli, defineCommand, handleError, InvalidPositionalError, InvalidOptionsError } from '~/core';
 
 describe('handleError', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;

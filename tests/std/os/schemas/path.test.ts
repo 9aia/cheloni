@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pathSchema, dirnameSchema, inputOptionSchema, outputOptionSchema } from '~/std/schemas/path';
+import { pathSchema, dirnameSchema } from '~/std/os';
 
 describe('pathSchema', () => {
   it('accepts a simple filename', () => {

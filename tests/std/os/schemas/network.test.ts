@@ -3,7 +3,7 @@ import {
   portSchema,
   hostnameSchema,
   hostSchema,
-} from '~/std/schemas/network';
+} from '~/std/os';
 
 describe('portSchema', () => {
   it('accepts a valid port number string', () => {

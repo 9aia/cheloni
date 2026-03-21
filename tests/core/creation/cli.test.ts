@@ -1,9 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand, defineRootCommand } from '~/core/definition/command';
-import { definePlugin } from '~/core/definition/plugin';
-import { definePluginpack } from '~/core/definition/pack';
-import { createCli } from '~/core/creation/cli';
+import { createCli, defineCli, defineCommand, definePlugin, definePluginpack, defineRootCommand } from '~/core';
 import z from 'zod';
 
 describe('createCli', () => {

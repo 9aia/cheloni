@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import z from 'zod';
-import { getPositionalManifest } from '~/core/manifest/command/positional';
+import { getPositionalManifest } from '~/core';
 
 describe('getPositionalManifest', () => {
   it('extracts description', () => {

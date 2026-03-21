@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { packageNameSchema } from '~/std/schemas/npm';
+import { packageNameSchema } from '~/std/npm';
 
 describe('packageNameSchema', () => {
   it('parses an unscoped package name', () => {

@@ -1,16 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { createCli } from '~/core/creation/cli';
-import { executeCli } from '~/core/execution/cli';
-import deprecationPlugin from '~/std/plugins/deprecation';
+import { defineCli, defineCommand, createCli, executeCli, PluginBeforeCommandExecutionError, PluginAfterCommandExecutionError, PluginDestroyError, PluginHookError } from '~/core';
+import { deprecationPlugin } from '~/std/core';
 import z from 'zod';
-import {
-  PluginBeforeCommandExecutionError,
-  PluginAfterCommandExecutionError,
-  PluginDestroyError,
-  PluginHookError,
-} from '~/core/execution/plugin/errors';
 
 describe('executeCli', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import z from 'zod';
-import { getValidOptionNames, validateOptionsExist } from '~/core/execution/command/validate';
+import { getValidOptionNames, validateOptionsExist } from '~/core';
 
 describe('getValidOptionNames', () => {
   it('returns empty set for undefined schema', () => {

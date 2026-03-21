@@ -5,7 +5,7 @@ import {
   InvalidOptionsError,
   InvalidOptionError,
   InvalidPositionalError,
-} from '~/core/execution/command/errors';
+} from '~/core';
 
 describe('InvalidSchemaError', () => {
   it('creates error with message and issues', () => {

@@ -1,9 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { createCli } from '~/core/creation/cli';
-import { executeCli } from '~/core/execution/cli';
-import configPlugin from '~/std/plugins/config';
+import { defineCli, defineCommand, createCli, executeCli } from '~/core';
+import { configPlugin } from '~/std/config';
 import z from 'zod';
 import fs from 'node:fs/promises';
 import path from 'node:path';

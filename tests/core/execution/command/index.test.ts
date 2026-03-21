@@ -1,12 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand, defineRootCommand } from '~/core/definition/command';
-import { defineOption } from '~/core/definition/command/option';
-import { createCli } from '~/core/creation/cli';
-import { executeCommand } from '~/core/execution/command';
-import { InvalidPositionalError, InvalidOptionsError } from '~/core/execution/command/errors';
-import { halt } from '~/core/execution/command';
+import {
+    createCli,
+    defineCli,
+    defineCommand,
+    defineOption,
+    defineRootCommand,
+    executeCommand,
+    halt,
+    InvalidOptionsError,
+    InvalidPositionalError,
+} from '~/core';
 
 describe('executeCommand', () => {
   it('executes handler with parsed arguments', async () => {

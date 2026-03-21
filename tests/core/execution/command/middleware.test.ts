@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { createCli } from '~/core/creation/cli';
-import { executeMiddleware } from '~/core/execution/command/middleware';
-import { defineMiddlewareArray } from '~/core/definition/command/middleware';
+import { createCli, defineCli, defineCommand, defineMiddlewareArray, executeMiddleware } from '~/core';
 
 describe('executeMiddleware', () => {
   it('returns empty data when no middleware', async () => {

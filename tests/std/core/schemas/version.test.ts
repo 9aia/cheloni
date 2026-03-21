@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { versionOptionSchema } from '~/std/schemas/version';
+import { versionOptionSchema } from '~/std/core';
 
 describe('versionOptionSchema', () => {
   it('accepts true', () => {

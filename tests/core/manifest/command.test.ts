@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import z from 'zod';
-import { defineCommand, defineRootCommand } from '~/core/definition/command';
-import { definePlugin } from '~/core/definition/plugin';
-import { getCommandManifest, getRootCommandsManifest } from '~/core/manifest/command';
+import { defineCommand, definePlugin, defineRootCommand, getCommandManifest, getRootCommandsManifest } from '~/core';
 
 describe('getCommandManifest', () => {
   it('extracts basic command manifest', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import z from 'zod';
-import { parseArgs, extractPositionalValue } from '~/core/execution/parser';
+import { extractPositionalValue, parseArgs } from '~/core';
 
 describe('parseArgs', () => {
   it('parses positional arguments', () => {

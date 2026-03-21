@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { definePlugin } from '~/core/definition/plugin';
-import { getPluginManifest } from '~/core/manifest/plugin';
+import { definePlugin, getPluginManifest } from '~/core';
 
 describe('getPluginManifest', () => {
   it('extracts plugin name', () => {

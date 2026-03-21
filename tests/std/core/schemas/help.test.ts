@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { helpPositionalSchema, helpOptionSchema } from '~/std/schemas/help';
+import { helpPositionalSchema, helpOptionSchema } from '~/std/core';
 
 describe('helpPositionalSchema', () => {
   it('accepts a command name string', () => {

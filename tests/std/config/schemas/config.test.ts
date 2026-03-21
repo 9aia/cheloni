@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { configOptionSchema } from '~/std/schemas/config';
+import { configOptionSchema } from '~/std/config';
 
 describe('configOptionSchema', () => {
   it('accepts a valid file path', () => {

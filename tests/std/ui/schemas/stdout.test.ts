@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { jsonOptionSchema, prettyOptionSchema } from '~/std/schemas/stdout';
+import { jsonOptionSchema, prettyOptionSchema } from '~/std/ui';
 
 describe('jsonOptionSchema', () => {
   it('accepts true', () => {

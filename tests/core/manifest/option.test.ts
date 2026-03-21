@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import z from 'zod';
-import { getOptionManifest, getOptionsManifest } from '~/core/manifest/command/option';
+import { getOptionManifest, getOptionsManifest } from '~/core';
 
 describe('getOptionManifest', () => {
   it('extracts option name', () => {

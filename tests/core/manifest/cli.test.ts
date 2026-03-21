@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import z from 'zod';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { getCliManifest } from '~/core/manifest/cli';
+import { defineCli, defineCommand, getCliManifest } from '~/core';
 
 describe('getCliManifest', () => {
   it('extracts basic CLI manifest', () => {

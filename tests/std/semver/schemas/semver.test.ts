@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { semverSchema } from "~/std/schemas/semver";
+import { semverSchema } from "~/std/semver";
 
 describe("semverSchema", () => {
   it("accepts a stable version", async () => {

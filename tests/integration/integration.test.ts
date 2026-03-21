@@ -1,9 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
-import { defineCli } from '~/core/definition/cli';
-import { defineCommand } from '~/core/definition/command';
-import { createCli } from '~/core/creation/cli';
-import { executeCli } from '~/core/execution/cli';
+import { createCli, defineCli, defineCommand, executeCli } from '~/core';
 
 describe('Integration Tests', () => {
   it('executes complete CLI workflow', async () => {
