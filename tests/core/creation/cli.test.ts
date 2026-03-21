@@ -421,7 +421,12 @@ describe('createCli', () => {
     try {
       await writeFile(
         join(root, 'package.json'),
-        JSON.stringify({ name: 'pkg-cli', version: '9.8.7', private: true }),
+        JSON.stringify({
+          name: 'pkg-cli',
+          version: '9.8.7',
+          description: 'From package.json',
+          private: true,
+        }),
       );
       const srcDir = join(root, 'src', 'nested');
       await mkdir(srcDir, { recursive: true });
@@ -437,6 +442,7 @@ describe('createCli', () => {
 
       expect(cli.manifest.name).toBe('pkg-cli');
       expect(cli.manifest.version).toBe('9.8.7');
+      expect(cli.manifest.description).toBe('From package.json');
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -467,12 +473,16 @@ describe('createCli', () => {
     }
   });
 
-  it('does not read package.json when name and version are both set', async () => {
+  it('does not read package.json when name, version, and description are all set', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cheloni-create-cli-skip-read-'));
     try {
       await writeFile(
         join(root, 'package.json'),
-        JSON.stringify({ name: 'wrong', version: '0.0.0' }),
+        JSON.stringify({
+          name: 'wrong',
+          version: '0.0.0',
+          description: 'wrong desc',
+        }),
       );
       const metaUrl = pathToFileURL(join(root, 'cli.ts')).href;
       await writeFile(join(root, 'cli.ts'), '//');
@@ -481,12 +491,44 @@ describe('createCli', () => {
         defineCli({
           name: 'right',
           version: '1.2.3',
+          description: 'explicit desc',
           metaUrl,
         }),
       );
 
       expect(cli.manifest.name).toBe('right');
       expect(cli.manifest.version).toBe('1.2.3');
+      expect(cli.manifest.description).toBe('explicit desc');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('fills description from package.json when name and version are already set', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cheloni-create-cli-desc-only-'));
+    try {
+      await writeFile(
+        join(root, 'package.json'),
+        JSON.stringify({
+          name: 'pkg-name',
+          version: '1.0.0',
+          description: 'Only description from pkg',
+        }),
+      );
+      const metaUrl = pathToFileURL(join(root, 'cli.ts')).href;
+      await writeFile(join(root, 'cli.ts'), '//');
+
+      const cli = await createCli(
+        defineCli({
+          metaUrl,
+          name: 'override-name',
+          version: '2.0.0',
+        }),
+      );
+
+      expect(cli.manifest.name).toBe('override-name');
+      expect(cli.manifest.version).toBe('2.0.0');
+      expect(cli.manifest.description).toBe('Only description from pkg');
     } finally {
       await rm(root, { recursive: true, force: true });
     }
