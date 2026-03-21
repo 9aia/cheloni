@@ -41,6 +41,7 @@
 
 ## DX
 
+- Refactor plugins to use immerjs
 - Refactor read nearest package.json using an external library
 - Add linter and formatter to the repo
 - Refactor utilities to use lodash-es if applicable

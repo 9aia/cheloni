@@ -1,22 +1,23 @@
 # TODO
 
+- Fix framework issues found while working on examples
+- Improve help generation with chalk and chalk-template
+  - Turn help plugin into a plugin factory and add optional help footer config
+- Rename option to named
 - Refactor src to monorepo (3 main packages: packages/core, packages/cli, packages/create (create-cheloni))
   - Add examples/ (monorepo)
-- Improve help generation with chalk and chalk-template
-- ~~Name, version and description should come from package.json by default~~ — `createCli({ metaUrl: import.meta.url, ... })` fills omitted fields from the nearest `package.json`
-- Move examples from docs to examples/ and just add links to them in the docs
-- Turn help plugin into a plugin factory and add optional help footer config
-- Refactor plugins to use immerjs
+- Add type-safety to config
+- Rename `"root"` to `"__root__"`
+- Improve CLI developer-facing error handling design
+- Add shell completion plugin
 - Ensure error handling by throwing errors instead of `process.exit(1)`
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
-- Add type-safety to config
-- Add shell completion plugin
 - Implement plugin-kit generation via Cheloni CLI (`cheloni generate plugin-kit`)
 - Add dependencies for commands, so it can inherit types
 - Global user-extendable option types, useful for programmatic CLI definition global types
-- Improve option inference to include global options
+- Improve option inference to include inheritance from parent commands
 - Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
-- Add option(schema, meta), positional(schema, meta)
 - Abstract validation and introspection (maybe as a plugin "hook" so we can create a zodPlugin)
+- Add option(schema, meta), positional(schema, meta)
 - Add validation to definition usage to ensure that the definition is valid
 - Add variadics
