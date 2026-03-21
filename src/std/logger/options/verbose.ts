@@ -43,17 +43,17 @@ export default defineOption({
     schema: z
         .any()
         .optional()
-        .describe("Increase verbosity (-V, -VV, -VVV). Sets context.verbosity and context.log.")
+        .describe("Increase verbosity (-V, -VV, -VVV). Sets ctx.verbosity and ctx.log.")
         .meta({ aliases: ["V"] }),
-    handler: ({ value, context }) => {
+    handler: ({ value, ctx }) => {
         const coerced = coerceVerbosity(value);
         const verbosity = typeof coerced === "number" ? coerced : 1;
 
-        context.verbosity = verbosity;
-        context.verbose = verbosity > 0;
+        ctx.verbosity = verbosity;
+        ctx.verbose = verbosity > 0;
 
-        if (context.log === undefined) {
-            context.log = createVerboseLogger(verbosity);
+        if (ctx.log === undefined) {
+            ctx.log = createVerboseLogger(verbosity);
         }
     },
 });

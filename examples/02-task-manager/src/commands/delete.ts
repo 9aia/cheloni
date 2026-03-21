@@ -7,8 +7,8 @@ export const deleteCommand = defineCommand({
   description: 'Delete a task',
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
-  handler: async ({ positional, data }) => {
-    const workspace = data.workspace;
-    console.log(`✓ Deleted task #${positional} from ${workspace.project}`);
+  handler: async ({ positional, ctx }) => {
+    const workspace = ctx.workspace;
+    console.log(`✓ Deleted task #${positional} from ${workspace.projectName}`);
   },
 });

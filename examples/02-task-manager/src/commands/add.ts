@@ -11,8 +11,8 @@ export const addCommand = defineCommand({
     priority: priorityOptionSchema,
   }),
   middleware: [workspaceMiddleware],
-  handler: async ({ positional, options, context }) => {
-    const workspace = context.workspace;
+  handler: async ({ positional, options, ctx }) => {
+    const workspace = ctx.workspace;
     const priority = options.priority || 'medium';
     console.log(`✓ Added task "${positional}" (${priority}) to ${workspace.projectName}`);
   },

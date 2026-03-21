@@ -45,8 +45,8 @@ export function defineMiddleware<
  * const myMiddleware = defineMiddlewareArray([
  *   loggerMiddleware,
  *   authMiddleware,
- *   ({ next, context }) => {
- *     // context.user is typed
+ *   ({ next, ctx }) => {
+ *     // ctx.user is typed on the handler via composed middleware
  *     return next();
  *   },
  * ]);

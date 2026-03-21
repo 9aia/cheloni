@@ -1,7 +1,7 @@
-import type { Middleware } from 'cheloni';
+import { defineMiddleware } from 'cheloni';
 import type { Workspace } from '../types';
 
-export const workspaceMiddleware: Middleware = async ({ next }) => {
+export const workspaceMiddleware = defineMiddleware(async ({ next }) => {
   const projectName = process.env.PROJECT_NAME || 'default';
   const workspace = process.env.WORKSPACE || 'personal';
 
@@ -10,4 +10,4 @@ export const workspaceMiddleware: Middleware = async ({ next }) => {
       workspace: { name: workspace, projectName } as Workspace,
     }
   });
-};
+});

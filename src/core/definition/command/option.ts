@@ -39,9 +39,9 @@ export function defineOption<T extends OptionSchema>(schema: T): T;
  * const dryRun = defineOption({
  *   name: "dry-run",
  *   schema: z.boolean().default(false),
- *   handler: ({ value, context }) => {
+ *   handler: ({ value, ctx }) => {
  *     if (value) {
- *       context.actions.push("Simulating actions in dry-run mode");
+ *       ctx.actions.push("Simulating actions in dry-run mode");
  *     }
  *   },
  * });

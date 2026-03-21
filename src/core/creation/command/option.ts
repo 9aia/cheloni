@@ -20,7 +20,7 @@ export interface OptionHandlerParams<TSchema extends OptionSchema> {
     /** The CLI instance. */
     cli: Cli;
     /** Accumulated context from middleware. */
-    context: UnknownRecord;
+    ctx: UnknownRecord;
     /** Halt execution of the command (e.g. after `--help`). */
     halt: HaltFunction;
 }
@@ -32,7 +32,7 @@ export interface OptionHandlerParams<TSchema extends OptionSchema> {
  * defineOption({
  *   name: "verbose",
  *   schema: z.boolean().optional(),
- *   handler: ({ value, context }) => { context.verbose = value; },
+ *   handler: ({ value, ctx }) => { ctx.verbose = value; },
  * });
  * ```
  */

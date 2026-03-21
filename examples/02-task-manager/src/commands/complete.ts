@@ -7,8 +7,8 @@ export const completeCommand = defineCommand({
   description: 'Mark a task as completed',
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
-  handler: async ({ positional, data }) => {
-    const workspace = data.workspace;
-    console.log(`✓ Completed task #${positional} in ${workspace.project}`);
+  handler: async ({ positional, ctx }) => {
+    const workspace = ctx.workspace;
+    console.log(`✓ Completed task #${positional} in ${workspace.projectName}`);
   },
 });

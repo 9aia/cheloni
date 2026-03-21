@@ -45,7 +45,7 @@ async function validateAndExecuteOptions(
     validatedOptions: Record<string, any>,
     cli: Cli,
     command: Command,
-    context: UnknownRecord,
+    ctx: UnknownRecord,
 ): Promise<void> {
     // Process bequeathOptions from parent commands
     for (const bequeathOpt of command.bequeathOptions.values()) {
@@ -76,7 +76,7 @@ async function validateAndExecuteOptions(
                 option,
                 command,
                 cli,
-                context,
+                ctx,
                 halt,
             });
         }
@@ -128,7 +128,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             const handlerParams: CommandHandlerParams<typeof positionalSchema, typeof optionsSchema> = {
                 positional,
                 options: cliOptions,
-                context: middlewareContext,
+                ctx: middlewareContext,
                 command,
                 cli,
             };

@@ -36,7 +36,7 @@ export interface CommandHandlerParams<
 > {
     positional: InferPositionalType<TPositionalDefinition>;
     options: InferOptionsType<TOptionsDefinition>;
-    context: TContext;
+    ctx: TContext;
     command: Command;
     cli: Cli;
 }

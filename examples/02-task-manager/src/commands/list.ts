@@ -10,10 +10,10 @@ export const listCommand = defineCommand({
     status: statusFilterOptionSchema,
   }),
   middleware: [workspaceMiddleware],
-  handler: async ({ options, data }) => {
-    const workspace = data.workspace;
+  handler: async ({ options, ctx }) => {
+    const workspace = ctx.workspace;
     const status = options.status || 'all';
-    console.log(`Tasks in ${workspace.project} (${status}):`);
+    console.log(`Tasks in ${workspace.projectName} (${status}):`);
     console.log('  1. Review documentation [pending]');
     console.log('  2. Write tests [pending]');
     console.log('  3. Deploy to staging [completed]');
