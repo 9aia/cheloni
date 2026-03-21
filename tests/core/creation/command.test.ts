@@ -214,6 +214,8 @@ describe('createRootCommand', () => {
 
     const command = createRootCommand(definition);
     expect(command.manifest.name).toBe('root');
+    expect(command.paths).toEqual([]);
+    expect(command.manifest.paths).toEqual([]);
     expect(command.commands.size).toBe(1);
   });
 

@@ -341,6 +341,7 @@ describe('getRootCommandsManifest', () => {
 
     const manifest = getRootCommandsManifest(definition);
     expect(manifest.name).toBe('root');
+    expect(manifest.paths).toEqual([]);
     expect(manifest.commands).toHaveLength(1);
     expect(manifest.commands?.[0]?.name).toBe('test');
   });

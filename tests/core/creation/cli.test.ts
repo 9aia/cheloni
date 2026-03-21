@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createCli, defineCli, defineCommand, definePlugin, definePluginpack, defineRootCommand } from '~/core';
+import { createCli, defineCli, defineCommand, definePlugin, defineRootCommand } from '~/core';
 import z from 'zod';
 
 describe('createCli', () => {
@@ -345,52 +345,7 @@ describe('createCli', () => {
     expect(cli.plugins.size).toBe(2);
   });
 
-  it('creates plugins from pluginpacks', async () => {
-    const packPlugin1 = definePlugin({ name: 'pack-plugin-1' });
-    const packPlugin2 = definePlugin({ name: 'pack-plugin-2' });
-
-    const pack = definePluginpack({
-      name: 'test-pack',
-      plugins: [packPlugin1, packPlugin2],
-    });
-
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        pluginpacks: [pack],
-      })
-    );
-
-    expect(cli.plugins.size).toBe(2);
-    const pluginNames = [...cli.plugins.values()].map(p => p.manifest.name);
-    expect(pluginNames).toContain('pack-plugin-1');
-    expect(pluginNames).toContain('pack-plugin-2');
-  });
-
-  it('combines plugins from plugins and pluginpacks', async () => {
-    const directPlugin = definePlugin({ name: 'direct-plugin' });
-    const packPlugin = definePlugin({ name: 'pack-plugin' });
-
-    const pack = definePluginpack({
-      name: 'test-pack',
-      plugins: [packPlugin],
-    });
-
-    const cli = await createCli(
-      defineCli({
-        name: 'test-cli',
-        plugins: [directPlugin],
-        pluginpacks: [pack],
-      })
-    );
-
-    expect(cli.plugins.size).toBe(2);
-    const pluginNames = [...cli.plugins.values()].map(p => p.manifest.name);
-    expect(pluginNames).toContain('direct-plugin');
-    expect(pluginNames).toContain('pack-plugin');
-  });
-
-  it('runs pluginpack onInit hooks after direct plugins', async () => {
+  it('runs onInit hooks in plugins array order', async () => {
     const order: string[] = [];
 
     const directPlugin = definePlugin({
@@ -400,35 +355,29 @@ describe('createCli', () => {
       },
     });
 
-    const packPlugin1 = definePlugin({
-      name: 'pack-plugin-1',
+    const secondPlugin = definePlugin({
+      name: 'second-plugin',
       onInit: async () => {
-        order.push('pack-plugin-1');
+        order.push('second-plugin');
       },
     });
 
-    const packPlugin2 = definePlugin({
-      name: 'pack-plugin-2',
+    const thirdPlugin = definePlugin({
+      name: 'third-plugin',
       onInit: async () => {
-        order.push('pack-plugin-2');
+        order.push('third-plugin');
       },
-    });
-
-    const pack = definePluginpack({
-      name: 'test-pack',
-      plugins: [packPlugin1, packPlugin2],
     });
 
     const cli = await createCli(
       defineCli({
         name: 'test-cli',
-        plugins: [directPlugin],
-        pluginpacks: [pack],
+        plugins: [directPlugin, secondPlugin, thirdPlugin],
       })
     );
 
     expect(cli.plugins.size).toBe(3);
-    expect(order).toEqual(['direct-plugin', 'pack-plugin-1', 'pack-plugin-2']);
+    expect(order).toEqual(['direct-plugin', 'second-plugin', 'third-plugin']);
   });
 
   it('preserves command structure after plugin onInit', async () => {
