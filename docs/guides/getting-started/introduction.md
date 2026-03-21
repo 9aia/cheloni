@@ -45,21 +45,22 @@ const verboseOption = defineOption({
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
-  handler: async ({ value, ctx }) => {
+  handler: async ({ value, next }) => {
     const session = await getSession(value);
     if (!session) {
       throw new Error('Unauthorized');
     }
-    ctx.user = session.user;
+    return next({ ctx: { user: session.user } });
   },
 });
 
 const circuitBreakerOption = defineOption({
   name: 'circuit-breaker',
-  handler: async ({ value, ctx, halt }) => {
+  handler: async ({ next, halt }) => {
     if (yourConditionToShortCircuitExecution) {
-      halt();
+      return halt();
     }
+    return next();
   },
 });
 
@@ -207,14 +208,14 @@ defineCommand({
 
 ### Bequeath Options
 
-Bequeath options are inherited by subcommands. When placed on the root command, they are available to all commands. They can short-circuit execution if a handler calls `halt()`.
+Bequeath options are inherited by subcommands. When placed on the root command, they are available to all commands. Handlers run after middleware and use `next` / `next({ ctx })` like command middleware; they can short-circuit by calling `return halt()`.
 
 ```typescript
 defineOption({
   name: 'verbose',
   schema: z.boolean().optional().meta({ aliases: ['V'] }),
-  handler: ({ value, command, cli, halt }) => {
-    // Can short-circuit via halt()
+  handler: async ({ value, next }) => {
+    return next({ ctx: { verbose: Boolean(value) } });
   },
 });
 ```

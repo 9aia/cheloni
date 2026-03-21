@@ -128,8 +128,9 @@ import { z } from "zod";
 const dryRun = defineOption({
   name: "dry-run",
   schema: z.boolean().default(false),
-  handler: ({ value, ctx }) => {
-    console.log('Dry run mode');
+  handler: async ({ value, next }) => {
+    if (value) console.log("Dry run mode");
+    return next();
   },
 });
 ```

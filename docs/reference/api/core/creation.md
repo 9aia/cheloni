@@ -253,16 +253,19 @@ interface OptionHandlerParams<TSchema extends OptionSchema> {
   command: Command;
   cli: Cli;
   ctx: Context;
+  next: NextFunction<any>;
   halt: HaltFunction;
 }
 ```
 
 ### `OptionHandler<TSchema>`
 
+Like command middleware, an option handler must **return** the result of `next()` (optionally `next({ ctx: { ... } })` to merge into context). If the handler calls `halt()`, it does not need to call `next()`.
+
 ```typescript
 type OptionHandler<TSchema extends OptionSchema> = (
   params: OptionHandlerParams<TSchema>
-) => Promisable<void>;
+) => Promisable<MiddlewareResult<Context>>;
 ```
 
 ### `Context`

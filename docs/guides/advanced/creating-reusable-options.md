@@ -16,9 +16,9 @@ const verboseOption = defineOption({
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
-  handler: async ({ value, ctx }) => {
-    // Handler runs before command execution
-    // Can short-circuit command execution
+  handler: async ({ value, next }) => {
+    // Runs after middleware, before the command handler; return next() to continue
+    return next({ ctx: { token: value } });
   },
 });
 ```
@@ -41,16 +41,15 @@ const cli = await createCli({
 
 ## Options with Handlers
 
-Options can have handlers that run before command execution. It can short-circuit the command execution (like `--help` or `--version`) by calling `halt()`:
+Options can have handlers that run after middleware and before the command handler. Handlers use the same `next` / `next({ ctx })` pattern as command middleware: return `next()` to continue, or `next({ ctx: { ... } })` to merge fields into `ctx` for the command handler. They can short-circuit (like `--help` or `--version`) by calling `halt()` instead of `next()`:
 
 ```typescript
 const helpOption = defineOption({
   name: 'help',
   schema: z.boolean().optional().meta({ aliases: ['h'] }),
   handler: ({ command, cli, halt }) => {
-    // Show help and exit
     showHelp({ cli, commandName: command.manifest.name });
-    halt(); // Short-circuit command execution
+    return halt(); // Short-circuit command execution
   },
 });
 
@@ -95,7 +94,7 @@ Option handlers can throw errors to stop command execution. Errors are automatic
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string(),
-  handler: async ({ value }) => {
+  handler: async ({ value, next }) => {
     const session = await getSession(value);
     if (!session) {
       throw new Error('Unauthorized');
