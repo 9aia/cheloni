@@ -37,9 +37,9 @@ describe('executeCommand', () => {
     });
 
     expect(handler).toHaveBeenCalledOnce();
-    const context = handler.mock.calls[0]![0];
-    expect(context.positional).toBe('input');
-    expect(context.options.verbose).toBe(true);
+    const params = handler.mock.calls[0]![0];
+    expect(params.positional).toBe('input');
+    expect(params.options.verbose).toBe(true);
   });
 
   it('validates positional argument', async () => {
@@ -136,9 +136,9 @@ describe('executeCommand', () => {
       cli,
     });
 
-    const context = handler.mock.calls[0]![0];
-    expect(context.options.verbose).toBe(true);
-    expect(context.options.unknown).toBeUndefined();
+    const params = handler.mock.calls[0]![0];
+    expect(params.options.verbose).toBe(true);
+    expect(params.options.unknown).toBeUndefined();
   });
 
   it('passes through unknown options with pass-through behavior', async () => {
@@ -164,9 +164,9 @@ describe('executeCommand', () => {
       cli,
     });
 
-    const context = handler.mock.calls[0]![0];
-    expect(context.options.verbose).toBe(true);
-    expect(context.options.unknown).toBe('value');
+    const params = handler.mock.calls[0]![0];
+    expect(params.options.verbose).toBe(true);
+    expect(params.options.unknown).toBe('value');
   });
 
   it('executes middleware before handler', async () => {
@@ -343,8 +343,8 @@ describe('executeCommand', () => {
     });
 
     expect(handler).toHaveBeenCalledOnce();
-    const context = handler.mock.calls[0]![0];
-    expect(context.positional).toBeUndefined();
+    const params = handler.mock.calls[0]![0];
+    expect(params.positional).toBeUndefined();
   });
 
   it('handles command without options', async () => {
@@ -367,8 +367,8 @@ describe('executeCommand', () => {
     });
 
     expect(handler).toHaveBeenCalledOnce();
-    const context = handler.mock.calls[0]![0];
-    expect(context.options).toEqual({});
+    const params = handler.mock.calls[0]![0];
+    expect(params.options).toEqual({});
   });
 });
 

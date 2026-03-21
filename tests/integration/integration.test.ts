@@ -35,10 +35,10 @@ describe('Integration Tests', () => {
     });
 
     expect(handler).toHaveBeenCalledOnce();
-    const context = handler.mock.calls[0]![0];
-    expect(context.positional).toBe('Alice');
-    expect(context.options.verbose).toBe(true);
-    expect(context.options.count).toBe(3);
+    const params = handler.mock.calls[0]![0];
+    expect(params.positional).toBe('Alice');
+    expect(params.options.verbose).toBe(true);
+    expect(params.options.count).toBe(3);
   });
 
   it('handles middleware chain', async () => {
@@ -80,7 +80,7 @@ describe('Integration Tests', () => {
     expect(order).toEqual(['middleware1', 'middleware2', 'handler']);
     expect(handler).toHaveBeenCalledOnce();
     expect(capturedContext).toBeDefined();
-    expect(capturedContext?.context.value).toBe('test');
+    expect(capturedContext?.ctx.value).toBe('test');
   });
 
   it('handles plugin lifecycle', async () => {
@@ -253,9 +253,9 @@ describe('Integration Tests', () => {
     await executeCli({ cli, args: ['test', '--verbose', '--unknown'] });
 
     expect(handler).toHaveBeenCalledOnce();
-    const context = handler.mock.calls[0]![0];
-    expect(context.options.verbose).toBe(true);
-    expect(context.options.unknown).toBeUndefined();
+    const params = handler.mock.calls[0]![0];
+    expect(params.options.verbose).toBe(true);
+    expect(params.options.unknown).toBeUndefined();
   });
 
   it('handles command-level plugins', async () => {

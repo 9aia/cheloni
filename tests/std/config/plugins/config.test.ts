@@ -22,9 +22,9 @@ describe('configPlugin', () => {
   });
 
   it('loads config file from cwd', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({ key: 'value' });
-      expect(context.configFile).toContain('test-cli.config');
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({ key: 'value' });
+      expect(ctx.configFile).toContain('test-cli.config');
     });
 
     await fs.writeFile(
@@ -45,9 +45,9 @@ describe('configPlugin', () => {
   });
 
   it('uses custom configFile name via c12Options', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({ task: 'build' });
-      expect(context.configFile).toContain('tasks');
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({ task: 'build' });
+      expect(ctx.configFile).toContain('tasks');
     });
 
     await fs.writeFile(
@@ -70,9 +70,9 @@ describe('configPlugin', () => {
   });
 
   it('loads explicit config file via --config', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({ explicit: true });
-      expect(context.configFile).toContain('custom.config');
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({ explicit: true });
+      expect(ctx.configFile).toContain('custom.config');
     });
 
     await fs.writeFile(
@@ -93,8 +93,8 @@ describe('configPlugin', () => {
   });
 
   it('merges file config with defaults', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({
         defaultOnly: 'value',
         merged: 'file',
         fileOnly: 'value',
@@ -123,8 +123,8 @@ describe('configPlugin', () => {
   });
 
   it('uses defaults when no config file exists', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({ fallback: 'value' });
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({ fallback: 'value' });
     });
 
     const cli = await createCli(
@@ -142,8 +142,8 @@ describe('configPlugin', () => {
   });
 
   it('returns empty config when no file and no defaults', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({});
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({});
     });
 
     const cli = await createCli(
@@ -169,8 +169,8 @@ describe('configPlugin', () => {
       JSON.stringify({ name: 'test', count: 42 })
     );
 
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({ name: 'test', count: 42 });
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({ name: 'test', count: 42 });
     });
 
     const cli = await createCli(
@@ -222,8 +222,8 @@ describe('configPlugin', () => {
       JSON.stringify({ name: 'test', count: 42 })
     );
 
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({
         name: 'test',
         count: 42,
         optional: 'default',
@@ -248,8 +248,8 @@ describe('configPlugin', () => {
   });
 
   it('prefers explicit --config over local config', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config).toEqual({ source: 'explicit' });
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config).toEqual({ source: 'explicit' });
     });
 
     await fs.writeFile(
@@ -274,9 +274,9 @@ describe('configPlugin', () => {
   });
 
   it('applies overrides with highest priority', async () => {
-    const handler = vi.fn(({ context }) => {
-      expect(context.config.source).toBe('override');
-      expect(context.config.fileOnly).toBe('value');
+    const handler = vi.fn(({ ctx }) => {
+      expect(ctx.config.source).toBe('override');
+      expect(ctx.config.fileOnly).toBe('value');
     });
 
     await fs.writeFile(
