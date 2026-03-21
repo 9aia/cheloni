@@ -1,0 +1,22 @@
+{
+  "name": "task-manager",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "task-manager": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts"
+  },
+  "dependencies": {
+    "cheloni": "file:../..",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

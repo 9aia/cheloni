@@ -1,11 +1,11 @@
 # Examples
 
-Practical examples demonstrating how to build real-world CLIs with Cheloni.
+Runnable example projects under `examples/`. Each folder is a small Bun + Cheloni CLI you can copy or extend.
 
 ## Examples
 
-- [File Converter](./01-file-converter.md) - A practical file converter tool demonstrating validation, type-safety and aliases
-- [Task Manager](./02-task-manager.md) - A simple task management CLI demonstrating multiple commands and middleware with context sharing
-- [Benchmark](./03-benchmark.md) - A benchmarking tool demonstrating advanced features
-- [JSON Tool](./04-json-tool.md) - A simple JSON tool demonstrating file I/O, JSON parsing, and subcommands for reading and writing JSON files
-- [Task Runner](./05-task-runner.md) - A lightweight task runner demonstrating the std config plugin, positional arguments, and accessing configuration in handlers
+- [File Converter](./01-file-converter.md) — validation, type-safety, and option aliases
+- [Task Manager](./02-task-manager.md) — multiple commands and middleware with shared context
+- [Benchmark](./03-benchmark.md) — bequeath options, positional args, and a custom timing plugin
+- [JSON Tool](./04-json-tool.md) — file I/O, JSON parsing, and read/write subcommands
+- [Task Runner](./05-task-runner.md) — std config plugin, positional task name, and config in handlers

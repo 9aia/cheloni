@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "cheloni": ["../../dist/core/index.d.ts"],
+      "cheloni/std/config": ["../../dist/std/config/index.d.ts"],
+      "cheloni/std/core": ["../../dist/std/core/index.d.ts"],
+      "cheloni/std/git": ["../../dist/std/git/index.d.ts"],
+      "cheloni/std/logger": ["../../dist/std/logger/index.d.ts"],
+      "cheloni/std/npm": ["../../dist/std/npm/index.d.ts"],
+      "cheloni/std/os": ["../../dist/std/os/index.d.ts"],
+      "cheloni/std/parse": ["../../dist/std/parse/index.d.ts"],
+      "cheloni/std/semver": ["../../dist/std/semver/index.d.ts"],
+      "cheloni/std/ui": ["../../dist/std/ui/index.d.ts"],
+      "cheloni/plugin-kits": ["../../dist/plugin-kits/index.d.ts"],
+      "cheloni/utils": ["../../dist/utils/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

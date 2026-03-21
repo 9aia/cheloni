@@ -1,0 +1,23 @@
+{
+  "name": "task-runner",
+  "version": "0.0.1",
+  "module": "cli.ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "task": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts"
+  },
+  "dependencies": {
+    "cheloni": "file:../..",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

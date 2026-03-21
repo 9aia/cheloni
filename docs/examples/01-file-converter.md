@@ -1,50 +1,85 @@
-# Example 1: File Converter CLI
+# Example: File Converter
 
-A practical file converter tool demonstrating validation, type-safety and aliases.
+A practical file converter tool demonstrating validation, type-safety, and option aliases.
+
+## Quick Start
+
+```bash
+git clone https://github.com/9aia/cheloni.git
+cd cheloni/examples/01-file-converter
+bun install
+bun start [...args]
+```
+
+## Usage Examples
+
+```bash
+$ bun start convert data.txt --format yaml --pretty
+$ bun start c data.txt -f json -o output.json
+$ bun start convert config.toml -p
+```
+
+## Source
+
+### `src/cli.ts`
 
 ```typescript
-// cli.ts
-#!/usr/bin/env bun
-import { createCli, defineCommand, defineRootCommand, executeCli } from 'cheloni';
+import { createCli, executeCli } from 'cheloni';
+import rootCommand from './commands/__root__';
 import { basicPluginKit } from './plugin-kits/basic-kit';
-import z from 'zod';
-import { prettyOptionSchema, outputOptionSchema, pathSchema } from 'cheloni/std';
-import pkg from '../package.json' with { type: 'json' };
 
-const convertCommand = defineCommand({
+const cli = await createCli({
+  metaUrl: import.meta.url,
+  command: rootCommand,
+  plugins: [...basicPluginKit],
+});
+
+await executeCli({ cli });
+```
+
+### `src/commands/__root__.ts`
+
+```typescript
+import { defineRootCommand } from 'cheloni';
+import { convertCommand } from './convert';
+
+export default defineRootCommand({
+  commands: [convertCommand],
+});
+```
+
+### `src/commands/convert.ts`
+
+```typescript
+import { defineCommand } from 'cheloni';
+import { outputOptionSchema, pathSchema } from 'cheloni/std/os';
+import z from 'zod';
+
+export const convertCommand = defineCommand({
   name: 'convert',
   paths: ['c', 'conv'],
   description: 'Convert files between formats',
-  positional: pathSchema.describe('Input file'),
+  positional: pathSchema.meta({ description: 'Input file' }),
   options: z.object({
     output: outputOptionSchema,
     format: z.enum(['json', 'yaml', 'toml']).default('json').meta({ aliases: ['f'] }),
-    pretty: prettyOptionSchema,
   }),
   handler: async ({ positional, options }) => {
     const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
     console.log(`Converting ${positional} to ${output} (${options.format})`);
-    if (options.pretty) console.log('Pretty printing enabled');
   },
 });
-
-const rootCommand = defineRootCommand({
-  commands: [convertCommand],
-});
-
-const cli = await createCli({
-  name: pkg.name,
-  version: pkg.version,
-  command: rootCommand,
-  plugins: [...basicPluginKit],
-});
-await executeCli({ cli });
 ```
 
-## Usage
+### `src/plugin-kits/basic-kit.ts`
 
-```bash
-$ file-converter convert data.txt --format yaml --pretty
-$ file-converter c data.txt -f json -o output.json
-$ file-converter convert config.toml -p
+```typescript
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+
+export const basicPluginKit = [
+  errorHandlerPlugin,
+  helpPlugin,
+  versionPlugin,
+  deprecationPlugin,
+] as const;
 ```

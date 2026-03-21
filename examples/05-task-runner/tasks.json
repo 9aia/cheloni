@@ -1,0 +1,6 @@
+{
+  "build": "echo 'Building...'",
+  "start": "echo 'Starting...'",
+  "test": "echo 'Testing...'",
+  "lint": "echo 'Linting...'"
+}

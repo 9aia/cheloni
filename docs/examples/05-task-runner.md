@@ -1,29 +1,86 @@
-# Example 5: Task Runner
+# Task Runner
 
-A lightweight task runner demonstrating the std config plugin, positional arguments, and accessing configuration in handlers. Plugins are composed with a local **plugin kit** array (same pattern as `examples/task-runner/cli.ts`).
+A lightweight task runner demonstrating the std config plugin, positional arguments, and accessing configuration in handlers. Plugins are composed with a local **plugin kit** array (same pattern as [`src/cli.ts`](./src/cli.ts)).
+
+## Quick Start
+
+```bash
+git clone https://github.com/9aia/cheloni.git
+cd cheloni/examples/05-task-runner
+bun install
+bun start [...args]
+```
+
+## Usage Examples
+
+```bash
+# Using explicit config file
+$ bun start build --config tasks.dev.json
+Running task: build
+Command: tsc
+✓ Task "build" completed
+
+# Using default config file (tasks.json)
+$ bun start start
+Running task: start
+Command: node dist/app.js
+✓ Task "start" completed
+
+# Error handling
+$ bun start unknown
+Task "unknown" not found in tasks.json
+Available tasks: build, start, test, lint
+```
+
+## Source
+
+### `src/cli.ts`
 
 ```typescript
-// cli.ts
-#!/usr/bin/env bun
-import { createCli, defineRootCommand, executeCli } from 'cheloni';
+import { createCli, executeCli } from 'cheloni';
 import { configPlugin } from 'cheloni/std/config';
-import { basicPluginKit } from 'cheloni/std/core';
+import rootCommand from './commands/__root__';
+import { tasksConfigSchema } from './configs/tasks';
+import { basicPluginKit } from './plugin-kits/basic-kit';
+
+const cli = await createCli({
+  metaUrl: import.meta.url,
+  command: rootCommand,
+  plugins: [
+    ...basicPluginKit,
+    configPlugin({
+      c12Options: { configFile: 'tasks' },
+      schema: tasksConfigSchema,
+    }),
+  ],
+});
+
+await executeCli({ cli });
+```
+
+### `src/commands/__root__.ts`
+
+```typescript
+import { defineRootCommand } from 'cheloni';
+import { CheloniError } from 'cheloni/utils';
+import type { TasksConfig } from '../configs/tasks';
 import z from 'zod';
-import pkg from '../package.json' with { type: 'json' };
 
-const tasksConfigSchema = z.record(z.string(), z.string());
-type TasksConfig = z.infer<typeof tasksConfigSchema>;
+class NoTasksJsonError extends CheloniError {
+  constructor(fileName: string) {
+    super(`No ${fileName} found. Create a ${fileName} file with your task definitions.`);
+  }
+}
 
-const rootCommand = defineRootCommand({
+export default defineRootCommand({
   description: 'Run tasks defined in tasks.json',
-  positional: z.string().describe('Task name to execute'),
+  positional: z.string().meta({ description: 'Task name to execute', name: 'task' }),
   handler: async ({ positional, context }) => {
     const taskName = positional;
-    const config = context.config as TasksConfig;
+    const { config, configFile } = context as { config: TasksConfig; configFile?: string };
 
     if (Object.keys(config).length === 0) {
-      console.error('No tasks.json found. Create a tasks.json file with your task definitions.');
-      process.exit(1);
+      throw new NoTasksJsonError(configFile ?? 'tasks.json');
     }
 
     const taskCommand = config[taskName];
@@ -39,52 +96,26 @@ const rootCommand = defineRootCommand({
     console.log(`\n✓ Task "${taskName}" completed`);
   },
 });
-
-const cli = await createCli({
-  name: pkg.name,
-  version: pkg.version,
-  command: rootCommand,
-  plugins: [
-    configPlugin({
-      c12Options: { configFile: 'tasks' }, // Looks for tasks.{json,ts,yaml,...}
-      schema: tasksConfigSchema,
-    }),
-    ...basicPluginKit,
-  ],
-});
-await executeCli({ cli });
 ```
 
-## Usage
+### `src/configs/tasks.ts`
 
-Create a `tasks.json` file:
+```typescript
+import z from 'zod';
 
-```json
-{
-  "build": "tsc",
-  "start": "node dist/app.js",
-  "test": "bun test",
-  "lint": "eslint src"
-}
+export const tasksConfigSchema = z.record(z.string(), z.string());
+export type TasksConfig = z.infer<typeof tasksConfigSchema>;
 ```
 
-Run tasks:
+### `src/plugin-kits/basic-kit.ts`
 
-```bash
-# Using explicit config file
-$ task build --config tasks.dev.json
-Running task: build
-Command: tsc
-✓ Task "build" completed
+```typescript
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
 
-# Using default config file (tasks.json)
-$ task start
-Running task: start
-Command: node dist/app.js
-✓ Task "start" completed
-
-# Error handling
-$ task unknown
-Task "unknown" not found in tasks.json
-Available tasks: build, start, test, lint
+export const basicPluginKit = [
+  errorHandlerPlugin,
+  helpPlugin,
+  versionPlugin,
+  deprecationPlugin,
+] as const;
 ```

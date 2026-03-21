@@ -1,102 +1,23 @@
-# Example 3: Benchmark Tool
+# Example: Benchmark
 
-A benchmark tool demonstrating bequeath options (--verbose), positional arguments (the command to run) and a custom plugin (time plugin).
+A benchmark tool demonstrating bequeath options (`--verbose`), a positional argument (the command to run), and a custom timing plugin.
 
-```typescript
-// cli.ts
-#!/usr/bin/env bun
-import { createCli, defineCommand, defineRootCommand, executeCli, defineOption, definePlugin } from 'cheloni';
-import { basicPluginKit } from './plugin-kits/basic-kit';
-import z from 'zod';
-import pkg from '../package.json' with { type: 'json' };
-
-// Custom time plugin that measures command execution time
-const timePlugin = definePlugin({
-  name: 'time',
-  onBeforeCommandExecution: async ({ command, context }) => {
-    context.startTime = Date.now();
-  },
-  onAfterCommandExecution: async ({ command, context }) => {
-    const startTime = context.startTime as number;
-    const duration = Date.now() - startTime;
-    const verbose = context.verbose as boolean;
-    
-    if (verbose) {
-      console.log(`\n⏱️  Command executed in ${duration}ms`);
-    } else {
-      console.log(`\n⏱️  ${duration}ms`);
-    }
-  },
-});
-
-// Verbose option as bequeath option (inherited by all commands)
-const verboseOption = defineOption({
-  name: 'verbose',
-  schema: z.boolean().optional().meta({ aliases: ['V'] }),
-  handler: ({ value, context }) => {
-    context.verbose = value === true;
-  },
-});
-
-// Benchmark command that runs another command
-const runCommand = defineCommand({
-  name: 'run',
-  description: 'Run a command and measure its execution time',
-  positional: z.string().describe('Command to execute'),
-  options: z.object({
-    iterations: z.number().optional().describe('Number of iterations to run'),
-  }),
-  handler: async ({ positional, options, context }) => {
-    const command = positional;
-    const iterations = options.iterations || 1;
-    const verbose = context.verbose as boolean;
-    
-    if (verbose) {
-      console.log(`Running: ${command}`);
-      console.log(`Iterations: ${iterations}`);
-    }
-    
-    // Simulate command execution
-    for (let i = 0; i < iterations; i++) {
-      if (verbose && iterations > 1) {
-        console.log(`\nIteration ${i + 1}/${iterations}:`);
-      }
-      
-      // Simulate work
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
-      
-      if (verbose) {
-        console.log(`✓ ${command} completed`);
-      }
-    }
-    
-    if (verbose) {
-      console.log(`\nAll iterations completed`);
-    }
-  },
-});
-
-const rootCommand = defineRootCommand({
-  bequeathOptions: [verboseOption],
-  commands: [runCommand],
-});
-
-const cli = await createCli({
-  name: pkg.name,
-  version: pkg.version,
-  command: rootCommand,
-  plugins: [timePlugin, ...basicPluginKit],
-});
-await executeCli({ cli });
-```
-
-## Usage
+## Quick Start
 
 ```bash
-$ benchmark run "npm test"
+git clone https://github.com/9aia/cheloni.git
+cd cheloni/examples/03-benchmark
+bun install
+bun start [...args]
+```
+
+## Usage Examples
+
+```bash
+$ bun start run "npm test"
 ⏱️  127ms
 
-$ benchmark run "npm test" --verbose
+$ bun start run "npm test" --verbose
 Running: npm test
 Iterations: 1
 ✓ npm test completed
@@ -104,7 +25,7 @@ All iterations completed
 
 ⏱️  Command executed in 142ms
 
-$ benchmark run "npm test" --iterations 3 --verbose
+$ bun start run "npm test" --iterations 3 --verbose
 Running: npm test
 Iterations: 3
 
@@ -120,4 +41,118 @@ Iteration 3/3:
 All iterations completed
 
 ⏱️  Command executed in 387ms
+```
+
+## Source
+
+### `src/cli.ts`
+
+```typescript
+import { createCli, executeCli } from 'cheloni';
+import rootCommand from './commands/__root__';
+import { basicPluginKit } from './plugin-kits/basic-kit';
+import timePlugin from './plugins/time';
+
+const cli = await createCli({
+  metaUrl: import.meta.url,
+  command: rootCommand,
+  plugins: [...basicPluginKit, timePlugin],
+});
+
+await executeCli({ cli });
+```
+
+### `src/commands/__root__.ts`
+
+```typescript
+import { defineRootCommand } from 'cheloni';
+import { runCommand } from './run';
+
+export default defineRootCommand({
+  commands: [runCommand],
+});
+```
+
+### `src/commands/run.ts`
+
+```typescript
+import { defineCommand } from 'cheloni';
+import z from 'zod';
+
+export const runCommand = defineCommand({
+  name: 'run',
+  description: 'Run a command and measure its execution time',
+  positional: z.string().meta({ description: 'Command to execute' }),
+  options: z.object({
+    iterations: z.number().optional().meta({ description: 'Number of iterations to run' }),
+  }),
+  handler: async ({ positional, options, context }) => {
+    const command = positional;
+    const iterations = options.iterations || 1;
+    const verbose = (context as { verbose?: boolean }).verbose === true;
+
+    if (verbose) {
+      console.log(`Running: ${command}`);
+      console.log(`Iterations: ${iterations}`);
+    }
+
+    for (let i = 0; i < iterations; i++) {
+      if (verbose && iterations > 1) {
+        console.log(`\nIteration ${i + 1}/${iterations}:`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 100 + 50));
+
+      if (verbose) {
+        console.log(`✓ ${command} completed`);
+      }
+    }
+
+    if (verbose) {
+      console.log(`\nAll iterations completed`);
+    }
+  },
+});
+```
+
+### `src/plugin-kits/basic-kit.ts`
+
+```typescript
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+
+export const basicPluginKit = [
+  errorHandlerPlugin,
+  helpPlugin,
+  versionPlugin,
+  deprecationPlugin,
+] as const;
+```
+
+### `src/plugins/time.ts`
+
+```typescript
+import { definePlugin } from 'cheloni';
+
+export default definePlugin({
+  name: 'time',
+  onBeforeCommandExecution: async ({ execute }) => {
+    return await execute({
+      ctx: {
+        startTime: Date.now(),
+      },
+    });
+  },
+  onAfterCommandExecution: async ({ data }) => {
+    const startTime = data.startTime;
+    if (startTime === undefined) return;
+    const duration = Date.now() - startTime;
+    const verbose = data.verbose === true;
+
+    if (verbose) {
+      console.log(`\n⏱️  Command executed in ${duration}ms`);
+    } else {
+      console.log(`\n⏱️  ${duration}ms`);
+    }
+  },
+});
 ```
