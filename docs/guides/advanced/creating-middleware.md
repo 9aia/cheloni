@@ -11,7 +11,7 @@ Use `defineMiddleware` and **always return** the result of `next()` to continue 
 ```typescript
 import { defineMiddleware } from 'cheloni';
 
-// Inject context — the handler receives `context.user`
+// Inject context — the handler receives `ctx.user`
 const authMiddleware = defineMiddleware(async ({ next }) => {
   const user = await getUser();
   return next({ ctx: { user } });
@@ -40,7 +40,7 @@ Every middleware receives a **readonly** params object (frozen at runtime):
 
 ## Context Accumulation
 
-Each `next({ ctx: { ... } })` call **deep-merges** new properties into the shared context using [`defu`](https://github.com/unjs/defu). New values take priority, nested objects are merged recursively, and arrays are concatenated. The handler's `context` type is the intersection of all middleware outputs:
+Each `next({ ctx: { ... } })` call **deep-merges** new properties into the shared context using [`defu`](https://github.com/unjs/defu). New values take priority, nested objects are merged recursively, and arrays are concatenated. The handler's `ctx` type is the intersection of all middleware outputs:
 
 ```typescript
 const configMiddleware = defineMiddleware(async ({ next }) => {
@@ -54,8 +54,8 @@ const authMiddleware = defineMiddleware(async ({ next }) => {
 defineCommand({
   name: 'deploy',
   middleware: [configMiddleware, authMiddleware],
-  handler: async ({ context }) => {
-    // context: { config: { verbose: boolean }, session: { user: string } }
+  handler: async ({ ctx }) => {
+    // ctx: { config: { verbose: boolean }, session: { user: string } }
   },
 });
 ```
@@ -100,7 +100,7 @@ const cli = await createCli({
       defineCommand({
         name: 'deploy',
         middleware: [configMiddleware], // runs after root middleware
-        handler: async ({ context }) => { /* ... */ },
+        handler: async ({ ctx }) => { /* ... */ },
       }),
     ],
   },

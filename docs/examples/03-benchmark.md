@@ -86,31 +86,24 @@ export const runCommand = defineCommand({
   options: z.object({
     iterations: z.number().optional().meta({ description: 'Number of iterations to run' }),
   }),
-  handler: async ({ positional, options, context }) => {
+  handler: async ({ positional, options }) => {
     const command = positional;
     const iterations = options.iterations || 1;
-    const verbose = (context as { verbose?: boolean }).verbose === true;
 
-    if (verbose) {
-      console.log(`Running: ${command}`);
-      console.log(`Iterations: ${iterations}`);
-    }
+    console.log(`Running: ${command}`);
+    console.log(`Iterations: ${iterations}`);
 
     for (let i = 0; i < iterations; i++) {
-      if (verbose && iterations > 1) {
+      if (iterations > 1) {
         console.log(`\nIteration ${i + 1}/${iterations}:`);
       }
 
       await new Promise((resolve) => setTimeout(resolve, Math.random() * 100 + 50));
 
-      if (verbose) {
-        console.log(`✓ ${command} completed`);
-      }
+      console.log(`✓ ${command} completed`);
     }
 
-    if (verbose) {
-      console.log(`\nAll iterations completed`);
-    }
+    console.log(`\nAll iterations completed`);
   },
 });
 ```

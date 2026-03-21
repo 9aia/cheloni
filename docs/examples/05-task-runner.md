@@ -75,9 +75,9 @@ class NoTasksJsonError extends CheloniError {
 export default defineRootCommand({
   description: 'Run tasks defined in tasks.json',
   positional: z.string().meta({ description: 'Task name to execute', name: 'task' }),
-  handler: async ({ positional, context }) => {
+  handler: async ({ positional, ctx }) => {
     const taskName = positional;
-    const { config, configFile } = context as { config: TasksConfig; configFile?: string };
+    const { config, configFile } = ctx as { config: TasksConfig; configFile?: string };
 
     if (Object.keys(config).length === 0) {
       throw new NoTasksJsonError(configFile ?? 'tasks.json');

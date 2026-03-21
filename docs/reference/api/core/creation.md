@@ -209,7 +209,7 @@ interface CommandHandlerParams<
 > {
   positional: InferPositionalType<TPositionalDefinition>;
   options: InferOptionsType<TOptionsDefinition>;
-  context: Context;
+  ctx: Context;
   command: Command;
   cli: Cli;
 }
@@ -252,7 +252,7 @@ interface OptionHandlerParams<TSchema extends OptionSchema> {
   option: Option;
   command: Command;
   cli: Cli;
-  context: Context;
+  ctx: Context;
   halt: HaltFunction;
 }
 ```
@@ -294,7 +294,7 @@ type MiddlewareFactory<
 ```typescript
 interface MiddlewareParams {
   command: Command;
-  context: Context;
+  ctx: Context;
   next: NextFunction;
   halt: HaltFunction;
 }

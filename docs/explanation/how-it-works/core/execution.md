@@ -51,10 +51,10 @@ Splits raw argv into `{ positional: string[], options: Record<string, any> }` us
 
 ### 3. Middleware
 
-Runs the middleware array sequentially. All middleware share a single mutable `context` (`Record<string, any>`). Each middleware calls `next()` to advance the chain. The resulting context is forwarded to the handler.
+Runs the middleware array sequentially. All middleware share a single mutable `ctx` (`Record<string, any>`). Each middleware calls `next()` to advance the chain. The resulting context is forwarded to the handler.
 
 ```
-middleware[0]({ context, next }) → middleware[1]({ context, next }) → ... → done
+middleware[0]({ ctx, next }) → middleware[1]({ ctx, next }) → ... → done
                                               ↑ same object
 ```
 
@@ -87,7 +87,7 @@ Collects global plugins first, then command-level plugins (created on the fly fr
 
 Calls the command handler with:
 ```
-{ positional, options, context, command, cli }
+{ positional, options, ctx, command, cli }
 ```
 
 ### 10. Post-Execution Plugin Hooks

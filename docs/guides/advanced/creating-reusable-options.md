@@ -16,7 +16,7 @@ const verboseOption = defineOption({
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
-  handler: async ({ value, context }) => {
+  handler: async ({ value, ctx }) => {
     // Handler runs before command execution
     // Can short-circuit command execution
   },
@@ -95,12 +95,12 @@ Option handlers can throw errors to stop command execution. Errors are automatic
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string(),
-  handler: async ({ value, context }) => {
+  handler: async ({ value }) => {
     const session = await getSession(value);
     if (!session) {
       throw new Error('Unauthorized');
     }
-    context.user = session.user;
+    return next({ ctx: { user: session.user } });
   },
 });
 ```

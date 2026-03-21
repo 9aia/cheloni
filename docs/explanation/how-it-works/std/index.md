@@ -40,8 +40,8 @@ The option handler then:
   - Uses `c12.loadConfig` rules (with options from `c12Options`)
 - Validates against `schema` if provided (via `validateConfig()`); on failure it throws a `ConfigValidationError` with the original Zod error attached as `cause`
 - Injects the (validated) result into the middleware chain via `configMiddleware`:
-  - `context.config` — merged configuration object (always defined, at least `{}`)
-  - `context.configFile` — the resolved main config file (when available)
+  - `ctx.config` — merged configuration object (always defined, at least `{}`)
+  - `ctx.configFile` — the resolved main config file (when available)
 
 Note: config merging is handled by `c12`. For full control, pass more options through `c12Options` or call `loadConfig` from `c12` directly.
 

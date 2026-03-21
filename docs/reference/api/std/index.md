@@ -220,7 +220,7 @@ const cli = await createCli({
 - `c12Options?: LoadConfigOptions` - options forwarded to `c12.loadConfig`
 - `schema?: z.ZodTypeAny` - Zod schema to validate the merged configuration
 
-The plugin delegates loading/merging to `c12`, validates against `schema` using `validateConfig()` (throwing `ConfigValidationError` on failure), and exposes the resolved config on `context.config` (and the resolved main config path as `context.configFile` when available).
+The plugin delegates loading/merging to `c12`, validates against `schema` using `validateConfig()` (throwing `ConfigValidationError` on failure), and exposes the resolved config on `ctx.config` (and the resolved main config path as `ctx.configFile` when available).
 
 ## Plugin kits
 

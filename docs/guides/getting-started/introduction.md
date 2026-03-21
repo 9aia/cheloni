@@ -47,19 +47,23 @@ const verboseOption = defineOption({
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
-  handler: async ({ value, context }) => {
+  handler: async ({ value, next }) => {
     const token = value;
     const session = await getSession(token);
     if (!session) {
       throw new Error('Unauthorized');
     }
-    context.user = session.user;
+    return next({
+      ctx: {
+        user: session.user,
+      },
+    });
   },
 });
 
 const circuitBreakerOption = defineOption({
   name: 'circuit-breaker',
-  handler: async ({ value, context, halt }) => {
+  handler: async ({ value, ctx, halt }) => {
     if (yourConditionToShortCircuitExecution) {
       halt();
     }
@@ -167,10 +171,10 @@ defineCommand({
   commands: [subcommand], // Nested subcommands
   middleware: [authMiddleware],
   plugins: [telemetryPlugin],
-  handler: async ({ positional, options, context, command, cli }) => {
+  handler: async ({ positional, options, ctx, command, cli }) => {
     // positional: string
     // options: { loud?: boolean }
-    // context: Context
+    // ctx: Context
     // command: Command
     // cli: Cli
     // Full type inference from Zod schemas
@@ -180,27 +184,30 @@ defineCommand({
 
 ### Middleware
 
-Middleware runs sequentially before the handler. All middleware share a single mutable `context` object.
+Middleware runs sequentially before the handler. All middleware share a single mutable `ctx` object.
 
 ```typescript
 import { defineMiddleware, type Middleware } from 'cheloni';
 
-const auth: Middleware = defineMiddleware(async ({ context, next }) => {
+const auth: Middleware = defineMiddleware(async ({ ctx, next }) => {
   const user = await authenticate();
   if (!user) throw new Error('Unauthorized');
-  context.user = user;
-  await next();
+  return await next({
+    ctx: {
+      user,
+    },
+  });
 });
 
 const logger: Middleware = defineMiddleware(async ({ command, next }) => {
   console.log(`Running: ${command.manifest.name}`);
-  await next();
+  return await next();
 });
 
 defineCommand({
   middleware: [auth, logger], // runs auth → logger → handler
-  handler: async ({ context }) => {
-    context.user; // available from auth middleware
+  handler: async ({ ctx }) => {
+    ctx.user; // available from auth middleware
   },
 });
 ```

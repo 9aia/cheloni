@@ -69,8 +69,8 @@ export const addCommand = defineCommand({
     priority: priorityOptionSchema,
   }),
   middleware: [workspaceMiddleware],
-  handler: async ({ positional, options, context }) => {
-    const workspace = context.workspace;
+  handler: async ({ positional, options, ctx }) => {
+    const workspace = ctx.workspace;
     const priority = options.priority || 'medium';
     console.log(`✓ Added task "${positional}" (${priority}) to ${workspace.projectName}`);
   },
@@ -89,9 +89,9 @@ export const completeCommand = defineCommand({
   description: 'Mark a task as completed',
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
-  handler: async ({ positional, data }) => {
-    const workspace = data.workspace;
-    console.log(`✓ Completed task #${positional} in ${workspace.project}`);
+  handler: async ({ positional, ctx }) => {
+    const workspace = ctx.workspace;
+    console.log(`✓ Completed task #${positional} in ${workspace.projectName}`);
   },
 });
 ```
@@ -108,9 +108,9 @@ export const deleteCommand = defineCommand({
   description: 'Delete a task',
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
-  handler: async ({ positional, data }) => {
-    const workspace = data.workspace;
-    console.log(`✓ Deleted task #${positional} from ${workspace.project}`);
+  handler: async ({ positional, ctx }) => {
+    const workspace = ctx.workspace;
+    console.log(`✓ Deleted task #${positional} from ${workspace.projectName}`);
   },
 });
 ```
@@ -130,10 +130,10 @@ export const listCommand = defineCommand({
     status: statusFilterOptionSchema,
   }),
   middleware: [workspaceMiddleware],
-  handler: async ({ options, data }) => {
-    const workspace = data.workspace;
+  handler: async ({ options, ctx }) => {
+    const workspace = ctx.workspace;
     const status = options.status || 'all';
-    console.log(`Tasks in ${workspace.project} (${status}):`);
+    console.log(`Tasks in ${workspace.projectName} (${status}):`);
     console.log('  1. Review documentation [pending]');
     console.log('  2. Write tests [pending]');
     console.log('  3. Deploy to staging [completed]');
@@ -144,10 +144,10 @@ export const listCommand = defineCommand({
 ### `src/middleware/workspace.ts`
 
 ```typescript
-import type { Middleware } from 'cheloni';
+import { defineMiddleware } from 'cheloni';
 import type { Workspace } from '../types';
 
-export const workspaceMiddleware: Middleware = async ({ next }) => {
+export const workspaceMiddleware = defineMiddleware(async ({ next }) => {
   const projectName = process.env.PROJECT_NAME || 'default';
   const workspace = process.env.WORKSPACE || 'personal';
 
@@ -156,7 +156,7 @@ export const workspaceMiddleware: Middleware = async ({ next }) => {
       workspace: { name: workspace, projectName } as Workspace,
     }
   });
-};
+});
 ```
 
 ### `src/plugin-kits/basic-kit.ts`

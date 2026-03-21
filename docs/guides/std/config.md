@@ -92,16 +92,16 @@ The std `configPlugin` handler:
 - Delegates config resolution/merging to `c12.loadConfig` using `c12Options` (and uses `--config` as the main config file when provided)
 - Validates against `schema` (if provided) using `validateConfig()` and throws a `ConfigValidationError` on failure (the original Zod error is kept as the `cause`)
 - Exposes the validated result on the execution context via `configMiddleware`:
-  - `context.config` – merged configuration object (always defined, at least `{}`)
-  - `context.configFile` – the resolved main config file (when available)
+  - `ctx.config` – merged configuration object (always defined, at least `{}`)
+  - `ctx.configFile` – the resolved main config file (when available)
 
 Example handler usage:
 
 ```ts
 const build = defineCommand({
   name: "build",
-  handler: async ({ context }) => {
-    const cfg = context.config as any;
+  handler: async ({ ctx }) => {
+    const cfg = ctx.config as any;
     const outputDir = cfg?.outputDir ?? "dist";
 
     console.log(`Building into: ${outputDir}`);
@@ -111,7 +111,7 @@ const build = defineCommand({
 
 > **Note**  
 > If you provide a `schema` option, the config will be validated and typed.  
-> Otherwise, treat `context.config` as `unknown` and narrow/validate it in user land as needed.
+> Otherwise, treat `ctx.config` as `unknown` and narrow/validate it in user land as needed.
 
 ## Using c12 directly
 
