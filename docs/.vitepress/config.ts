@@ -56,7 +56,7 @@ export default defineConfig({
           items: [
             { text: 'Creating Middleware', link: '/guides/advanced/creating-middleware' },
             { text: 'Creating Reusable Options', link: '/guides/advanced/creating-reusable-options' },
-            { text: 'Creating Pluginpacks', link: '/guides/advanced/creating-pluginpacks' },
+            { text: 'Creating Plugin Kits', link: '/guides/advanced/creating-plugin-kits' },
             { text: 'Creating Plugins', link: '/guides/advanced/creating-plugins' }
           ]
         },

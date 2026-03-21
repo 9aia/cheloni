@@ -6,7 +6,7 @@ A practical file converter tool demonstrating validation, type-safety and aliase
 // cli.ts
 #!/usr/bin/env bun
 import { createCli, defineCommand, defineRootCommand, executeCli } from 'cheloni';
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from './plugin-kits/basic-kit';
 import z from 'zod';
 import { prettyOptionSchema, outputOptionSchema, pathSchema } from 'cheloni/std';
 import pkg from '../package.json' with { type: 'json' };
@@ -36,7 +36,7 @@ const cli = await createCli({
   name: pkg.name,
   version: pkg.version,
   command: rootCommand,
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 await executeCli({ cli });
 ```

@@ -19,7 +19,7 @@ OptionDefinition    → Option    { definition, manifest }
 
 1. Extracts the CLI manifest via `getCliManifest()`
 2. Creates the root command tree (if a command definition is provided), including bequeath options
-3. Creates plugins from `plugins` and `pluginpacks`
+3. Creates plugins from `plugins` (in array order)
 4. Assembles the `Cli` object
 5. Runs `onInit` hooks for each plugin, passing the `Cli` object
 

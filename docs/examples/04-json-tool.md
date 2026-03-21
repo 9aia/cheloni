@@ -6,7 +6,8 @@ A simple JSON tool demonstrating file I/O, JSON parsing, and multiple commands f
 // cli.ts
 #!/usr/bin/env bun
 import { createCli, defineCommand, defineRootCommand, executeCli } from 'cheloni';
-import { pathSchema, prettyOptionSchema, basePluginpack } from 'cheloni/std';
+import { pathSchema, prettyOptionSchema } from 'cheloni/std';
+import { basicPluginKit } from './plugin-kits/basic-kit';
 import z from 'zod';
 import fs from 'node:fs/promises';
 import pkg from '../package.json' with { type: 'json' };
@@ -90,7 +91,7 @@ const cli = await createCli({
   name: pkg.name,
   version: pkg.version,
   command: rootCommand,
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 await executeCli({ cli });
 ```

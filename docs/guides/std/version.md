@@ -34,16 +34,16 @@ $ my-cli version
 $ my-cli --version
 ```
 
-## Using the Base Pluginpack
+## Using `basicPluginKit`
 
-For most CLIs, use `basePluginpack` which includes deprecation warnings, help/version support, and default error handling:
+For most CLIs, spread `basicPluginKit` from `./plugin-kits/basic-kit`:
 
 ```typescript
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from './plugin-kits/basic-kit';
 
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 ```

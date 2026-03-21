@@ -6,7 +6,7 @@ A benchmark tool demonstrating bequeath options (--verbose), positional argument
 // cli.ts
 #!/usr/bin/env bun
 import { createCli, defineCommand, defineRootCommand, executeCli, defineOption, definePlugin } from 'cheloni';
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from './plugin-kits/basic-kit';
 import z from 'zod';
 import pkg from '../package.json' with { type: 'json' };
 
@@ -85,8 +85,7 @@ const cli = await createCli({
   name: pkg.name,
   version: pkg.version,
   command: rootCommand,
-  plugins: [timePlugin],
-  pluginpacks: [basePluginpack],
+  plugins: [timePlugin, ...basicPluginKit],
 });
 await executeCli({ cli });
 ```

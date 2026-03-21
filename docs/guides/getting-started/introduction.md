@@ -13,7 +13,7 @@ Cheloni follows a four-phase architecture: **Definition** → **Manifest** → *
 Define your CLI structure using `define*` functions. These return plain objects with full type inference — nothing is created or executed yet.
 
 ```typescript
-import { defineCommand, defineRootCommand, defineOption, definePlugin, definePluginpack, defineCli } from 'cheloni';
+import { defineCommand, defineRootCommand, defineOption, definePlugin, defineCli } from 'cheloni';
 import z from 'zod';
 
 const convert = defineCommand({
@@ -74,10 +74,7 @@ const analytics = definePlugin({
   onDestroy: async ({ cli }) => { /* ... */ },
 });
 
-const pluginpack = definePluginpack({
-  name: 'my-pluginpack',
-  plugins: [analytics, ...otherPlugins],
-});
+const observabilityKit = [analytics, ...otherPlugins];
 
 const rootCommand = defineRootCommand({
   commands: [/* ... */],
@@ -88,7 +85,7 @@ const cli = defineCli({
   name: 'my-cli',
   version: '1.0.0',
   command: rootCommand,
-  pluginpacks: [pluginpack],
+  plugins: [...observabilityKit],
 });
 ```
 
@@ -109,7 +106,7 @@ plugin.manifest     // { name: 'analytics' }
 
 ```typescript
 import { createCli, defineRootCommand } from 'cheloni';
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from 'cheloni/std/core';
 
 const rootCommand = defineRootCommand({
   bequeathOptions: [verboseOption], // Available to all commands
@@ -120,9 +117,7 @@ const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
   command: rootCommand,
-  plugins: [analytics],
-  // Or use a pluginpack:
-  // pluginpacks: [basePluginpack],
+  plugins: [analytics, ...basicPluginKit],
 });
 
 // cli.command       — root Command (with nested command tree)
@@ -134,7 +129,7 @@ const cli = await createCli({
 1. Manifest is extracted from the definition (metadata for help/introspection)
 2. Root command tree is built recursively (`createCommand` / `createRootCommand`)
 3. Plugins are created
-4. Plugin `onInit` hooks run — they can modify the CLI structure (e.g. `basePluginpack` injects deprecation/help/version behavior)
+4. Plugin `onInit` hooks run — they can modify the CLI structure (e.g. `basicPluginKit` injects deprecation/help/version behavior)
 
 ### Execution
 
@@ -249,17 +244,17 @@ Plugins hook into the CLI lifecycle at specific points. They can be applied glob
 
 The standard library (`cheloni/std`) provides ready-to-use components for common CLI features.
 
-### Base Pluginpack
+### Basic plugin kit
 
-The `basePluginpack` automatically adds deprecation warnings plus help and version support, and installs default error handling:
+The `basicPluginKit` export (`cheloni/std/core`) is an array of plugins that add deprecation warnings, help and version support, and default error handling:
 
 ```typescript
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from 'cheloni/std/core';
 
 const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 ```
 
@@ -335,7 +330,7 @@ import {
 
 ```typescript
 import { defineCommand, defineRootCommand, createCli, executeCli } from 'cheloni';
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from 'cheloni/std/core';
 import z from 'zod';
 
 const greet = defineCommand({
@@ -355,7 +350,7 @@ const cli = await createCli({
   name: 'my-cli',
   version: '1.0.0',
   command: defineRootCommand({ commands: [greet] }),
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 
 await executeCli({ cli });

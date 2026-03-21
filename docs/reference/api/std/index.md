@@ -222,26 +222,26 @@ const cli = await createCli({
 
 The plugin delegates loading/merging to `c12`, validates against `schema` using `validateConfig()` (throwing `ConfigValidationError` on failure), and exposes the resolved config on `context.config` (and the resolved main config path as `context.configFile` when available).
 
-## Packs
+## Plugin kits
 
-### `basePluginpack`
+### `basicPluginKit`
 
-The standard library pluginpack that includes `deprecationPlugin`, `helpPlugin`, `versionPlugin`, and `errorHandlerPlugin`.
+Read-only array of the standard plugins: `errorHandlerPlugin`, `helpPlugin`, `versionPlugin`, and `deprecationPlugin`. Spread it into `plugins` (same pattern as `examples/task-runner`).
 
 ```typescript
-import { basePluginpack } from "cheloni/std";
+import { basicPluginKit } from "cheloni/std/core";
 
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
-  pluginpacks: [basePluginpack]
+  plugins: [...basicPluginKit],
 });
 ```
 
-The pluginpack provides:
+The kit provides:
 
 - Help and version support (`help` / `version`, plus `--help` / `--version`)
 - Deprecation warnings for deprecated CLIs, commands, and deprecated provided args/options
 - Error display via the `error-handler` plugin (handles `onError` at the CLI plugin layer)
 
-This is the recommended way to add standard library functionality.
+This is the recommended way to add that standard library behavior.

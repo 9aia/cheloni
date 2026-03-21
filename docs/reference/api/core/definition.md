@@ -24,29 +24,26 @@ const cli = defineCli({
 });
 ```
 
-**Example (with plugins and pluginpacks):**
+**Example (with plugins and a plugin kit):**
 
 ```typescript
-import { defineCli, definePlugin, definePluginpack } from "cheloni";
+import { defineCli, definePlugin } from "cheloni";
+import { basicPluginKit } from "cheloni/std/core";
 
 const loggingPlugin = definePlugin({ name: "logging" });
 
-const monitoringPack = definePluginpack({
-  name: "monitoring",
-  plugins: [
-    definePlugin({ name: "analytics" }),
-    definePlugin({ name: "tracing" }),
-  ],
-});
+const monitoringKit = [
+  definePlugin({ name: "analytics" }),
+  definePlugin({ name: "tracing" }),
+];
 
 const cli = defineCli({
   name: "my-cli",
-  plugins: [loggingPlugin],      // Individual global plugins
-  pluginpacks: [monitoringPack], // Packs of reusable plugins
+  plugins: [loggingPlugin, ...basicPluginKit, ...monitoringKit],
 });
 ```
 
-When you call `createCli()` with this definition, plugins from `plugins` and from each `pluginpack.plugins` array are **flattened into a single global plugin list**. Their `onInit` hooks run in order: all `plugins` first (in array order), followed by all plugins from `pluginpacks` (respecting pack order).
+When you call `createCli()` with this definition, `plugins` is a single list. `onInit` hooks run in **array order**. Reusable bundles are plain arrays (for example `basicPluginKit` from the standard library, or a local `src/plugin-kits/` module you maintain).
 
 ### `defineCommand(definition)`
 
@@ -194,25 +191,6 @@ const plugin = definePlugin({
 });
 ```
 
-### `definePluginpack(definition)`
-
-Creates a pluginpack definition that bundles multiple plugins together.
-
-**Parameters:**
-- `definition: PluginpackDefinition` - The pluginpack definition
-
-**Returns:** `PluginpackDefinition`
-
-**Example:**
-```typescript
-import { definePluginpack, definePlugin } from "cheloni";
-
-const pack = definePluginpack({
-  name: "my-pack",
-  plugins: [plugin1, plugin2]
-});
-```
-
 ## Plugin Hooks
 
 ### `onInit`
@@ -327,7 +305,6 @@ interface CliDefinition {
   deprecated?: boolean | string;
   command?: RootCommandDefinition;
   plugins?: PluginDefinition[];
-  pluginpacks?: PluginpackDefinition[];
 }
 ```
 
@@ -430,15 +407,6 @@ type PluginCommandHook = (params: PluginCommandHookParams) => Promisable<void>;
 - `params.cli: Cli` - The CLI instance
 - `params.plugin: Plugin` - The plugin instance
 - `params.command: CommandDefinition` - The command being executed
-
-### `PackDefinition`
-
-```typescript
-interface PluginpackDefinition {
-  name: string;
-  plugins: PluginDefinition[];
-}
-```
 
 ### `ExtrageousOptionsBehavior`
 

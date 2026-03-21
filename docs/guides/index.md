@@ -30,5 +30,5 @@ How-to guides help you accomplish specific tasks with Cheloni.
 
 - [Creating Middleware](./advanced/creating-middleware.md)
 - [Creating Reusable Options](./advanced/creating-reusable-options.md) - Create options shared across commands
-- [Creating Pluginpacks](./advanced/creating-pluginpacks.md) - Bundle multiple plugins together
+- [Creating Plugin Kits](./advanced/creating-plugin-kits.md) - Reusable plugin arrays and `basicPluginKit`
 - [Creating Plugins](./advanced/creating-plugins.md) - Extend CLI functionality

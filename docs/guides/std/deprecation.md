@@ -1,20 +1,20 @@
 # Deprecation warnings
 
-Deprecation warnings are **not emitted by core**. To show warnings at runtime, install the standard library `deprecationPlugin` (or the `basePluginpack`).
+Deprecation warnings are **not emitted by core**. To show warnings at runtime, install the standard library `deprecationPlugin` or spread `basicPluginKit` from `./plugin-kits/basic-kit`.
 
 ## Deprecate an entire CLI
 
-Set `deprecated` on your CLI definition, then install the plugin (or pluginpack):
+Set `deprecated` on your CLI definition, then install the plugin or kit:
 
 ```typescript
 import { createCli } from "cheloni";
-import { basePluginpack } from "cheloni/std";
+import { basicPluginKit } from "./plugin-kits/basic-kit";
 
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
   deprecated: "Use `my-cli2` instead.",
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 ```
 

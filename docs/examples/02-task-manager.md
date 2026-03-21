@@ -6,7 +6,7 @@ A simple task management CLI demonstrating multiple commands and middleware with
 // cli.ts
 #!/usr/bin/env bun
 import { createCli, defineCommand, defineRootCommand, executeCli, type Middleware } from 'cheloni';
-import { basePluginpack } from 'cheloni/std';
+import { basicPluginKit } from './plugin-kits/basic-kit';
 import z from 'zod';
 import pkg from '../package.json' with { type: 'json' };
 
@@ -87,7 +87,7 @@ const cli = await createCli({
   name: pkg.name,
   version: pkg.version,
   command: rootCommand,
-  pluginpacks: [basePluginpack],
+  plugins: [...basicPluginKit],
 });
 await executeCli({ cli });
 ```

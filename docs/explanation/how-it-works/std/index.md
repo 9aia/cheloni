@@ -57,7 +57,7 @@ Option rendering reads Zod internals for aliases, descriptions, and deprecation 
 
 ### `deprecationService`
 
-The std deprecation service emits warnings for deprecated CLIs, commands, options, and positional arguments. It is typically used via `deprecationPlugin` (or `basePluginpack`).
+The std deprecation service emits warnings for deprecated CLIs, commands, options, and positional arguments. It is typically used via `deprecationPlugin` or `basicPluginKit`.
 
 See: `docs/guides/std/deprecation.md`.
 
