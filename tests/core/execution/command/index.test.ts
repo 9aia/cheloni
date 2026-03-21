@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import z from 'zod';
+import type { OptionHandlerParams } from '~/core/creation/command/option';
 import {
     createCli,
     defineCli,
@@ -445,7 +446,8 @@ describe('bequeathOptions execution', () => {
 
   it('executes bequeathOptions handler', async () => {
     const commandHandler = vi.fn();
-    const optionHandler = vi.fn();
+    const optionHandler = vi.fn(async ({ next }: OptionHandlerParams<z.ZodOptional<z.ZodBoolean>>) =>
+      next());
 
     const verboseOption = defineOption({
       name: 'verbose',
@@ -480,6 +482,94 @@ describe('bequeathOptions execution', () => {
 
     expect(optionHandler).toHaveBeenCalledOnce();
     expect(commandHandler).toHaveBeenCalledOnce();
+  });
+
+  it('bequeathOptions handler merges context via next like middleware', async () => {
+    const commandHandler = vi.fn();
+
+    const aOption = defineOption({
+      name: 'a',
+      schema: z.boolean().optional(),
+      handler: async ({ next }) => next({ ctx: { fromA: 1 } }),
+    });
+
+    const bOption = defineOption({
+      name: 'b',
+      schema: z.boolean().optional(),
+      handler: async ({ ctx, next }) => next({ ctx: { fromB: ctx.fromA as number } }),
+    });
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test',
+        command: defineCommand({
+          name: 'root',
+          bequeathOptions: [aOption, bOption],
+          commands: [
+            defineCommand({
+              name: 'sub',
+              handler: commandHandler,
+            }),
+          ],
+        }),
+      })
+    );
+
+    const subCommand = cli.command!.commands.get('sub')!;
+
+    await executeCommand({
+      command: subCommand,
+      args: ['--a', '--b'],
+      cli,
+    });
+
+    expect(commandHandler).toHaveBeenCalledOnce();
+    const params = commandHandler.mock.calls[0]![0];
+    expect(params.ctx).toMatchObject({ fromA: 1, fromB: 1 });
+  });
+
+  it('bequeathOptions handler sees middleware context and can extend it', async () => {
+    const commandHandler = vi.fn();
+
+    const verboseOption = defineOption({
+      name: 'verbose',
+      schema: z.boolean().optional(),
+      handler: async ({ ctx, next }) =>
+        next({ ctx: { fromOption: (ctx.fromMw as string) + '-opt' } }),
+    });
+
+    const cli = await createCli(
+      defineCli({
+        name: 'test',
+        command: defineCommand({
+          name: 'root',
+          bequeathOptions: [verboseOption],
+          commands: [
+            defineCommand({
+              name: 'sub',
+              middleware: [
+                async ({ next }) => next({ ctx: { fromMw: 'mw' } }),
+              ],
+              handler: commandHandler,
+            }),
+          ],
+        }),
+      })
+    );
+
+    const subCommand = cli.command!.commands.get('sub')!;
+
+    await executeCommand({
+      command: subCommand,
+      args: ['--verbose'],
+      cli,
+    });
+
+    expect(commandHandler).toHaveBeenCalledOnce();
+    expect(commandHandler.mock.calls[0]![0].ctx).toMatchObject({
+      fromMw: 'mw',
+      fromOption: 'mw-opt',
+    });
   });
 
   it('bequeathOptions handler can halt execution', async () => {
@@ -613,8 +703,10 @@ describe('bequeathOptions execution', () => {
 
   it('child bequeathOptions override parent bequeathOptions', async () => {
     const handler = vi.fn();
-    const parentHandler = vi.fn();
-    const childHandler = vi.fn();
+    const parentHandler = vi.fn(async ({ next }: OptionHandlerParams<z.ZodOptional<z.ZodBoolean>>) =>
+      next());
+    const childHandler = vi.fn(async ({ next }: OptionHandlerParams<z.ZodOptional<z.ZodBoolean>>) =>
+      next());
 
     const parentOption = defineOption({
       name: 'verbose',
@@ -744,7 +836,8 @@ describe('bequeathOptions execution', () => {
 describe('bequeathOptions execution (root command)', () => {
   it('executes bequeathOptions handler', async () => {
     const commandHandler = vi.fn();
-    const optionHandler = vi.fn();
+    const optionHandler = vi.fn(async ({ next }: OptionHandlerParams<z.ZodOptional<z.ZodBoolean>>) =>
+      next());
 
     const cli = await createCli(
       defineCli({
