@@ -1,1 +1,1 @@
-export { semverSchema } from "./semver";
+export * from "./semver";

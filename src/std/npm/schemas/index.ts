@@ -1,1 +1,1 @@
-export { packageNameSchema } from "./npm";
+export * from "./npm";

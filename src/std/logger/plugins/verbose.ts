@@ -1,7 +1,7 @@
 import { createCommand } from "~/core";
 import { definePlugin } from "~/core/definition/plugin";
 import rootCommand from "~/std/core/commands/root";
-import verboseOption from "~/std/log/options/verbose";
+import verboseOption from "~/std/logger/options/verbose";
 
 export default definePlugin({
     name: "verbose",

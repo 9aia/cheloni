@@ -1,2 +1,2 @@
-export { jsonDataSchema } from "./json";
-export { yamlDataSchema } from "./yaml";
+export * from "./json";
+export * from "./yaml";

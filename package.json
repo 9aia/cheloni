@@ -23,9 +23,9 @@
       "types": "./dist/std/git/index.d.ts",
       "import": "./dist/std/git/index.js"
     },
-    "./std/log": {
-      "types": "./dist/std/log/index.d.ts",
-      "import": "./dist/std/log/index.js"
+    "./std/logger": {
+      "types": "./dist/std/logger/index.d.ts",
+      "import": "./dist/std/logger/index.js"
     },
     "./std/npm": {
       "types": "./dist/std/npm/index.d.ts",

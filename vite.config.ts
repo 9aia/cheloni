@@ -14,7 +14,7 @@ export default defineConfig({
         "std/config/index": resolve(__dirname, "src/std/config/index.ts"),
         "std/core/index": resolve(__dirname, "src/std/core/index.ts"),
         "std/git/index": resolve(__dirname, "src/std/git/index.ts"),
-        "std/log/index": resolve(__dirname, "src/std/log/index.ts"),
+        "std/logger/index": resolve(__dirname, "src/std/logger/index.ts"),
         "std/npm/index": resolve(__dirname, "src/std/npm/index.ts"),
         "std/os/index": resolve(__dirname, "src/std/os/index.ts"),
         "std/parse/index": resolve(__dirname, "src/std/parse/index.ts"),
