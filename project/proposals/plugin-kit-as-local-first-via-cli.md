@@ -3,7 +3,7 @@ $ cheloni generate plugin-kit
 ## Summary
 Generate `plugin-kit` source code locally in the consumer repo (shadcn-style local-first) instead of publishing it as an installable package.
 
-The CLI resolves a kit template from a registry, writes deterministic files into `src/plugin-kits/<kit-name>/`, and the user composes the generated kit via `createCli({ pluginpacks: [...] })`.
+The CLI resolves a kit template from a registry, writes deterministic files into `src/plugin-kits/<kit-name>/`, and the user composes the generated kit via `createCli({ plugins: [...myKit] })` (spread a plugin array into `plugins`).
 
 ## Motivation / Problem
 Package kits create versioning friction, make customization/overrides harder, slow iteration, leave users wiring boilerplate manually, and limit tree-shaking.

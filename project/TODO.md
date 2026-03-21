@@ -1,13 +1,16 @@
 # TODO
 
+- Name, version and description should come from package.json by default
+- Move examples from docs to examples/ and just add links to them in the docs
+- Turn help plugin into a plugin factory and add optional help footer config
+- Refactor plugins to use immerjs
 - Ensure error handling by throwing errors instead of `process.exit(1)`
 - Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
 - Add support for config caching (avoid reloading the config file for subcommands that also use the config)
 - Add support for controlling when the config is loaded (eagerly or lazily)?
 - Add type-safety to config
 - Add shell completion plugin
-- Rename pluginpack to plugin-kit
-  - Implement plugin-kit generation via Cheloni CLI
+- Implement plugin-kit generation via Cheloni CLI (`cheloni generate plugin-kit`)
 - Add dependencies for commands, so it can inherit types
 - Global user-extendable option types, useful for programmatic CLI definition global types
 - Improve option inference to include global options
