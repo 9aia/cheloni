@@ -45,15 +45,16 @@ export default defineOption({
         .optional()
         .describe("Increase verbosity (-V, -VV, -VVV). Sets ctx.verbosity and ctx.log.")
         .meta({ aliases: ["V"] }),
-    handler: ({ value, ctx }) => {
+    handler: async ({ value, ctx, next }) => {
         const coerced = coerceVerbosity(value);
         const verbosity = typeof coerced === "number" ? coerced : 1;
 
-        ctx.verbosity = verbosity;
-        ctx.verbose = verbosity > 0;
-
-        if (ctx.log === undefined) {
-            ctx.log = createVerboseLogger(verbosity);
-        }
+        return next({
+            ctx: {
+                verbosity,
+                verbose: verbosity > 0,
+                ...(ctx.log === undefined ? { log: createVerboseLogger(verbosity) } : {}),
+            },
+        });
     },
 });

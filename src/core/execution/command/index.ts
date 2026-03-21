@@ -3,13 +3,12 @@ import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
 import type { AnyMiddleware } from "~/core/creation/command/middleware";
-import { createOption } from "~/core/creation/command/option";
 import { createPlugin } from "~/core/creation/plugin";
 import { executeBeforeCommandHooks, executePostCommandHooks } from "~/core/execution/plugin/command-hooks";
 import { buildAliasMap } from "~/utils/execution/alias";
 import { parseArgs } from "../parser";
 import { HaltError, InvalidOptionsError } from "./errors";
-import { halt } from "./halt";
+import { executeBequeathedOptionHandlers, type BequeathedOptionInvocation } from "./option-handlers";
 import { executeMiddleware } from "./middleware";
 import { buildOptionNames } from "./option";
 import { validateOptions, validateOptionsExist, validatePositional } from "./validate";
@@ -46,16 +45,17 @@ async function validateAndExecuteOptions(
     cli: Cli,
     command: Command,
     ctx: UnknownRecord,
-): Promise<void> {
-    // Process bequeathOptions from parent commands
+): Promise<UnknownRecord> {
+    const invocations: BequeathedOptionInvocation[] = [];
+
     for (const bequeathOpt of command.bequeathOptions.values()) {
         const optName = bequeathOpt.definition.name;
         const optValue = validatedOptions[optName];
-        
+
         if (optValue === undefined) {
             continue;
         }
-        
+
         let parsedValue: any = optValue;
         if (bequeathOpt.definition.schema) {
             try {
@@ -68,19 +68,18 @@ async function validateAndExecuteOptions(
                 );
             }
         }
-        
+
         if (bequeathOpt.definition.handler) {
-            const option = createOption(bequeathOpt.definition);
-            await bequeathOpt.definition.handler({
-                value: parsedValue,
-                option,
-                command,
-                cli,
-                ctx,
-                halt,
-            });
+            invocations.push({ option: bequeathOpt, parsedValue });
         }
     }
+
+    return executeBequeathedOptionHandlers({
+        invocations,
+        cli,
+        command,
+        initialCtx: ctx,
+    });
 }
 
 export async function executeCommand(options: ExecuteCommandOptions): Promise<void> {
@@ -100,8 +99,8 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             parsedPositionals: positionalArgs,
         });
         
-        const middlewareContext = await executeMiddlewareChain(def.middleware, cli, command);
-        
+        let commandCtx = await executeMiddlewareChain(def.middleware, cli, command);
+
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? 'throw';
         const optionNames = buildOptionNames(cli, command);
         const validatedOptions = validateOptionsExist(
@@ -110,12 +109,12 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             extrageousOptionsBehavior,
             optionNames
         );
-        
-        await validateAndExecuteOptions(validatedOptions, cli, command, middlewareContext);
-        
+
+        commandCtx = await validateAndExecuteOptions(validatedOptions, cli, command, commandCtx);
+
         const positionalSchema = def.positional;
         const positional = validatePositional(positionalSchema, positionalArgs);
-        
+
         const optionsSchema = def.options;
         const cliOptions = validateOptions(
             optionsSchema,
@@ -123,12 +122,12 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             extrageousOptionsBehavior,
             command.bequeathOptions
         );
-        
+
         if (def.handler) {
             const handlerParams: CommandHandlerParams<typeof positionalSchema, typeof optionsSchema> = {
                 positional,
                 options: cliOptions,
-                ctx: middlewareContext,
+                ctx: commandCtx,
                 command,
                 cli,
             };

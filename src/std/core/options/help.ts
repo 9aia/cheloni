@@ -7,6 +7,6 @@ export default defineOption({
     schema: helpOptionSchema,
     handler: ({ command, cli, halt }) => {
         showHelp({ cli, commandName: command.manifest.name });
-        halt();
+        return halt();
     },
 });

@@ -7,6 +7,6 @@ export default defineOption({
     schema: versionOptionSchema,
     handler: ({ cli, halt }) => {
         showVersion({ cliManifest: cli.manifest });
-        halt();
+        return halt();
     },
 });
