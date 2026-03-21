@@ -29,11 +29,9 @@ const convert = defineCommand({
   plugins: [telemetryPlugin],
   examples: ['my-cli convert image.png --output result.webp'],
   throwOnExtrageousOptions: 'throw',
-  handler: async ({ positional, options, context, command, cli }) => {
+  handler: async ({ positional, options, ctx, command, cli }) => {
     // positional: string, options: { output?: string, quality?: number }
-    if(options.verbose) {
-      console.log('Verbose mode is enabled');
-    }
+    // ctx: merged middleware + bequeath-option handler context
   },
 });
 
@@ -47,17 +45,12 @@ const verboseOption = defineOption({
 const tokenOption = defineOption({
   name: 'token',
   schema: z.string().meta({ aliases: ['t'] }),
-  handler: async ({ value, next }) => {
-    const token = value;
-    const session = await getSession(token);
+  handler: async ({ value, ctx }) => {
+    const session = await getSession(value);
     if (!session) {
       throw new Error('Unauthorized');
     }
-    return next({
-      ctx: {
-        user: session.user,
-      },
-    });
+    ctx.user = session.user;
   },
 });
 
@@ -137,7 +130,7 @@ const cli = await createCli({
 
 ### Execution
 
-`executeCli` runs the CLI: resolves the command from `argv`, parses args, runs middleware, validates with Zod, and calls the handler.
+`executeCli` runs the CLI: resolves the command from `argv`, parses args, runs plugin pre-hooks, then middleware, then validates and calls the handler.
 
 ```typescript
 import { executeCli } from 'cheloni';
@@ -149,12 +142,12 @@ await executeCli({ cli });
 **Execution pipeline:**
 1. Command resolved from `argv` by walking the command tree
 2. Args parsed into positional values and options (with alias resolution)
-3. Middleware chain runs sequentially
-4. Positional and options validated with Zod
-5. Plugin `onBeforeCommandExecution` hooks run
+3. Plugin `onBeforeCommandExecution` hooks run (unvalidated parsed args)
+4. Middleware chain runs on the matched command only
+5. Options and positionals validated (unknown-option policy, bequeath option handlers, then Zod)
 6. Command handler runs
 7. Plugin `onAfterCommandExecution` hooks run (even on error)
-8. Plugin `onDestroy` hooks run on shutdown
+8. Plugin `onDestroy` hooks run in `executeCli`’s `finally` block
 
 ## Core Concepts
 
@@ -184,24 +177,24 @@ defineCommand({
 
 ### Middleware
 
-Middleware runs sequentially before the handler. All middleware share a single mutable `ctx` object.
+Middleware runs on the **matched command only** (the leaf command resolved from argv), in array order, before option validation and the handler. Extend context with `return next({ ctx: { ... } })` (deep-merged); always **return** the promise or value from `next()`.
 
 ```typescript
-import { defineMiddleware, type Middleware } from 'cheloni';
+import { defineMiddleware } from 'cheloni';
 
-const auth: Middleware = defineMiddleware(async ({ ctx, next }) => {
+const auth = defineMiddleware(async ({ next }) => {
   const user = await authenticate();
   if (!user) throw new Error('Unauthorized');
-  return await next({
+  return next({
     ctx: {
       user,
     },
   });
 });
 
-const logger: Middleware = defineMiddleware(async ({ command, next }) => {
+const logger = defineMiddleware(async ({ command, next }) => {
   console.log(`Running: ${command.manifest.name}`);
-  return await next();
+  return next();
 });
 
 defineCommand({

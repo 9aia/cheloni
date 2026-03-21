@@ -27,12 +27,12 @@ const deploy = defineCommand({
   examples: ['deploy staging', 'deploy production --force'],
   details: 'Deploys your application to the specified environment.',
   middleware: [authMiddleware],
-  handler: async ({ positional, options, context }) => {
+  handler: async ({ positional, options, ctx }) => {
     // Full type inference:
     // {
     //   positional: string,
     //   options: { dryRun?: boolean, force?: boolean },
-    //   context: { session: Session }
+    //   ctx: { session: Session }
     // }
     console.log(`Deploying to ${positional}...`);
     if (options.dryRun) console.log('Dry run mode');

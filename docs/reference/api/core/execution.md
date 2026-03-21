@@ -191,22 +191,18 @@ class InvalidPositionalError extends InvalidSchemaError {
 
 ## Execution Flow
 
-1. **Argument Parsing** - Parse raw arguments into positional and options
-2. **Middleware Execution** - Execute middleware chain, building context
-3. **Option Validation** - Validate options against schema and check for extrageous options
-4. **Bequeath Option Handlers** - Execute bequeath option handlers (may short-circuit)
-5. **Positional Validation** - Extract and validate positional arguments
-6. **Option Schema Validation** - Validate options with Zod
-7. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks
+1. **Argument Parsing** - Parse raw arguments into positional and options (alias map applied first)
+2. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks (unvalidated parsed args; runs **before** middleware)
+3. **Middleware Execution** - Execute the **matched command’s** middleware chain only; context from `next({ ctx })` is merged
+4. **Extraneous Options** - Enforce `throwOnExtrageousOptions` policy against the command schema and bequeath names
+5. **Bequeath Option Handlers** - Execute bequeath option handlers when flags are present (may short-circuit)
+6. **Positional Validation** - Extract and validate positional arguments with Zod
+7. **Option Schema Validation** - Validate command options with Zod
 8. **Handler Execution** - Execute the command handler
-9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks (always runs, even on error)
+9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks in a `finally` block (always runs, even on error)
 
 ## Hook Execution Order
 
-During command execution:
+`onBeforeCommandExecution` runs once per invocation, immediately after parse and **before** middleware and validation. `onAfterCommandExecution` runs in `finally` after the handler attempt.
 
-1. Global plugins' `onBeforeCommandExecution` (in registration order)
-2. Command plugins' `onBeforeCommandExecution` (in registration order)
-3. Command handler
-4. Command plugins' `onAfterCommandExecution` (reverse order)
-5. Global plugins' `onAfterCommandExecution` (reverse order)
+For both hooks, plugins run in the same order: **global** plugins (from `cli.plugins`, in registration order), then **command-level** plugins from the matched command’s definition (in definition order).

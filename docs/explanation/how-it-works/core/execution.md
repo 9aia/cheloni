@@ -9,12 +9,11 @@ argv
   │
   ├─ 1. Route ──────────── Match command from the nested command tree
   ├─ 2. Parse ──────────── Extract positional args and options (resolve aliases)
-  ├─ 3. Middleware ─────── Run middleware chain, build shared context
-  ├─ 4. Validate ───────── Check for unknown options, then Zod-validate positional & options
-  ├─ 5. Bequeath opts ──── Execute bequeath option handlers (may short-circuit)
-  ├─ 6. Plugin hooks ───── onBeforeCommandExecution (global + command plugins)
-  ├─ 7. Handler ────────── Execute command handler with validated params
-  └─ 8. Plugin hooks ───── onAfterCommandExecution (always runs, even on error)
+  ├─ 3. Plugin (pre) ────── onBeforeCommandExecution (global + command plugins; raw parsed args)
+  ├─ 4. Middleware ─────── Matched command only; build ctx via next()
+  ├─ 5. Validate ───────── Unknown-option policy, bequeath handlers, Zod positional & options
+  ├─ 6. Handler ────────── Execute command handler with validated params
+  └─ 7. Plugin (post) ──── onAfterCommandExecution (always runs, even on error)
 ```
 
 ## Entry Point
@@ -49,39 +48,34 @@ Merges command option aliases (from Zod `.meta({ aliases })`) with bequeath opti
 
 Splits raw argv into `{ positional: string[], options: Record<string, any> }` using mri with the alias map.
 
-### 3. Middleware
+### 3. Pre-Execution Plugin Hooks
 
-Runs the middleware array sequentially. All middleware share a single mutable `ctx` (`Record<string, any>`). Each middleware calls `next()` to advance the chain. The resulting context is forwarded to the handler.
+Runs `onBeforeCommandExecution` for global plugins, then command plugins, in order. Hooks receive **unvalidated** `parsedOptions` and `parsedPositionals`. If a hook throws, the rest of the pipeline (including middleware and handler) does not run.
 
-```
-middleware[0]({ ctx, next }) → middleware[1]({ ctx, next }) → ... → done
-                                              ↑ same object
-```
+### 4. Middleware
 
-### 4. Extraneous Options
+Runs the **matched command’s** `middleware` array only (not parent commands’ arrays), in order. Each step receives frozen params `{ ctx, next, cli, command, halt }`. Context grows when a middleware **returns** `next({ ctx: { ... } })` (deep-merge via defu). Each middleware must **return** the result of `next()`. The final context is passed to bequeath option handlers and the command handler as `ctx`.
+
+### 5. Extraneous Options
 
 Checks parsed options against the schema + bequeath option names. Behavior depends on `throwOnExtrageousOptions`:
 - `'throw'` (default): throws `InvalidOptionsError`
 - `'filter-out'`: silently drops unknown options
 - `'pass-through'`: keeps them for the handler
 
-### 5. Bequeath Option Handlers
+### 6. Bequeath Option Handlers
 
 Iterates bequeath options. If a bequeath option is present in parsed args:
 - Validates its value against its Zod schema
 - If it has a handler (e.g. `--help`, `--version`): executes it and **returns early** (short-circuits the rest of the pipeline)
 
-### 6. Positional Validation
+### 7. Positional Validation
 
 Extracts the positional value, then runs `schema.parse()`. Throws `InvalidPositionalError` on failure.
 
-### 7. Options Validation
+### 8. Options Validation
 
 Separates valid vs. extra options, then runs `schema.parse()` on valid options. For `'pass-through'` mode, extra options are merged back into the result.
-
-### 8. Pre-Execution Plugin Hooks
-
-Collects global plugins first, then command-level plugins (created on the fly from definitions). Runs `onBeforeCommandExecution` hooks in order. If a hook throws, the handler does not execute.
 
 ### 9. Handler
 

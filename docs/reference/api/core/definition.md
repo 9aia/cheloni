@@ -165,13 +165,10 @@ Creates a middleware definition.
 ```typescript
 import { defineMiddleware } from "cheloni";
 
-const middleware = defineMiddleware(async ({ ctx, next }) => {
-  const result = await next({
-    ctx: {
-      duration: Date.now() - ctx.startTime,
-    },
-  });
-  console.log("Duration:", Date.now() - ctx.startTime);
+const middleware = defineMiddleware(async ({ next }) => {
+  const start = Date.now();
+  const result = await next();
+  console.log("Duration (ms):", Date.now() - start);
   return result;
 });
 ```

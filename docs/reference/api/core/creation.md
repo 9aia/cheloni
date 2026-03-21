@@ -273,10 +273,22 @@ type Context = {
 };
 ```
 
-### `Middleware`
+### `MiddlewareResult<TCtx>`
 
 ```typescript
-type Middleware = (params?: MiddlewareParams) => Promisable<void>;
+interface MiddlewareResult<TCtx extends Record<string, any> = Record<string, any>> {
+  ctx: TCtx;
+}
+```
+
+### `Middleware`
+
+Middleware must **return** the result of calling `next()` (with or without extra context).
+
+```typescript
+type Middleware<TCtxOut extends Record<string, any> = Record<string, any>> = (
+  params: MiddlewareParams
+) => Promisable<MiddlewareResult<TCtxOut>>;
 ```
 
 ### `MiddlewareFactory<TOptions, TMiddleware>`
@@ -285,25 +297,29 @@ A helper type for creating a middleware from some configuration/options.
 ```typescript
 type MiddlewareFactory<
   TOptions extends Record<string, any>,
-  TMiddleware extends Middleware = Middleware
+  TMiddleware extends Middleware<any> = Middleware<any>
 > = (options: TOptions) => TMiddleware;
 ```
 
 ### `MiddlewareParams`
 
 ```typescript
-interface MiddlewareParams {
+type MiddlewareParams<TCtx extends Record<string, any> = Record<string, any>> = Readonly<{
+  ctx: TCtx;
+  next: NextFunction<TCtx>;
+  cli: Cli;
   command: Command;
-  ctx: Context;
-  next: NextFunction;
   halt: HaltFunction;
-}
+}>;
 ```
 
 ### `NextFunction`
 
 ```typescript
-type NextFunction = () => Promise<void>;
+interface NextFunction<TCtx extends Record<string, any> = Record<string, any>> {
+  (): Promise<MiddlewareResult<TCtx>>;
+  <T extends Record<string, any>>(opts: { ctx: T }): Promise<MiddlewareResult<TCtx & T>>;
+}
 ```
 
 ### `HaltFunction`

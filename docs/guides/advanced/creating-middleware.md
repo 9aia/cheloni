@@ -89,20 +89,28 @@ const authMiddleware = defineMiddleware(async ({ next }) => {
 
 ## Execution Order
 
-Middleware executes sequentially in array order. Root-command middleware runs first, then subcommand middleware — all **before** option validation and the handler.
+Middleware runs **only on the command that was matched** (the resolved leaf from argv). Parent or root `middleware` arrays are **not** run when a subcommand is selected. To reuse the same stack on several commands, share an array (for example via `defineMiddlewareArray`) and attach it to each command that needs it.
 
 ```typescript
-const cli = await createCli({
+import { createCli, defineCommand, defineMiddlewareArray, defineRootCommand } from 'cheloni';
+
+const baseMiddleware = defineMiddlewareArray([
+  loggerMiddleware,
+  authMiddleware,
+]);
+
+await createCli({
   name: 'my-cli',
-  command: {
-    middleware: [loggerMiddleware, authMiddleware], // runs for all commands
+  command: defineRootCommand({
     commands: [
       defineCommand({
         name: 'deploy',
-        middleware: [configMiddleware], // runs after root middleware
+        middleware: [...baseMiddleware, configMiddleware],
         handler: async ({ ctx }) => { /* ... */ },
       }),
     ],
-  },
+  }),
 });
 ```
+
+Within one command, middleware runs in array order, **before** option validation and the handler.
