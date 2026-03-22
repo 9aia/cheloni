@@ -5,10 +5,7 @@ import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
 import type { AnyMiddleware } from "~/core/creation/command/middleware";
 import { createPlugin } from "~/core/creation/plugin";
-import {
-  executePostCommandHooks,
-  runBeforeCommandExecutionChain,
-} from "~/core/execution/plugin/command-hooks";
+import { runCommandExecutionChain } from "~/core/execution/plugin/command-hooks";
 import { buildAliasMap } from "~/utils/execution/alias";
 import { parseArgs } from "../parser";
 import { HaltError, InvalidOptionsError } from "./errors";
@@ -101,20 +98,16 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
   const aliasMap = buildAliasMap(def, cli, command);
   const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
 
-  const ctxAfterCommand: { current: UnknownRecord } = { current: {} };
-
   try {
-    await runBeforeCommandExecutionChain({
+    await runCommandExecutionChain({
       plugins: allPlugins,
       cli,
       command: def,
+      commandInstance: command,
       parsedOptions: rawOptions,
       parsedPositionals: positionalArgs,
       runAfterHooks: async (pluginCtx) => {
-        ctxAfterCommand.current = { ...pluginCtx };
-
         let commandCtx = await executeMiddlewareChain(def.middleware, cli, command, pluginCtx);
-        ctxAfterCommand.current = commandCtx;
 
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? "throw";
         const optionNames = buildOptionNames(cli, command);
@@ -126,7 +119,6 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         );
 
         commandCtx = await validateAndExecuteOptions(validatedOptions, cli, command, commandCtx);
-        ctxAfterCommand.current = commandCtx;
 
         const positionalSchema = def.positional;
         const positional = validatePositional(positionalSchema, positionalArgs);
@@ -139,7 +131,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
           command.bequeathOptions,
         );
 
-        ctxAfterCommand.current = defu(cliOptions as UnknownRecord, commandCtx) as UnknownRecord;
+        const mergedCtx = defu(cliOptions as UnknownRecord, commandCtx) as UnknownRecord;
 
         if (def.handler) {
           const handlerParams: CommandHandlerParams<typeof positionalSchema, typeof optionsSchema> =
@@ -152,6 +144,8 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
             };
           await def.handler(handlerParams);
         }
+
+        return mergedCtx;
       },
     });
   } catch (error) {
@@ -159,13 +153,5 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
       return;
     }
     throw error;
-  } finally {
-    await executePostCommandHooks({
-      plugins: allPlugins,
-      cli,
-      command: def,
-      commandInstance: command,
-      ctx: ctxAfterCommand.current,
-    });
   }
 }

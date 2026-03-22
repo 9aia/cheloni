@@ -40,11 +40,10 @@ Executes a command with the provided arguments. This function:
 - Executes middleware
 - Validates options and positional arguments
 - Executes bequeath option handlers
-- Calls `onBeforeCommandExecution` hooks
-- Executes the command handler
-- Calls `onAfterCommandExecution` hooks
+- Calls `onCommandExecution` hooks (each wraps the rest of the chain, then middleware, validation, and the handler)
+- Executes the command handler (inside the innermost `execute()`)
 
-Note: plugin hook failures (e.g. `onInit`, `onBeforeCommandExecution`, `onError` throwing) are wrapped as plugin errors and routed directly to `cli.onError` to avoid error-handler plugin loops. **`return halt()` from `onBeforeCommandExecution` is not a failure** — it uses the same `HaltError` path as middleware and ends the command quietly; `onAfterCommandExecution` still runs.
+Note: plugin hook failures (e.g. `onInit`, `onCommandExecution` before `execute()` completes, `onError` throwing) are wrapped as plugin errors and routed directly to `cli.onError` to avoid error-handler plugin loops. **`return halt()` from `onCommandExecution` is not a failure** — it uses the same `HaltError` path as middleware and ends the command quietly. Failures **after** `await execute()` resolves are routed to `cli.onError` as `PluginAfterCommandExecutionError` without changing a successful command outcome.
 
 **Parameters:**
 
@@ -197,17 +196,16 @@ class InvalidPositionalError extends InvalidSchemaError {
 ## Execution Flow
 
 1. **Argument Parsing** - Parse raw arguments into positional and options (alias map applied first)
-2. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks (unvalidated parsed args; each hook must **return** `execute({ ctx })` or `halt()` — same merge semantics as middleware `next({ ctx })`, same stop semantics as middleware `halt()`)
+2. **Plugin `onCommandExecution` chain** - Global then command plugins (same registration order as before). Each hook receives unvalidated `parsedOptions` / `parsedPositionals` and must **return** `await execute({ ctx })` or `halt()` — same merge semantics as middleware `next({ ctx })`, same stop semantics as middleware `halt()`. The innermost `execute` runs middleware through handler.
 3. **Middleware Execution** - Execute the **matched command’s** middleware chain only; starts from plugin-merged `ctx`; context from `next({ ctx })` is merged
 4. **Extraneous Options** - Enforce `throwOnExtrageousOptions` policy against the command schema and bequeath names
 5. **Bequeath Option Handlers** - Execute bequeath option handlers when flags are present (may short-circuit)
 6. **Positional Validation** - Extract and validate positional arguments with Zod
 7. **Option Schema Validation** - Validate command options with Zod
 8. **Handler Execution** - Execute the command handler
-9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks in a `finally` block with post-attempt `ctx` (options merged over command context when available; always runs, even on error)
 
 ## Hook Execution Order
 
-`onBeforeCommandExecution` runs once per invocation, immediately after parse and **before** middleware and validation. Hooks compose through **returning** `execute({ ctx })` or `halt()`, like middleware `next` / `halt`. `onAfterCommandExecution` runs in `finally` after the handler attempt and receives post-attempt `ctx` for telemetry and cleanup.
+`onCommandExecution` runs once per invocation, immediately after parse. Outer plugins wrap inner ones: the first registered global plugin’s hook runs first and calls `execute`, which enters the next plugin, and so on, until the core pipeline (middleware → validation → handler) runs inside the innermost `execute`. Code **after** each `await execute()` unwinds in reverse order (inner plugin teardown runs before outer). Use `try` / `finally` inside a hook when teardown must run even if `execute()` rejects.
 
-For both hooks, plugins run in the same order: **global** plugins (from `cli.plugins`, in registration order), then **command-level** plugins from the matched command’s definition (in definition order).
+Plugins run in the same order as before: **global** plugins (from `cli.plugins`, in registration order), then **command-level** plugins from the matched command’s definition (in definition order).

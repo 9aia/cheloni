@@ -24,13 +24,18 @@ export class PluginInitError extends PluginHookError {
   }
 }
 
-export class PluginBeforeCommandExecutionError extends PluginHookError {
+/** Thrown when `onCommandExecution` fails before the inner pipeline completes (or omits `execute` / `halt`). */
+export class PluginCommandExecutionError extends PluginHookError {
   constructor(message: string, cause?: unknown) {
     super(message, cause);
-    this.name = "PluginBeforeCommandExecutionError";
+    this.name = "PluginCommandExecutionError";
   }
 }
 
+/**
+ * Thrown when code in `onCommandExecution` runs **after** `await execute(...)` resolved and then throws.
+ * Routed to `cli.onError` like the former `onAfterCommandExecution` failures; the command outcome is unchanged.
+ */
 export class PluginAfterCommandExecutionError extends PluginHookError {
   constructor(message: string, cause?: unknown) {
     super(message, cause);

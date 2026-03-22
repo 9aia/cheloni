@@ -18,7 +18,7 @@ export interface ExecuteMiddlewareOptions {
   command: Command;
   /**
    * Starting context before the first middleware runs (e.g. merged from
-   * `onBeforeCommandExecution` via `execute({ ctx })`).
+   * `onCommandExecution` via `execute({ ctx })`).
    */
   ctx?: UnknownRecord;
 }

@@ -16,14 +16,13 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
   onInit: async ({ cli, plugin }) => {
     // Called when CLI is created
   },
-  onBeforeCommandExecution: async ({ cli, plugin, command, execute }) => {
+  onCommandExecution: async ({ cli, plugin, command, execute }) => {
     if (options.level === "debug") {
       console.debug("About to run", command.name);
     }
-    return execute();
-  },
-  onAfterCommandExecution: async ({ cli, plugin, command }) => {
-    // Called after each command execution (even if it fails)
+    const ctx = await execute();
+    // Teardown / logging after the handler (use try/finally if this must run when execute rejects)
+    return ctx;
   },
   onDestroy: async ({ cli, plugin }) => {
     // Called when CLI is shutting down
@@ -33,11 +32,11 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
 
 ## Injecting context with `execute()` and stopping with `halt()`
 
-`onBeforeCommandExecution` receives `execute` and `halt`, like middleware `next` / `halt`. **Return** `await execute({ ctx: { ... } })` to run the remaining before-hooks, then middleware, validation, and the handler. Merged fields become part of command `ctx` (same `defu` rules as `next({ ctx })`). **Return** `halt()` to stop the command cleanly with no error.
+`onCommandExecution` receives `execute` and `halt`, like middleware `next` / `halt`. **Return** `await execute({ ctx: { ... } })` to run the remaining plugin hooks, then middleware, validation, and the handler. Merged fields become part of command `ctx` (same `defu` rules as `next({ ctx })`). **Return** `halt()` to stop the command cleanly with no error.
 
-If you neither return `execute(...)` nor `halt()`, Cheloni throws a `PluginBeforeCommandExecutionError`.
+If you neither return `execute(...)` nor `halt()`, Cheloni throws `PluginCommandExecutionError`.
 
-`onAfterCommandExecution` receives `ctx`: a snapshot after the command attempt — validated options merged over accumulated command context when those stages ran, so you can combine injected values (for example `startTime`) with parsed flags.
+`await execute()` resolves to the post-attempt context snapshot — validated options merged over accumulated command `ctx` when those stages ran — so you can combine injected values (for example `startTime`) with parsed flags in the same hook.
 
 See the [benchmark example](../examples/03-benchmark.md) (`src/plugins/time.ts`).
 
@@ -63,34 +62,22 @@ const plugin = definePlugin({
 });
 ```
 
-### `onBeforeCommand`
+### `onCommandExecution`
 
-Runs before each command handler. Use it for:
+Runs around each command (after parse, before middleware in the innermost `execute`). Use it for:
 
-- Authentication checks
-- Logging command start
-- Performance tracking
-
-```typescript
-onBeforeCommand: async ({ cli, command }) => {
-  console.log(`Executing: ${command.manifest.name}`);
-  const startTime = Date.now();
-  // Store in plugin state for onAfterCommand
-};
-```
-
-### `onAfterCommand`
-
-Runs after each command handler, even if it throws. Use it for:
-
-- Cleanup
-- Logging completion
-- Error tracking
+- Authentication checks before `await execute()`
+- Logging and performance tracking (`const ctx = await execute(...)` then log)
+- Cleanup with `try` / `finally` when `execute()` may reject
 
 ```typescript
-onAfterCommand: async ({ cli, command }) => {
-  console.log(`Completed: ${command.manifest.name}`);
-  // Always runs, even if handler failed
+onCommandExecution: async ({ cli, command, execute }) => {
+  console.log(`Executing: ${command.name}`);
+  try {
+    return await execute();
+  } finally {
+    console.log(`Finished: ${command.name}`);
+  }
 };
 ```
 
@@ -120,8 +107,9 @@ import { createCli, definePlugin } from "cheloni";
 
 const analyticsPlugin = definePlugin({
   name: "analytics",
-  onBeforeCommand: async ({ command }) => {
-    trackCommandUsage(command.manifest.name);
+  onCommandExecution: async ({ command, execute }) => {
+    trackCommandUsage(command.name);
+    return execute();
   },
 });
 
@@ -141,8 +129,9 @@ import { defineCommand, definePlugin } from "cheloni";
 
 const deploymentPlugin = definePlugin({
   name: "deployment-plugin",
-  onBeforeCommand: async () => {
+  onCommandExecution: async ({ execute }) => {
     await checkDeploymentPermissions();
+    return execute();
   },
 });
 
@@ -162,16 +151,16 @@ const deployCommand = defineCommand({
 ```typescript
 const analyticsPlugin = definePlugin({
   name: "analytics",
-  onBeforeCommand: async ({ command }) => {
+  onCommandExecution: async ({ command, execute }) => {
     await trackEvent("command_started", {
       command: command.manifest.name,
       timestamp: Date.now(),
     });
-  },
-  onAfterCommand: async ({ command }) => {
+    const ctx = await execute();
     await trackEvent("command_completed", {
       command: command.manifest.name,
     });
+    return ctx;
   },
 });
 ```
@@ -181,10 +170,9 @@ const analyticsPlugin = definePlugin({
 ```typescript
 const loggingPlugin = definePlugin({
   name: "logging",
-  onBeforeCommand: async ({ command }) => {
+  onCommandExecution: async ({ command, execute }) => {
     console.log(`[${new Date().toISOString()}] Starting: ${command.manifest.name}`);
-  },
-  onAfterCommand: async ({ command }) => {
+    await execute();
     console.log(`[${new Date().toISOString()}] Completed: ${command.manifest.name}`);
   },
 });
@@ -225,12 +213,13 @@ import { definePlugin, defineCommand, createCli } from "cheloni";
 
 const timer = definePlugin({
   name: "timer",
-  onBeforeCommandExecution: async ({ command, execute }) => {
+  onCommandExecution: async ({ command, execute }) => {
     console.time(command.name);
-    return execute();
-  },
-  onAfterCommandExecution: async ({ command }) => {
-    console.timeEnd(command.name);
+    try {
+      return await execute();
+    } finally {
+      console.timeEnd(command.name);
+    }
   },
 });
 
@@ -256,23 +245,20 @@ defineCommand({
 ### Hook Error Behavior
 
 - **`onInit`**: Errors prevent CLI initialization and are thrown immediately
-- **`onBeforeCommand`**: Errors prevent command execution and are displayed to the user
-- **`onAfterCommand`**: Errors are logged but don't override the original handler error
+- **`onCommandExecution`**: If you throw before `await execute()` completes, the pipeline stops. If you throw after `await execute()` resolved, Cheloni routes `PluginAfterCommandExecutionError` to `cli.onError` without changing a successful command outcome
 - **`onDestroy`**: Errors are logged during shutdown
 
 ```typescript
 const plugin = definePlugin({
   name: "my-plugin",
-  onBeforeCommand: async ({ command }) => {
+  onCommandExecution: async ({ command, execute }) => {
     if (!hasPermission(command)) {
       throw new Error(`Permission denied for command: ${command.manifest.name}`);
     }
-  },
-  onAfterCommand: async ({ command }) => {
+    await execute();
     try {
       await logCommandExecution(command);
     } catch (error) {
-      // Log but don't throw - original error takes precedence
       console.error("Failed to log execution:", error);
     }
   },
@@ -281,21 +267,21 @@ const plugin = definePlugin({
 
 **Key points:**
 
-- Throw errors in `onInit` and `onBeforeCommand` to stop execution
-- Don't throw in `onAfterCommand` or `onDestroy` - handle errors internally
-- Use try-catch in cleanup hooks to prevent masking original errors
+- Throw errors in `onInit` or before `execute()` finishes to stop execution
+- Prefer not to throw from `onDestroy`; handle errors internally
+- Use `try` / `finally` around `await execute()` when cleanup must run even if the handler throws
 - Error messages are automatically displayed by the framework
 
 ## Best Practices
 
 - **Keep hooks focused**: Each hook should do one thing well
 - **Handle errors gracefully**: Hook failures can break CLI initialization or execution
-- **Use `onAfterCommand` for cleanup**: It always runs, even if the handler throws
+- **Use `try` / `finally` around `await execute()`** when cleanup must run even if the handler throws
 - **Store state in closures**: Use closures to share data between hooks
 - **Make plugins reusable**: Export plugins for use across multiple CLIs
 
 1. **Use `onInit` for structural changes** - Modify CLI structure only in `onInit`
 2. **Keep hooks focused** - Each hook should do one thing well
-3. **Handle errors gracefully** - `onAfterCommandExecution` and `onDestroy` should not throw
+3. **Handle errors gracefully** - Avoid throwing from `onDestroy`; after `await execute()` resolves, throws are routed to `cli.onError` rather than failing the command
 4. **Use command plugins for command-specific behavior** - Global plugins for cross-cutting concerns
-5. **Use `execute({ ctx })` when middleware needs your data** - Inject early context before the middleware chain; read it back from `onAfterCommandExecution`’s `ctx` if you also need validated options
+5. **Use `execute({ ctx })` when middleware needs your data** - Inject early context before the middleware chain; read merged values from the object returned by `await execute()` if you need validated options too

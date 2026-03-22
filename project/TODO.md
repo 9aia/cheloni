@@ -17,7 +17,6 @@
 - Add dependencies for commands, so it can inherit types
   - Improve option inference to include inheritance from parent commands
   - Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
-- Merge `onBeforeCommandExecution` and `onAfterCommandExecution` into `onCommandLifecycle`, allowing logic before/after `await execute()`, similar to FastAPI.
 - Abstract validation and introspection as a plugin "hook"
   - Add zod plugin
   - Add validation to definition usage to ensure that the definition is valid

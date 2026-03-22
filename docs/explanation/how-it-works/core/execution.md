@@ -9,11 +9,9 @@ argv
   │
   ├─ 1. Route ──────────── Match command from the nested command tree
   ├─ 2. Parse ──────────── Extract positional args and options (resolve aliases)
-  ├─ 3. Plugin (pre) ────── onBeforeCommandExecution (global + command plugins; raw parsed args)
-  ├─ 4. Middleware ─────── Matched command only; build ctx via next()
-  ├─ 5. Validate ───────── Unknown-option policy, bequeath handlers, Zod positional & options
-  ├─ 6. Handler ────────── Execute command handler with validated params
-  └─ 7. Plugin (post) ──── onAfterCommandExecution (always runs, even on error)
+  ├─ 3. Plugin wrap ────── onCommandExecution (nested: outer hooks call execute → inner hooks → core)
+  │                         Core = middleware → validate → handler (inside innermost execute)
+  └─ (teardown) ───────── Code after each await execute() unwinds outward; use try/finally for “always” cleanup
 ```
 
 ## Entry Point
@@ -25,7 +23,7 @@ argv
 3. On error: formats and logs via `handleError()`, then `process.exit(1)`
 4. **Finally**: runs `onDestroy` plugin hooks (always, even on error)
 
-Deprecation warnings are not emitted by the core execution layer. If you install the standard library `deprecationPlugin`, it will emit warnings via plugin hooks (e.g. `onInit` for the CLI and `onBeforeCommandExecution` for the matched command).
+Deprecation warnings are not emitted by the core execution layer. If you install the standard library `deprecationPlugin`, it will emit warnings via plugin hooks (e.g. `onInit` for the CLI and `onCommandExecution` for the matched command).
 
 ## Routing
 
@@ -48,9 +46,9 @@ Merges command option aliases (from Zod `.meta({ aliases })`) with bequeath opti
 
 Splits raw argv into `{ positional: string[], options: Record<string, any> }` using mri with the alias map.
 
-### 3. Pre-Execution Plugin Hooks
+### 3. Plugin `onCommandExecution` chain
 
-Runs `onBeforeCommandExecution` for global plugins, then command plugins, in order. Hooks receive **unvalidated** `parsedOptions` and `parsedPositionals`, plus `execute({ ctx })` and `halt()`. The hook must **return** `execute(...)` or `halt()` (middleware-style). `execute` continues with the **next** before-hooks, then middleware, validation, and the handler, merging `ctx` like `next({ ctx })` (via defu). `halt` ends the command cleanly with no error. Omitting both is a `PluginBeforeCommandExecutionError`. If a hook throws any other error, the rest of the pipeline does not run.
+Runs for global plugins, then command plugins, in order. Each hook receives **unvalidated** `parsedOptions` and `parsedPositionals`, plus `execute({ ctx })` and `halt()`. The hook must **return** `await execute(...)` or `halt()` (middleware-style). `execute` continues with the **next** plugin hook, then (in the innermost call) middleware, validation, and the handler, merging `ctx` like `next({ ctx })` (via defu). `execute` resolves with the post-attempt context snapshot (validated options merged over accumulated `ctx` when those stages completed). `halt` ends the command cleanly with no error. Omitting both `execute` and `halt` is a `PluginCommandExecutionError`. If a hook throws before `execute()` completes successfully, the rest of the pipeline does not run.
 
 ### 4. Middleware
 
@@ -87,9 +85,9 @@ Calls the command handler with:
 { positional, options, ctx, command, cli }
 ```
 
-### 10. Post-Execution Plugin Hooks
+### 10. Teardown in plugins
 
-Runs `onAfterCommandExecution` in a `finally` block — always executes, even if the handler threw. Hooks receive `ctx`: a snapshot after the attempt — validated command options merged over accumulated command context when those stages completed (otherwise best-effort partial). Hook errors are logged but don't override the original error.
+There is no separate global “post” hook pass. Put logic after `await execute()` inside `onCommandExecution`, or use `try` / `finally` so cleanup runs when `execute()` rejects (for example if the handler throws). If code after `await execute()` throws once `execute` has resolved, Cheloni routes that error to `cli.onError` without changing a successful command outcome (same spirit as the old `onAfterCommandExecution` error path).
 
 ## Error Handling
 

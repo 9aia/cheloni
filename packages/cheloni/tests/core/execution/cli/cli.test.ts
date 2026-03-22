@@ -4,7 +4,7 @@ import {
   defineCommand,
   createCli,
   executeCli,
-  PluginBeforeCommandExecutionError,
+  PluginCommandExecutionError,
   PluginAfterCommandExecutionError,
   PluginDestroyError,
   PluginHookError,
@@ -283,7 +283,7 @@ describe("executeCli", () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  it("routes onBeforeCommandExecution failures to cli.onError (bypassing onError plugins)", async () => {
+  it("routes onCommandExecution failures (before execute) to cli.onError (bypassing onError plugins)", async () => {
     const onErrorPlugin = vi.fn().mockReturnValue(true);
     const cliOnError = vi.fn();
 
@@ -293,7 +293,7 @@ describe("executeCli", () => {
         plugins: [
           {
             name: "before-throws",
-            onBeforeCommandExecution: async () => {
+            onCommandExecution: async () => {
               throw new Error("before boom");
             },
           },
@@ -321,11 +321,11 @@ describe("executeCli", () => {
     expect(onErrorPlugin).not.toHaveBeenCalled();
     expect(cliOnError).toHaveBeenCalledOnce();
     const params = cliOnError.mock.calls[0]![0];
-    expect(params.error).toBeInstanceOf(PluginBeforeCommandExecutionError);
-    expect(String((params.error as Error).message)).toContain("onBeforeCommandExecution");
+    expect(params.error).toBeInstanceOf(PluginCommandExecutionError);
+    expect(String((params.error as Error).message)).toContain("onCommandExecution");
   });
 
-  it("routes onAfterCommandExecution failures to cli.onError without failing the command", async () => {
+  it("routes onCommandExecution failures after execute to cli.onError without failing the command", async () => {
     const handler = vi.fn();
     const cliOnError = vi.fn();
 
@@ -335,7 +335,8 @@ describe("executeCli", () => {
         plugins: [
           {
             name: "after-throws",
-            onAfterCommandExecution: async () => {
+            onCommandExecution: async ({ execute }) => {
+              await execute();
               throw new Error("after boom");
             },
           },
@@ -360,7 +361,7 @@ describe("executeCli", () => {
     expect(cliOnError).toHaveBeenCalledOnce();
     const params = cliOnError.mock.calls[0]![0];
     expect(params.error).toBeInstanceOf(PluginAfterCommandExecutionError);
-    expect(String((params.error as Error).message)).toContain("onAfterCommandExecution");
+    expect(String((params.error as Error).message)).toContain("onCommandExecution failed after execute()");
   });
 
   it("routes onDestroy failures to cli.onError", async () => {

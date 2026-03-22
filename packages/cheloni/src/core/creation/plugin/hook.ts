@@ -18,25 +18,17 @@ export interface PluginCommandHookParams extends PluginHookParams {
 }
 
 /**
- * Continue with the next `onBeforeCommandExecution` hooks, then middleware, validation, and the handler.
+ * Run the next `onCommandExecution` hooks, then middleware, validation, and the handler.
  * Pass `ctx` to deep-merge into command context (same merge rules as middleware `next({ ctx })`).
+ * Resolves with the post-attempt context snapshot: validated options merged over accumulated command
+ * `ctx` when those stages completed; otherwise best-effort partial (e.g. early halt or validation error).
  */
-export type PluginBeforeExecuteFn = (opts?: { ctx?: UnknownRecord }) => Promisable<void>;
+export type PluginCommandExecuteFn = (opts?: { ctx?: UnknownRecord }) => Promisable<UnknownRecord>;
 
-export interface PluginBeforeCommandHookParams extends PluginCommandHookParams {
-  execute: PluginBeforeExecuteFn;
+export interface PluginCommandExecutionHookParams extends PluginCommandHookParams {
+  execute: PluginCommandExecuteFn;
   /** Stop the command pipeline without error (same as command middleware `halt`). */
   halt: HaltFunction;
-}
-
-/**
- * `onAfterCommandExecution` — `ctx` is the context snapshot after the command attempt:
- * validated options merged over accumulated command `ctx` when those stages ran; otherwise
- * best-effort partial (e.g. early halt or validation error).
- */
-export interface PluginAfterCommandHookParams extends PluginHookParams {
-  command: CommandDefinition;
-  ctx: UnknownRecord;
 }
 
 export interface PluginErrorHookParams extends PluginHookParams {
@@ -45,8 +37,12 @@ export interface PluginErrorHookParams extends PluginHookParams {
 }
 
 export type PluginHook = (params: PluginHookParams) => Promisable<void>;
-/** Must return `execute(...)` or `halt()` so the pipeline can continue or stop cleanly. */
-export type PluginBeforeCommandHook = (params: PluginBeforeCommandHookParams) => Promisable<void>;
-export type PluginAfterCommandHook = (params: PluginAfterCommandHookParams) => Promisable<void>;
+/**
+ * Wrap the rest of the pipeline: call `await execute({ ctx })`, then run your teardown logic.
+ * Must **return** `await execute(...)` or `halt()`.
+ */
+export type PluginCommandExecutionHook = (
+  params: PluginCommandExecutionHookParams,
+) => Promisable<UnknownRecord | void>;
 /** Return `true` to indicate the error was handled and stop further propagation. */
 export type PluginErrorHook = (params: PluginErrorHookParams) => Promisable<boolean | void>;

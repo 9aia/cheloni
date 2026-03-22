@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vite-plus/test";
 import z from "zod";
 import { createCli, defineCli, defineCommand, executeCommand } from "~/core";
 
-describe("onBeforeCommandExecution execute() / halt()", () => {
+describe("onCommandExecution execute() / halt()", () => {
   it("merges ctx into the handler context when hooks return execute", async () => {
     const handler = vi.fn();
     const cli = await createCli(
@@ -11,7 +11,7 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
         plugins: [
           {
             name: "inject",
-            onBeforeCommandExecution: async ({ execute }) => {
+            onCommandExecution: async ({ execute }) => {
               return await execute({ ctx: { startTime: 42 } });
             },
           },
@@ -34,7 +34,7 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
 
   it("throws if the hook neither invokes execute nor halt", async () => {
     const handler = vi.fn();
-    const onBefore = vi.fn();
+    const onHook = vi.fn();
 
     const cli = await createCli(
       defineCli({
@@ -42,8 +42,8 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
         plugins: [
           {
             name: "bad",
-            onBeforeCommandExecution: async (params) => {
-              onBefore(params);
+            onCommandExecution: async (params) => {
+              onHook(params);
             },
           },
         ],
@@ -58,7 +58,7 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
       "must return execute(...) or halt()",
     );
 
-    expect(onBefore).toHaveBeenCalledOnce();
+    expect(onHook).toHaveBeenCalledOnce();
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -72,10 +72,13 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
         plugins: [
           {
             name: "stop",
-            onBeforeCommandExecution: async ({ halt }) => {
-              return halt();
+            onCommandExecution: async ({ halt }) => {
+              try {
+                return halt();
+              } finally {
+                onAfter();
+              }
             },
-            onAfterCommandExecution: onAfter,
           },
         ],
         command: defineCommand({
@@ -99,13 +102,13 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
         plugins: [
           {
             name: "p1",
-            onBeforeCommandExecution: async ({ execute }) => {
+            onCommandExecution: async ({ execute }) => {
               return await execute({ ctx: { a: 1 } });
             },
           },
           {
             name: "p2",
-            onBeforeCommandExecution: async ({ execute }) => {
+            onCommandExecution: async ({ execute }) => {
               return await execute({ ctx: { b: 2 } });
             },
           },
@@ -126,7 +129,7 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
     );
   });
 
-  it("passes ctx to onAfterCommandExecution with merged options over command ctx", async () => {
+  it("passes merged ctx from execute() for post-execute logic", async () => {
     const onAfter = vi.fn();
     const cli = await createCli(
       defineCli({
@@ -134,10 +137,11 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
         plugins: [
           {
             name: "inject",
-            onBeforeCommandExecution: async ({ execute }) => {
-              return await execute({ ctx: { marker: "pre" } });
+            onCommandExecution: async ({ execute }) => {
+              const ctx = await execute({ ctx: { marker: "pre" } });
+              onAfter(ctx);
+              return ctx;
             },
-            onAfterCommandExecution: onAfter,
           },
         ],
         command: defineCommand({
@@ -156,7 +160,7 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
 
     expect(onAfter).toHaveBeenCalledOnce();
     const params = onAfter.mock.calls[0]![0];
-    expect(params.ctx).toMatchObject({ marker: "pre", flag: true });
+    expect(params).toMatchObject({ marker: "pre", flag: true });
   });
 
   it("throws if execute is called more than once", async () => {
@@ -166,7 +170,7 @@ describe("onBeforeCommandExecution execute() / halt()", () => {
         plugins: [
           {
             name: "bad",
-            onBeforeCommandExecution: async ({ execute }) => {
+            onCommandExecution: async ({ execute }) => {
               await execute();
               return execute();
             },

@@ -82,7 +82,7 @@ Only **provided** positionals emit warnings (i.e. if a positional value is prese
 With `deprecationPlugin` installed:
 
 - CLI deprecation is warned during plugin `onInit`
-- Command/option/positional deprecations are warned during `onBeforeCommandExecution`
+- Command/option/positional deprecations are warned during `onCommandExecution`
 
 For background, see:
 

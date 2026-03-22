@@ -7,37 +7,63 @@ import { HaltError } from "~/core/execution/command/errors";
 import { halt } from "~/core/execution/command/halt";
 import {
   PluginAfterCommandExecutionError,
-  PluginBeforeCommandExecutionError,
+  PluginCommandExecutionError,
 } from "~/core/execution/plugin/errors";
 import { getErrorMessage } from "~/utils/execution/errors";
 
-export async function runBeforeCommandExecutionChain(options: {
+async function reportPostExecuteHookFailure(options: {
+  cli: Cli;
+  pluginName: string;
+  hookError: unknown;
+  command?: Command;
+}): Promise<void> {
+  const { cli, pluginName, hookError, command } = options;
+  const message = getErrorMessage(hookError);
+  const error = new PluginAfterCommandExecutionError(
+    `Plugin ${pluginName} onCommandExecution failed after execute(): ${message}`,
+    hookError,
+  );
+
+  if (cli.onError) {
+    try {
+      await cli.onError({ error, cli, command });
+      return;
+    } catch (handlerError) {
+      console.error("CLI onError handler failed:", handlerError);
+    }
+  }
+
+  console.error(error);
+}
+
+export async function runCommandExecutionChain(options: {
   plugins: Array<{ definition: any; manifest: { name: string } }>;
   cli: Cli;
   command: CommandDefinition;
+  commandInstance: Command;
   parsedOptions?: Record<string, any>;
   parsedPositionals?: string[];
   /** Runs middleware, validation, and handler. Receives ctx merged from preceding `execute({ ctx })` calls. */
-  runAfterHooks: (pluginCtx: UnknownRecord) => Promise<void>;
-}): Promise<void> {
-  const { plugins, cli, command, parsedOptions, parsedPositionals, runAfterHooks } = options;
+  runAfterHooks: (pluginCtx: UnknownRecord) => Promise<UnknownRecord>;
+}): Promise<UnknownRecord> {
+  const { plugins, cli, command, commandInstance, parsedOptions, parsedPositionals, runAfterHooks } =
+    options;
 
-  async function runFromIndex(index: number, pluginCtx: UnknownRecord): Promise<void> {
+  async function runFromIndex(index: number, pluginCtx: UnknownRecord): Promise<UnknownRecord> {
     if (index >= plugins.length) {
-      await runAfterHooks(pluginCtx);
-      return;
+      return await runAfterHooks(pluginCtx);
     }
 
     const plugin = plugins[index]!;
-    const hook = plugin.definition.onBeforeCommandExecution;
+    const hook = plugin.definition.onCommandExecution;
 
     if (!hook) {
-      await runFromIndex(index + 1, pluginCtx);
-      return;
+      return await runFromIndex(index + 1, pluginCtx);
     }
 
     let executeCalled = false;
-    let tailPromise: Promise<void> | undefined;
+    let reachedPostExecute = false;
+    let lastCtx: UnknownRecord | undefined;
 
     const execute = async (opts?: { ctx?: UnknownRecord }) => {
       if (executeCalled) {
@@ -45,12 +71,13 @@ export async function runBeforeCommandExecutionChain(options: {
       }
       executeCalled = true;
       const nextCtx = defu(opts?.ctx ?? {}, pluginCtx) as UnknownRecord;
-      tailPromise = runFromIndex(index + 1, nextCtx);
-      await tailPromise;
+      lastCtx = await runFromIndex(index + 1, nextCtx);
+      reachedPostExecute = true;
+      return lastCtx;
     };
 
     try {
-      await hook({
+      const hookReturn = await hook({
         cli,
         plugin,
         command,
@@ -59,64 +86,42 @@ export async function runBeforeCommandExecutionChain(options: {
         execute,
         halt,
       });
+
+      if (!executeCalled) {
+        throw new PluginCommandExecutionError(
+          `Plugin ${plugin.manifest.name} onCommandExecution must return execute(...) or halt()`,
+        );
+      }
+
+      return (hookReturn ?? lastCtx) as UnknownRecord;
     } catch (hookError) {
       if (hookError instanceof HaltError) {
         throw hookError;
       }
+      if (reachedPostExecute && lastCtx !== undefined) {
+        const msg = getErrorMessage(hookError);
+        // Second `execute()` call throws after the first completed — not teardown after a successful pipeline.
+        if (msg === "execute() called multiple times") {
+          throw new PluginCommandExecutionError(
+            `Plugin ${plugin.manifest.name} onCommandExecution hook failed: ${msg}`,
+            hookError,
+          );
+        }
+        await reportPostExecuteHookFailure({
+          cli,
+          pluginName: plugin.manifest.name,
+          hookError,
+          command: commandInstance,
+        });
+        return lastCtx;
+      }
       const message = getErrorMessage(hookError);
-      throw new PluginBeforeCommandExecutionError(
-        `Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed: ${message}`,
+      throw new PluginCommandExecutionError(
+        `Plugin ${plugin.manifest.name} onCommandExecution hook failed: ${message}`,
         hookError,
       );
     }
-
-    if (!executeCalled) {
-      throw new PluginBeforeCommandExecutionError(
-        `Plugin ${plugin.manifest.name} onBeforeCommandExecution must return execute(...) or halt()`,
-      );
-    }
-
-    if (tailPromise) {
-      await tailPromise;
-    }
   }
 
-  await runFromIndex(0, {});
-}
-
-export async function executePostCommandHooks(options: {
-  plugins: Array<{ definition: any; manifest: { name: string } }>;
-  cli: Cli;
-  command: CommandDefinition;
-  commandInstance?: Command;
-  ctx: UnknownRecord;
-}): Promise<void> {
-  const { plugins, cli, command, commandInstance, ctx } = options;
-
-  for (const plugin of plugins) {
-    if (plugin.definition.onAfterCommandExecution) {
-      try {
-        await plugin.definition.onAfterCommandExecution({ cli, plugin, command, ctx });
-      } catch (hookError) {
-        const message = getErrorMessage(hookError);
-        const error = new PluginAfterCommandExecutionError(
-          `Plugin ${plugin.manifest.name} onAfterCommandExecution hook failed: ${message}`,
-          hookError,
-        );
-
-        // Plugin errors go straight to CLI onError to avoid onError-plugin loops.
-        if (cli.onError) {
-          try {
-            await cli.onError({ error, cli, command: commandInstance });
-            continue;
-          } catch (handlerError) {
-            console.error("CLI onError handler failed:", handlerError);
-          }
-        }
-
-        // Best-effort: log but never throw.
-        console.error(error);
-      }
-    }
-  }
+  return await runFromIndex(0, {});
 }

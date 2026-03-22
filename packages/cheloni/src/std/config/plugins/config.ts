@@ -2,7 +2,7 @@ import { loadConfig, type LoadConfigOptions } from "c12";
 import path from "node:path";
 import z from "zod";
 import { createCommand } from "~/core";
-import type { PluginBeforeCommandHook, PluginHook } from "~/core/creation/plugin/hook";
+import type { PluginCommandExecutionHook, PluginHook } from "~/core/creation/plugin/hook";
 import type { PluginDefinition } from "~/core/definition/plugin";
 import { definePlugin } from "~/core/definition/plugin";
 import rootCommand from "~/std/core/commands/root";
@@ -37,11 +37,11 @@ function configPluginFactory<T extends Record<string, any> = Record<string, any>
         bequeathOptions: [configOption],
       });
     },
-    onBeforeCommandExecution: async ({
+    onCommandExecution: async ({
       cli,
       parsedOptions,
       execute,
-    }: Parameters<PluginBeforeCommandHook>[0]) => {
+    }: Parameters<PluginCommandExecutionHook>[0]) => {
       const explicitConfigPath = parsedOptions?.config;
       const cliName = cli.manifest.name;
 
@@ -68,7 +68,7 @@ function configPluginFactory<T extends Record<string, any> = Record<string, any>
         cli.command.definition.middleware = [middleware, ...(existing || [])];
       }
 
-      return execute();
+      return await execute();
     },
   });
 }

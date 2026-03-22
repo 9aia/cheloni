@@ -1,6 +1,5 @@
 import type {
-  PluginAfterCommandHook,
-  PluginBeforeCommandHook,
+  PluginCommandExecutionHook,
   PluginErrorHook,
   PluginHook,
 } from "~/core/creation/plugin/hook";
@@ -10,10 +9,11 @@ export interface PluginDefinition {
   name: string;
   /** Hook that runs once CLI is created. */
   onInit?: PluginHook;
-  /** Hook that runs before a command is executed. */
-  onBeforeCommandExecution?: PluginBeforeCommandHook;
-  /** Hook that runs after a command is executed. */
-  onAfterCommandExecution?: PluginAfterCommandHook;
+  /**
+   * Wrap command execution: run setup, `const ctx = await execute({ ctx })`, then teardown.
+   * `execute` runs remaining plugin hooks, then middleware, validation, and the handler.
+   */
+  onCommandExecution?: PluginCommandExecutionHook;
   /** Hook that runs when any error occurs in the CLI. Return `true` to mark it as handled. */
   onError?: PluginErrorHook;
   /** Hook that runs once CLI is destroyed. */

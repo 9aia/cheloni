@@ -36,7 +36,7 @@ export interface CliDefinition {
    * Custom error handler invoked as a final fallback.
    *
    * - Called when no `plugin.definition.onError` hook handled the error.
-   * - Also called for **plugin hook failures** (e.g. `onInit`, `onBeforeCommandExecution`, `onError` throwing),
+   * - Also called for **plugin hook failures** (e.g. `onInit`, `onCommandExecution`, `onError` throwing),
    *   bypassing error-handler plugins to avoid infinite loops.
    */
   onError?: CliErrorHandler;

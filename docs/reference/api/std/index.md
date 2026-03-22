@@ -156,7 +156,7 @@ const options = mergeOptionsWithVersion(
 Emits deprecation warnings via plugin hooks:
 
 - `onInit`: warns if `cli.manifest.deprecated` is set
-- `onBeforeCommandExecution`: warns if the matched command is deprecated, and warns for **provided** deprecated options/positionals
+- `onCommandExecution`: warns if the matched command is deprecated, and warns for **provided** deprecated options/positionals
 
 This plugin does not change routing or validation; it only emits warnings.
 

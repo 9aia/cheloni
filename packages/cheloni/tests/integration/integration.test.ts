@@ -98,12 +98,11 @@ describe("Integration Tests", () => {
             onInit: async () => {
               lifecycle.push("onInit");
             },
-            onBeforeCommandExecution: async ({ execute }) => {
+            onCommandExecution: async ({ execute }) => {
               lifecycle.push("onBeforeCommand");
-              return execute();
-            },
-            onAfterCommandExecution: async () => {
+              const result = await execute();
               lifecycle.push("onAfterCommand");
+              return result;
             },
             onDestroy: async () => {
               lifecycle.push("onDestroy");
@@ -272,7 +271,7 @@ describe("Integration Tests", () => {
         plugins: [
           {
             name: "global",
-            onBeforeCommandExecution: async (params) => {
+            onCommandExecution: async (params) => {
               globalHook(params);
               return params.execute();
             },
@@ -287,7 +286,7 @@ describe("Integration Tests", () => {
               plugins: [
                 {
                   name: "command",
-                  onBeforeCommandExecution: async (params) => {
+                  onCommandExecution: async (params) => {
                     commandHook(params);
                     return params.execute();
                   },

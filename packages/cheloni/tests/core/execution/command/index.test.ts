@@ -202,8 +202,8 @@ describe("executeCommand", () => {
     expect(order).toEqual(["middleware", "handler"]);
   });
 
-  it("calls onBeforeCommand hooks", async () => {
-    const onBefore = vi.fn();
+  it("calls onCommandExecution hooks", async () => {
+    const onCommand = vi.fn();
     const handler = vi.fn();
 
     const cli = await createCli(
@@ -212,8 +212,8 @@ describe("executeCommand", () => {
         plugins: [
           {
             name: "test-plugin",
-            onBeforeCommandExecution: async (params) => {
-              onBefore(params);
+            onCommandExecution: async (params) => {
+              onCommand(params);
               return params.execute();
             },
           },
@@ -232,12 +232,12 @@ describe("executeCommand", () => {
       cli,
     });
 
-    expect(onBefore).toHaveBeenCalledOnce();
+    expect(onCommand).toHaveBeenCalledOnce();
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it("calls onAfterCommand hooks even if handler fails", async () => {
-    const onAfter = vi.fn();
+  it("runs teardown in onCommandExecution when handler fails (try/finally)", async () => {
+    const onTeardown = vi.fn();
     const handler = vi.fn(() => {
       throw new Error("Handler error");
     });
@@ -248,7 +248,13 @@ describe("executeCommand", () => {
         plugins: [
           {
             name: "test-plugin",
-            onAfterCommandExecution: onAfter,
+            onCommandExecution: async ({ execute }) => {
+              try {
+                return await execute();
+              } finally {
+                onTeardown();
+              }
+            },
           },
         ],
         command: defineCommand({
@@ -267,7 +273,7 @@ describe("executeCommand", () => {
       }),
     ).rejects.toThrow("Handler error");
 
-    expect(onAfter).toHaveBeenCalledOnce();
+    expect(onTeardown).toHaveBeenCalledOnce();
   });
 
   it("handles command-level plugins", async () => {
@@ -280,7 +286,7 @@ describe("executeCommand", () => {
         plugins: [
           {
             name: "global-plugin",
-            onBeforeCommandExecution: async (params) => {
+            onCommandExecution: async (params) => {
               globalHook(params);
               return params.execute();
             },
@@ -291,7 +297,7 @@ describe("executeCommand", () => {
           plugins: [
             {
               name: "command-plugin",
-              onBeforeCommandExecution: async (params) => {
+              onCommandExecution: async (params) => {
                 commandHook(params);
                 return params.execute();
               },

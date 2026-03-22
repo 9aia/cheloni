@@ -75,12 +75,11 @@ const analytics = definePlugin({
   onInit: async ({ cli }) => {
     /* ... */
   },
-  onBeforeCommandExecution: async ({ cli, command, execute }) => {
-    /* ... */
-    return execute();
-  },
-  onAfterCommandExecution: async ({ cli, command }) => {
-    /* ... */
+  onCommandExecution: async ({ cli, command, execute }) => {
+    /* Before command execution logic */
+    const ctx = await execute();
+    /* After command execution logic */
+    return ctx;
   },
   onDestroy: async ({ cli }) => {
     /* ... */
@@ -164,12 +163,9 @@ await executeCli({ cli });
 
 1. Command resolved from `argv` by walking the command tree
 2. Args parsed into positional values and options (with alias resolution)
-3. Plugin `onBeforeCommandExecution` hooks run (unvalidated parsed args; each hook **returns** `execute({ ctx })` or `halt()` to continue or stop)
-4. Middleware chain runs on the matched command only (starts from plugin-merged `ctx`)
-5. Options and positionals validated (unknown-option policy, bequeath option handlers, then Zod)
-6. Command handler runs
-7. Plugin `onAfterCommandExecution` hooks run with post-attempt `ctx` (options merged over command context when available; even on error)
-8. Plugin `onDestroy` hooks run in `executeCli`’s `finally` block
+3. Plugin `onCommandExecution` hooks run (nested; unvalidated parsed args; each hook **returns** `await execute({ ctx })` or `halt()`). The innermost `execute` runs the matched command’s middleware chain (from plugin-merged `ctx`), unknown-option policy, bequeath handlers, Zod validation, then the handler.
+4. Each plugin’s code after `await execute()` runs as the chain unwinds; use `try` / `finally` for teardown when `execute()` rejects
+5. Plugin `onDestroy` hooks run in `executeCli`’s `finally` block
 
 ## Core Concepts
 
@@ -251,8 +247,7 @@ Plugins hook into the CLI lifecycle at specific points. They can be applied glob
 **Lifecycle hooks:**
 
 - `onInit` — runs during `createCli`, can mutate CLI structure
-- `onBeforeCommandExecution` — runs after parse, before middleware and validation; **return** `execute({ ctx })` or `halt()`
-- `onAfterCommandExecution` — runs after handler attempt with post-attempt `ctx` (even on error)
+- `onCommandExecution` — wraps the rest of the pipeline: **return** `await execute({ ctx })` or `halt()`; use the resolved `ctx` for post-handler logic, or `try` / `finally` for cleanup on errors
 - `onDestroy` — runs on CLI shutdown
 
 **Use cases:** telemetry, auth, feature flags, service integration, context enrichment, CLI manipulation, cleanup.

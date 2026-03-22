@@ -2,16 +2,14 @@ import { definePlugin } from "cheloni";
 
 export default definePlugin({
   name: "time",
-  onBeforeCommandExecution: async ({ execute }) => {
-    return await execute({
+  onCommandExecution: async ({ execute }) => {
+    const ctx = await execute({
       ctx: {
         startTime: Date.now(),
       },
     });
-  },
-  onAfterCommandExecution: async ({ ctx }) => {
     const startTime = ctx.startTime;
-    if (startTime === undefined) return;
+    if (startTime === undefined) return ctx;
     const duration = Date.now() - startTime;
     const verbose = ctx.verbose === true;
 
@@ -20,5 +18,6 @@ export default definePlugin({
     } else {
       console.log(`\n⏱️  ${duration}ms`);
     }
+    return ctx;
   },
 });
