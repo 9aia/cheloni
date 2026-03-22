@@ -361,7 +361,9 @@ describe("executeCli", () => {
     expect(cliOnError).toHaveBeenCalledOnce();
     const params = cliOnError.mock.calls[0]![0];
     expect(params.error).toBeInstanceOf(PluginAfterCommandExecutionError);
-    expect(String((params.error as Error).message)).toContain("onCommandExecution failed after execute()");
+    expect(String((params.error as Error).message)).toContain(
+      "onCommandExecution failed after execute()",
+    );
   });
 
   it("routes onDestroy failures to cli.onError", async () => {

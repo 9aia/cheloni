@@ -46,8 +46,15 @@ export async function runCommandExecutionChain(options: {
   /** Runs middleware, validation, and handler. Receives ctx merged from preceding `execute({ ctx })` calls. */
   runAfterHooks: (pluginCtx: UnknownRecord) => Promise<UnknownRecord>;
 }): Promise<UnknownRecord> {
-  const { plugins, cli, command, commandInstance, parsedOptions, parsedPositionals, runAfterHooks } =
-    options;
+  const {
+    plugins,
+    cli,
+    command,
+    commandInstance,
+    parsedOptions,
+    parsedPositionals,
+    runAfterHooks,
+  } = options;
 
   async function runFromIndex(index: number, pluginCtx: UnknownRecord): Promise<UnknownRecord> {
     if (index >= plugins.length) {
