@@ -1,7 +1,7 @@
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
-import type { CommandDefinition } from "~/core/definition/command";
-import type { DefaultMiddlewareCtx, MiddlewareArray } from "~/core/definition/command/middleware";
+import type { AnyCommandDefinition } from "~/core/definition/command";
+import type { DefaultMiddlewareCtx } from "~/core/definition/command/middleware";
 import type { Plugin } from "~/core/creation/plugin";
 import type { HaltFunction } from "~/core/execution/command/halt";
 import type { Promisable, UnknownRecord } from "type-fest";
@@ -13,7 +13,7 @@ export interface PluginHookParams {
 
 /** Shared fields for command-scoped plugin hooks (parsed argv is only meaningful before validation). */
 export interface PluginCommandHookParams extends PluginHookParams {
-  commandDefinition: CommandDefinition;
+  commandDefinition: AnyCommandDefinition;
   parsedOptions?: Record<string, any>;
   parsedPositionals?: string[];
 }

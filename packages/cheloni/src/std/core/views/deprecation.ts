@@ -1,5 +1,5 @@
 import type { Cli } from "~/core/creation/cli";
-import type { CommandDefinition } from "~/core/definition/command";
+import type { AnyCommandDefinition } from "~/core/definition/command";
 import { extractPositionalValue } from "~/core/execution/parser";
 import { getOptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest } from "~/core/manifest/command/positional";
@@ -20,7 +20,7 @@ export function showCliDeprecationWarning({ cli }: CliDeprecationWarningParams):
 }
 
 interface CommandDeprecationWarningParams {
-  command: CommandDefinition;
+  command: AnyCommandDefinition;
 }
 
 export function showCommandDeprecationWarning({ command }: CommandDeprecationWarningParams): void {
@@ -33,7 +33,7 @@ export function showCommandDeprecationWarning({ command }: CommandDeprecationWar
 }
 
 interface OptionDeprecationWarningsParams {
-  command: CommandDefinition;
+  command: AnyCommandDefinition;
   parsedOptions: Record<string, any> | undefined;
 }
 
@@ -56,7 +56,7 @@ export function showOptionDeprecationWarnings({
 }
 
 interface PositionalDeprecationWarningParams {
-  command: CommandDefinition;
+  command: AnyCommandDefinition;
   parsedPositionals: string[] | undefined;
 }
 

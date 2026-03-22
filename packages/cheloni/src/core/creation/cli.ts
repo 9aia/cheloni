@@ -10,17 +10,11 @@ import type { RuntimeObject } from "~/utils/creation/runtime-object";
 import { ManifestKeyedMap } from "~/utils/definition";
 import { PluginInitError } from "~/core/execution/plugin/errors";
 import { getErrorMessage } from "~/utils/execution/errors";
-import type { MiddlewareArray } from "~/core/definition/command/middleware";
-import type { UnknownRecord } from "type-fest";
-
-export interface Cli<
-  TCtx extends UnknownRecord = UnknownRecord,
-  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
-> extends RuntimeObject<CliManifest> {
+export interface Cli extends RuntimeObject<CliManifest> {
   /** The root command of the CLI */
-  command?: RootCommand<TCtx, TMiddlewareArray>;
+  command?: RootCommand;
   /** Plugins applied to all commands */
-  plugins: ManifestKeyedMap<Plugin<TCtx, TMiddlewareArray>>;
+  plugins: ManifestKeyedMap<Plugin>;
   /** Custom error handler called when no plugin handles the error. */
   onError?: CliErrorHandler;
 }

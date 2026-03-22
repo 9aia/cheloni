@@ -6,12 +6,7 @@ import type {
   PluginHook,
 } from "~/core/creation/plugin/hook";
 import type { JsonObject, Promisable, UnknownRecord } from "type-fest";
-import type { MiddlewareArray } from "..";
-
-export interface PluginDefinition<
-  TCtx extends UnknownRecord = UnknownRecord,
-  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
-> {
+export interface PluginDefinition<TCtx extends UnknownRecord = UnknownRecord> {
   name: string;
   /** Hook that runs once CLI is created. */
   onInit?: PluginHook;
@@ -34,7 +29,7 @@ export type PluginFactory<TConfig extends PluginConfig<T>, T extends JsonObject>
 
 /** Params for {@link definePluginCommandExecutionHook}: `execute` is typed like middleware `next`. */
 export type DefinePluginCommandExecutionHookParams = Omit<
-  PluginCommandExecutionHookParams,
+  PluginCommandExecutionHookParams<UnknownRecord>,
   "execute"
 > & {
   execute: PluginExecuteFunction<{}>;
@@ -56,8 +51,8 @@ export type DefinePluginCommandExecutionHookParams = Omit<
  */
 export function definePluginCommandExecutionHook(
   hook: (params: DefinePluginCommandExecutionHookParams) => Promisable<UnknownRecord | void>,
-): PluginCommandExecutionHook {
-  return hook as PluginCommandExecutionHook;
+): PluginCommandExecutionHook<UnknownRecord> {
+  return hook as PluginCommandExecutionHook<UnknownRecord>;
 }
 
 /**

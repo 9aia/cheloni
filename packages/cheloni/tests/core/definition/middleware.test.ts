@@ -12,11 +12,13 @@ describe("defineMiddleware — ctx type inference", () => {
       });
     });
 
-    expectTypeOf(helpMiddleware).toEqualTypeOf<Middleware<{ help: boolean }>>();
+    const _typed: Middleware<{ help: true }> = helpMiddleware;
+    expectTypeOf(helpMiddleware).toEqualTypeOf(_typed);
   });
 
   it("uses an unknown record ctx when there is no middleware", () => {
     const middleware = defineMiddleware(async ({ next }) => next());
-    expectTypeOf(middleware).toEqualTypeOf<Middleware<UnknownRecord>>();
+    const _typed: Middleware<UnknownRecord> = middleware;
+    expectTypeOf(middleware).toEqualTypeOf(_typed);
   });
 });

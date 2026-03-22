@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
-import { createCli, defineCli, defineCommand, executeMiddleware } from "~/core";
+import type { AnyMiddleware } from "~/core";
+import { createCli, defineCli, defineCommand, defineMiddleware, executeMiddleware } from "~/core";
 
 describe("executeMiddleware", () => {
   it("returns empty data when no middleware", async () => {
@@ -186,13 +187,11 @@ describe("executeMiddleware", () => {
 
     await executeMiddleware({
       middleware: [
-        async () => {
-          return { ctx: {} };
-        },
-        async ({ next }) => {
+        (async () => ({ ctx: {} })) as AnyMiddleware,
+        defineMiddleware(async ({ next }) => {
           secondExecuted = true;
           return next();
-        },
+        }),
       ],
       command,
       cli,

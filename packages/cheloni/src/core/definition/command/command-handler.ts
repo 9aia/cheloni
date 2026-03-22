@@ -5,16 +5,16 @@ import type { Promisable } from "type-fest";
 import type { CommandHandlerParams } from "~/core/creation/command";
 
 export type CommandHandler<
-  TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionsSchema,
+  TPositionalDefinition extends PositionalDefinition | undefined,
+  TOptionsDefinition extends OptionsSchema | undefined,
   TCtx extends UnknownRecord,
 > = (
   params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition, TCtx>,
 ) => Promisable<void>;
 
 export function defineCommandHandler<
-  TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionsSchema,
+  TPositionalDefinition extends PositionalDefinition | undefined,
+  TOptionsDefinition extends OptionsSchema | undefined,
   TCtx extends UnknownRecord,
 >(
   handler: CommandHandler<TPositionalDefinition, TOptionsDefinition, TCtx>,

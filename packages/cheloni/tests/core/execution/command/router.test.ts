@@ -57,7 +57,7 @@ describe("findCommandByPath", () => {
 });
 
 describe("resolveCommand", () => {
-  it("resolves to root command when no args", async () => {
+  it("resolves to root when no args and root has a handler", async () => {
     const cli = await createCli(
       defineCli({
         name: "test",
@@ -72,6 +72,39 @@ describe("resolveCommand", () => {
     expect(match).toBeDefined();
     expect(match?.command.manifest.name).toBe("__root__");
     expect(match?.remainingArgv).toEqual([]);
+  });
+
+  it("returns null when no args and root has no handler", async () => {
+    const cli = await createCli(
+      defineCli({
+        name: "test",
+        command: defineCommand({
+          name: "__root__",
+          commands: [
+            defineCommand({
+              name: "sub",
+              paths: ["sub"],
+              handler: async () => {},
+            }),
+          ],
+        }),
+      }),
+    );
+
+    expect(resolveCommand(cli, [])).toBeNull();
+  });
+
+  it("returns null when no args and root has no handler even without subcommands", async () => {
+    const cli = await createCli(
+      defineCli({
+        name: "test",
+        command: defineCommand({
+          name: "__root__",
+        }),
+      }),
+    );
+
+    expect(resolveCommand(cli, [])).toBeNull();
   });
 
   it("resolves nested subcommand by path", async () => {

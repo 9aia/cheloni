@@ -38,7 +38,7 @@ export async function executeMiddleware<
   const { middleware, cli, command, ctx } = options;
 
   if (middleware.length === 0) {
-    return ctx ? { ...ctx } : ({} as TCtx);
+    return (ctx ? { ...ctx } : {}) as TCtx;
   }
 
   for (const fn of middleware) {
@@ -48,10 +48,10 @@ export async function executeMiddleware<
   }
 
   if (process.env.NODE_ENV === "production") {
-    return executeSlim(middleware, cli, command, ctx);
+    return executeSlim(middleware, cli, command, ctx) as TCtx;
   }
 
-  return executeSafe(middleware, cli, command, ctx);
+  return executeSafe(middleware, cli, command, ctx) as TCtx;
 }
 
 /**

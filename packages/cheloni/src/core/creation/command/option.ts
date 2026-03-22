@@ -3,7 +3,11 @@ import type { Command } from ".";
 import type { Cli } from "~/core/creation/cli";
 import type { Promisable, UnknownRecord } from "type-fest";
 import type { HaltFunction } from "~/core/execution/command";
-import type { OptionDefinition, OptionSchema } from "~/core/definition/command/option";
+import type {
+  OptionDefinition,
+  OptionSchema,
+  OptionsSchema,
+} from "~/core/definition/command/option";
 import { getOptionManifest, type OptionManifest } from "~/core/manifest/command/option";
 import type { RuntimeObject } from "~/utils/creation/runtime-object";
 import type { MiddlewareResult, NextFunction } from "~/core/definition/command/middleware";
@@ -63,12 +67,12 @@ export function createOption(definition: OptionDefinition): Option {
   };
 }
 
-/** Infers the TypeScript type from an options schema (`z.infer`), or `{}` when undefined. */
-export type InferOptionsType<TSchema extends OptionSchema | undefined> = [TSchema] extends [
-  OptionSchema,
+/** Infers the TypeScript type from an options schema (`z.infer`), or `{}` when omitted / undefined. */
+export type InferOptionsType<TSchema extends OptionsSchema | undefined> = [TSchema] extends [
+  undefined,
 ]
-  ? z.infer<TSchema>
-  : {};
+  ? {}
+  : z.infer<TSchema>;
 
 /** Controls how unrecognized options are handled during execution. */
 export type ExtrageousOptionsBehavior = "throw" | "filter-out" | "pass-through";

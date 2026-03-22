@@ -105,7 +105,7 @@ export function validateOptionsExist(
   return rawOptions;
 }
 
-export function validatePositional<T extends PositionalSchema>(
+export function validatePositional<T extends PositionalSchema | undefined>(
   positionalSchema: T | undefined,
   positionalArgs: string[],
 ): InferPositionalType<T> {
@@ -123,7 +123,7 @@ export function validatePositional<T extends PositionalSchema>(
   }
 }
 
-export function validateOptions<T extends OptionsSchema>(
+export function validateOptions<T extends OptionsSchema | undefined>(
   optionsSchema: T | undefined,
   validatedOptions: Record<string, any>,
   extrageousOptionsBehavior: "throw" | "filter-out" | "pass-through",

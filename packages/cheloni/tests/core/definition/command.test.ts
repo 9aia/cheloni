@@ -17,7 +17,7 @@ describe("defineCommand — ctx type inference (middleware)", () => {
       name: "cmd",
       middleware: [helpMiddleware],
       handler: async ({ ctx }) => {
-        expectTypeOf(ctx).toEqualTypeOf<UnknownRecord & { help: boolean }>();
+        expectTypeOf(ctx).toEqualTypeOf({ help: true } as UnknownRecord & { help: true });
       },
     });
   });
@@ -30,7 +30,9 @@ describe("defineCommand — ctx type inference (middleware)", () => {
       name: "cmd",
       middleware: [aMiddleware, bMiddleware],
       handler: async ({ ctx }) => {
-        expectTypeOf(ctx).toEqualTypeOf<UnknownRecord & { a: number } & { b: string }>();
+        expectTypeOf(ctx).toEqualTypeOf({ a: 1, b: "two" } as UnknownRecord & { a: number } & {
+          b: string;
+        });
       },
     });
   });
@@ -39,7 +41,28 @@ describe("defineCommand — ctx type inference (middleware)", () => {
     defineCommand({
       name: "cmd",
       handler: async ({ ctx }) => {
-        expectTypeOf(ctx).toEqualTypeOf<UnknownRecord>();
+        expectTypeOf(ctx).toEqualTypeOf({} as UnknownRecord);
+      },
+    });
+  });
+});
+
+describe("defineCommand — positional typing", () => {
+  it("infers parsed positional on the handler from the positional schema", () => {
+    defineCommand({
+      name: "cmd",
+      positional: z.string(),
+      handler: async ({ positional }) => {
+        expectTypeOf(positional).toEqualTypeOf("" as string);
+      },
+    });
+  });
+
+  it("uses undefined positional when no positional schema is set", () => {
+    defineCommand({
+      name: "cmd",
+      handler: async ({ positional }) => {
+        expectTypeOf(positional).toEqualTypeOf(undefined as undefined);
       },
     });
   });
@@ -54,7 +77,10 @@ describe("defineCommand — options typing and bequeathed option next({ ctx })",
         force: z.boolean(),
       }),
       handler: async ({ options }) => {
-        expectTypeOf(options).toEqualTypeOf<{ count?: number; force: boolean }>();
+        expectTypeOf(options).toEqualTypeOf({
+          count: 0 as number | undefined,
+          force: true as boolean,
+        });
       },
     });
   });
@@ -64,7 +90,7 @@ describe("defineCommand — options typing and bequeathed option next({ ctx })",
       name: "flag",
       schema: z.boolean().optional(),
       handler: async ({ value, next }) => {
-        expectTypeOf(value).toEqualTypeOf<boolean | undefined>();
+        expectTypeOf(value).toEqualTypeOf(undefined as boolean | undefined);
         return next({ ctx: { fromOption: value === true } });
       },
     });

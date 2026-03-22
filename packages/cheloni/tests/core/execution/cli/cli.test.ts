@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import {
   defineCli,
   defineCommand,
+  defineRootCommand,
   createCli,
   executeCli,
   PluginCommandExecutionError,
@@ -52,6 +53,51 @@ describe("executeCli", () => {
     await executeCli({ cli, args: [] });
 
     expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it("does not run root when no args and root has no handler (subcommand-only CLI)", async () => {
+    const subHandler = vi.fn();
+    const cli = await createCli(
+      defineCli({
+        name: "test-cli",
+        command: defineRootCommand({
+          commands: [
+            defineCommand({
+              name: "hello",
+              paths: ["hello"],
+              handler: subHandler,
+            }),
+          ],
+        }),
+      }),
+    );
+
+    await expect(executeCli({ cli, args: [] })).rejects.toThrow("process.exit called");
+
+    expect(subHandler).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it("runs subcommand when root has no handler", async () => {
+    const subHandler = vi.fn();
+    const cli = await createCli(
+      defineCli({
+        name: "test-cli",
+        command: defineRootCommand({
+          commands: [
+            defineCommand({
+              name: "hello",
+              paths: ["hello"],
+              handler: subHandler,
+            }),
+          ],
+        }),
+      }),
+    );
+
+    await executeCli({ cli, args: ["hello"] });
+
+    expect(subHandler).toHaveBeenCalledOnce();
   });
 
   it("executes subcommand by path", async () => {

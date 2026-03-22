@@ -1,6 +1,6 @@
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
-import type { RootCommandDefinition } from "~/core/definition/command";
+import type { AnyRootCommandDefinition } from "~/core/definition/command";
 import type { PluginDefinition } from "~/core/definition/plugin";
 import type { Promisable } from "type-fest";
 
@@ -30,7 +30,7 @@ export interface CliDefinition {
   description?: string;
   details?: string;
   deprecated?: boolean | string;
-  command?: RootCommandDefinition;
+  command?: AnyRootCommandDefinition;
   plugins?: PluginDefinition[];
   /**
    * Custom error handler invoked as a final fallback.

@@ -28,7 +28,10 @@ export function resolveCommand(cli: Cli, argv: string[]): CommandMatch | null {
   }
 
   if (argv.length === 0) {
-    // No args: run the root command itself
+    // Subcommand-only CLIs omit a root handler; empty argv must not execute the root.
+    if (!command.definition.handler) {
+      return null;
+    }
     return {
       command,
       remainingArgv: [],

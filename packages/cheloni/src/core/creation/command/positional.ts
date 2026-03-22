@@ -20,7 +20,7 @@ export interface Positional<TSchema extends PositionalSchema> {
 }
 
 export type InferPositionalType<TSchema extends PositionalSchema | undefined> = [TSchema] extends [
-  PositionalSchema | undefined,
+  undefined,
 ]
-  ? z.infer<TSchema>
-  : undefined;
+  ? undefined
+  : z.infer<TSchema>;

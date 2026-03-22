@@ -1,8 +1,4 @@
-import type { MiddlewareArray } from "src/core/definition/command/middleware";
-import type { UnknownRecord } from "type-fest";
-import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
-import type { OptionsSchema } from "~/core/definition/command/option";
-import type { PositionalDefinition } from "~/core/definition/command/positional";
+import type { AnyCommandDefinition, AnyRootCommandDefinition } from "~/core/definition/command";
 import { getOptionsManifest, type OptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest, type PositionalManifest } from "~/core/manifest/command/positional";
 import { getPluginsManifest, type PluginManifest } from "~/core/manifest/plugin";
@@ -20,14 +16,7 @@ export interface CommandManifest extends Manifest {
   details?: string;
 }
 
-function defaultPathsForCommand<
-  TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
-  TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TCtx extends UnknownRecord = UnknownRecord,
-  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
->(
-  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
-): string[] {
+function defaultPathsForCommand(definition: AnyCommandDefinition): string[] {
   if (definition.paths !== undefined && definition.paths !== null) {
     return definition.paths;
   }
@@ -38,14 +27,7 @@ function defaultPathsForCommand<
   return [definition.name];
 }
 
-export function getCommandManifest<
-  TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
-  TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TCtx extends UnknownRecord = UnknownRecord,
-  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
->(
-  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
-): CommandManifest {
+export function getCommandManifest(definition: AnyCommandDefinition): CommandManifest {
   return {
     name: definition.name,
     paths: defaultPathsForCommand(definition),
@@ -64,14 +46,7 @@ export interface RootCommandManifest extends CommandManifest {
   name: "__root__";
 }
 
-export function getRootCommandsManifest<
-  TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
-  TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TCtx extends UnknownRecord = UnknownRecord,
-  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
->(
-  command: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
-): RootCommandManifest {
+export function getRootCommandsManifest(command: AnyRootCommandDefinition): RootCommandManifest {
   return {
     ...getCommandManifest({
       ...command,

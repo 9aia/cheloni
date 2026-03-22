@@ -3,7 +3,7 @@ import type { UnknownRecord } from "type-fest";
 import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
-import type { AnyMiddleware, MiddlewareArray } from "~/core/definition/command/middleware";
+import type { MiddlewareArray } from "~/core/definition/command/middleware";
 import { createPlugin } from "~/core/creation/plugin";
 import { runCommandExecutionChain } from "~/core/execution/plugin/command-hooks";
 import { buildAliasMap } from "~/utils/execution/alias";
