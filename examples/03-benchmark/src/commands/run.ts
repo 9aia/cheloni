@@ -1,12 +1,12 @@
-import { defineCommand } from 'cheloni';
-import z from 'zod';
+import { defineCommand } from "cheloni";
+import z from "zod";
 
 export const runCommand = defineCommand({
-  name: 'run',
-  description: 'Run a command and measure its execution time',
-  positional: z.string().meta({ description: 'Command to execute' }),
+  name: "run",
+  description: "Run a command and measure its execution time",
+  positional: z.string().meta({ description: "Command to execute" }),
   options: z.object({
-    iterations: z.number().optional().meta({ description: 'Number of iterations to run' }),
+    iterations: z.number().optional().meta({ description: "Number of iterations to run" }),
   }),
   handler: async ({ positional, options }) => {
     const command = positional;

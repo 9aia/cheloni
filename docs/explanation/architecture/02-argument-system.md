@@ -17,6 +17,7 @@ defineCommand({
 ```
 
 Usage:
+
 - `my-cli add 42`
 
 ### Required vs Optional
@@ -37,6 +38,7 @@ defineCommand({
 ```
 
 Usage:
+
 - `my-cli deploy prod`
 
 #### Optional positional
@@ -52,6 +54,7 @@ defineCommand({
 ```
 
 Usage:
+
 - `my-cli show`
 - `my-cli show 42`
 
@@ -81,6 +84,7 @@ defineCommand({
 ```
 
 Usage:
+
 - `my-cli dev --watch`
 - `my-cli dev -w`
 
@@ -96,6 +100,7 @@ defineCommand({
 ```
 
 Usage:
+
 - `my-cli run --silent`
 - `my-cli run --quiet`
 
@@ -105,10 +110,13 @@ Usage:
 defineCommand({
   name: "run",
   options: z.object({
-    watch: z.boolean().default(true).meta({
-      aliases: ["w"],
-      description: "Re-run when files change",
-    }),
+    watch: z
+      .boolean()
+      .default(true)
+      .meta({
+        aliases: ["w"],
+        description: "Re-run when files change",
+      }),
   }),
   handler: ({ options }) => {
     // options.watch is boolean
@@ -118,6 +126,7 @@ defineCommand({
 ```
 
 Usage:
+
 - `my-cli run --watch`
 - `my-cli run -w`
 
@@ -137,6 +146,7 @@ const serve = defineCommand({
 ```
 
 Usage:
+
 - `my-cli serve --port 3000`
 - `my-cli serve --host 0.0.0.0 --port 8080`
 
@@ -146,9 +156,9 @@ Usage:
 const build = defineCommand({
   name: "build",
   options: z.object({
-    input: z.string(),                 // required string
-    retries: z.number().default(3),    // number with default
-    minify: z.boolean().default(false) // boolean with default
+    input: z.string(), // required string
+    retries: z.number().default(3), // number with default
+    minify: z.boolean().default(false), // boolean with default
   }),
   handler: ({ options }) => {
     // options.input: string

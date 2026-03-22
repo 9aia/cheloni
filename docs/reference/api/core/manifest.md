@@ -9,17 +9,19 @@ The Manifest layer extracts serializable metadata from definitions for introspec
 Extracts the manifest from a CLI definition.
 
 **Parameters:**
+
 - `definition: CliDefinition & { name: string }` - The CLI definition after optional `package.json` resolution; `name` must be present (as produced internally by `createCli()`, or set explicitly when calling `getCliManifest()` yourself)
 
 **Returns:** `CliManifest`
 
 **Example:**
+
 ```typescript
 import { defineCli, getCliManifest } from "cheloni";
 
 const definition = defineCli({
   name: "my-cli",
-  version: "1.0.0"
+  version: "1.0.0",
 });
 
 const manifest = getCliManifest(definition);
@@ -30,17 +32,19 @@ const manifest = getCliManifest(definition);
 Extracts the manifest from a command definition.
 
 **Parameters:**
+
 - `command: CommandManifest` - The command definition
 
 **Returns:** `CommandManifest`
 
 **Example:**
+
 ```typescript
 import { defineCommand, getCommandManifest } from "cheloni";
 
 const command = defineCommand({
   name: "build",
-  description: "Build the project"
+  description: "Build the project",
 });
 
 const manifest = getCommandManifest(command);
@@ -51,16 +55,18 @@ const manifest = getCommandManifest(command);
 Extracts the manifest from a root command definition.
 
 **Parameters:**
+
 - `command: RootCommandDefinition` - The root command definition
 
 **Returns:** `RootCommandManifest`
 
 **Example:**
+
 ```typescript
 import { defineRootCommand, getRootCommandsManifest } from "cheloni";
 
 const rootCommand = defineRootCommand({
-  handler: () => {}
+  handler: () => {},
 });
 
 const manifest = getRootCommandsManifest(rootCommand);
@@ -71,16 +77,18 @@ const manifest = getRootCommandsManifest(rootCommand);
 Extracts the manifest from a plugin definition.
 
 **Parameters:**
+
 - `definition: PluginDefinition` - The plugin definition
 
 **Returns:** `PluginManifest`
 
 **Example:**
+
 ```typescript
 import { definePlugin, getPluginManifest } from "cheloni";
 
 const plugin = definePlugin({
-  name: "my-plugin"
+  name: "my-plugin",
 });
 
 const manifest = getPluginManifest(plugin);
@@ -91,20 +99,19 @@ const manifest = getPluginManifest(plugin);
 Extracts the manifest from an option schema.
 
 **Parameters:**
+
 - `name: string` - The option name
 - `schema?: z.ZodTypeAny` - The option schema
 
 **Returns:** `OptionManifest`
 
 **Example:**
+
 ```typescript
 import { getOptionManifest } from "cheloni";
 import { z } from "zod";
 
-const manifest = getOptionManifest(
-  "verbose",
-  z.boolean().optional()
-);
+const manifest = getOptionManifest("verbose", z.boolean().optional());
 ```
 
 ### `getOptionsManifest(schema)`
@@ -112,11 +119,13 @@ const manifest = getOptionManifest(
 Extracts manifests for all options in a schema object.
 
 **Parameters:**
+
 - `schema: z.ZodTypeAny` - The options schema
 
 **Returns:** `OptionManifest[]`
 
 **Example:**
+
 ```typescript
 import { getOptionsManifest } from "cheloni";
 import { z } from "zod";
@@ -124,8 +133,8 @@ import { z } from "zod";
 const manifest = getOptionsManifest(
   z.object({
     verbose: z.boolean(),
-    output: z.string()
-  })
+    output: z.string(),
+  }),
 );
 ```
 
@@ -134,11 +143,13 @@ const manifest = getOptionsManifest(
 Extracts the manifest from a positional schema.
 
 **Parameters:**
+
 - `schema?: z.ZodTypeAny` - The positional schema
 
 **Returns:** `PositionalManifest | undefined`
 
 **Example:**
+
 ```typescript
 import { getPositionalManifest } from "cheloni";
 import { z } from "zod";
@@ -151,18 +162,17 @@ const manifest = getPositionalManifest(z.string());
 Extracts manifests for multiple plugins.
 
 **Parameters:**
+
 - `plugins: PluginDefinition[]` - The plugin definitions
 
 **Returns:** `PluginManifest[]`
 
 **Example:**
+
 ```typescript
 import { definePlugin, getPluginsManifest } from "cheloni";
 
-const plugins = [
-  definePlugin({ name: "plugin1" }),
-  definePlugin({ name: "plugin2" })
-];
+const plugins = [definePlugin({ name: "plugin1" }), definePlugin({ name: "plugin2" })];
 
 const manifests = getPluginsManifest(plugins);
 ```
@@ -204,7 +214,7 @@ interface CommandManifest {
 
 ```typescript
 interface RootCommandManifest extends CommandManifest {
-  name: "root";
+  name: "__root__";
 }
 ```
 
@@ -244,6 +254,7 @@ interface PositionalManifest {
 ## Usage
 
 Manifests are primarily used for:
+
 - **Help Generation** - Generating help text from command structure
 - **Introspection** - Inspecting CLI structure programmatically
 - **Tooling** - Building IDE support, autocomplete, etc.

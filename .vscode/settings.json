@@ -1,15 +1,24 @@
 {
-    "files.exclude": {
-        "**/dist": true,
-        "**/node_modules": true,
-        "**/.cursor/skills": true,
-    },
-    "explorer.fileNesting.enabled": true,
-    "explorer.fileNesting.patterns": {
-        "README.md": "LICENSE",
-        "package.json": ".release-it.json, bun.lock, tsconfig.json, tsconfig.build.json, vite.config.ts, vitest.config.ts"
-    },
-    "files.associations": {
-        "*.md": "markdown"
-    }
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "oxc.fmt.configPath": "./vite.config.ts",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit"
+  },
+
+  "files.exclude": {
+    // "**/dist": true,
+    "**/node_modules": true,
+    "**/.pnpm-store": true,
+    "**/.cursor/skills": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "README.md": "LICENSE",
+    "package.json": ".release-it.json, pnpm-workspace.yaml, pnpm-lock.yaml, tsconfig.json, vite.config.ts"
+  },
+  "files.associations": {
+    "*.md": "markdown"
+  }
 }

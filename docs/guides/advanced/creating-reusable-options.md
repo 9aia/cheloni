@@ -5,17 +5,20 @@ Bequeath options are options that are inherited by subcommands. When defined on 
 ## Defining Options
 
 ```typescript
-import { defineOption, defineRootCommand } from 'cheloni';
-import z from 'zod';
+import { defineOption, defineRootCommand } from "cheloni";
+import z from "zod";
 
 const verboseOption = defineOption({
-  name: 'verbose',
-  schema: z.boolean().optional().meta({ aliases: ['V'] }),
+  name: "verbose",
+  schema: z
+    .boolean()
+    .optional()
+    .meta({ aliases: ["V"] }),
 });
 
 const tokenOption = defineOption({
-  name: 'token',
-  schema: z.string().meta({ aliases: ['t'] }),
+  name: "token",
+  schema: z.string().meta({ aliases: ["t"] }),
   handler: async ({ value, next }) => {
     // Runs after middleware, before the command handler; return next() to continue
     return next({ ctx: { token: value } });
@@ -30,11 +33,13 @@ Register bequeath options on a command using `bequeathOptions`:
 ```typescript
 const rootCommand = defineRootCommand({
   bequeathOptions: [verboseOption], // Available to all commands
-  commands: [/* ... */],
+  commands: [
+    /* ... */
+  ],
 });
 
 const cli = await createCli({
-  name: 'my-cli',
+  name: "my-cli",
   command: rootCommand,
 });
 ```
@@ -45,8 +50,11 @@ Options can have handlers that run after middleware and before the command handl
 
 ```typescript
 const helpOption = defineOption({
-  name: 'help',
-  schema: z.boolean().optional().meta({ aliases: ['h'] }),
+  name: "help",
+  schema: z
+    .boolean()
+    .optional()
+    .meta({ aliases: ["h"] }),
   handler: ({ command, cli, halt }) => {
     showHelp({ cli, commandName: command.manifest.name });
     return halt(); // Short-circuit command execution
@@ -55,7 +63,9 @@ const helpOption = defineOption({
 
 const rootCommand = defineRootCommand({
   bequeathOptions: [helpOption],
-  commands: [/* ... */],
+  commands: [
+    /* ... */
+  ],
 });
 ```
 
@@ -65,7 +75,7 @@ Bequeath options without handlers are available to all subcommands:
 
 ```typescript
 const verboseOption = defineOption({
-  name: 'verbose',
+  name: "verbose",
   schema: z.boolean().optional(),
   // No handler - available to all commands
 });
@@ -74,11 +84,11 @@ const rootCommand = defineRootCommand({
   bequeathOptions: [verboseOption],
   commands: [
     defineCommand({
-      name: 'build',
+      name: "build",
       handler: async ({ options }) => {
         // options.verbose is available if --verbose was passed
         if (options.verbose) {
-          console.log('Verbose mode enabled');
+          console.log("Verbose mode enabled");
         }
       },
     }),
@@ -92,12 +102,12 @@ Option handlers can throw errors to stop command execution. Errors are automatic
 
 ```typescript
 const tokenOption = defineOption({
-  name: 'token',
+  name: "token",
   schema: z.string(),
   handler: async ({ value, next }) => {
     const session = await getSession(value);
     if (!session) {
-      throw new Error('Unauthorized');
+      throw new Error("Unauthorized");
     }
     return next({ ctx: { user: session.user } });
   },
@@ -105,6 +115,7 @@ const tokenOption = defineOption({
 ```
 
 **Key points:**
+
 - Throw errors for validation failures in handlers
 - Use descriptive error messages
 - Schema validation errors are handled automatically by the framework

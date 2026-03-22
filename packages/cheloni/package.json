@@ -1,0 +1,83 @@
+{
+  "name": "cheloni",
+  "version": "0.6.0",
+  "description": "A type-safe, lightweight, modular, and extensible CLI framework for TypeScript.",
+  "keywords": [
+    "cli",
+    "command-line",
+    "schema",
+    "type-safe",
+    "typescript",
+    "zod"
+  ],
+  "homepage": "https://github.com/9aia/cheloni#readme",
+  "bugs": {
+    "url": "https://github.com/9aia/cheloni/issues"
+  },
+  "license": "MIT",
+  "author": "Luis Emidio",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/9aia/cheloni.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/core/index.d.mts",
+      "import": "./dist/core/index.mjs",
+      "default": "./dist/core/index.mjs"
+    },
+    "./core": "./dist/core/index.mjs",
+    "./plugin-kits": "./dist/plugin-kits/index.mjs",
+    "./std/config": "./dist/std/config/index.mjs",
+    "./std/core": "./dist/std/core/index.mjs",
+    "./std/git": "./dist/std/git/index.mjs",
+    "./std/logger": "./dist/std/logger/index.mjs",
+    "./std/npm": "./dist/std/npm/index.mjs",
+    "./std/os": "./dist/std/os/index.mjs",
+    "./std/parse": "./dist/std/parse/index.mjs",
+    "./std/semver": "./dist/std/semver/index.mjs",
+    "./std/ui": "./dist/std/ui/index.mjs",
+    "./utils": "./dist/utils/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
+  },
+  "dependencies": {
+    "c12": "^4.0.0-beta.4",
+    "defu": "^6.1.4",
+    "mri": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/semver": "^7.7.1",
+    "@typescript/native-preview": "7.0.0-dev.20260316.1",
+    "bumpp": "^11.0.1",
+    "release-it": "^19.2.4",
+    "semver": "^7.7.4",
+    "type-fest": "^5.4.4",
+    "typescript": "^5.9.3",
+    "vite-plus": "catalog:",
+    "yaml": "^2.8.2",
+    "zod": "^4.3.6"
+  },
+  "peerDependencies": {
+    "semver": "^7.7.4",
+    "typescript": "^5",
+    "yaml": "^2.8.2",
+    "zod": "^4.0.0"
+  }
+}

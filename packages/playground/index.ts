@@ -1,45 +1,52 @@
-import z from 'zod';
-import { createCli, defineCommand, defineMiddleware, executeCli } from '../../dist/core';
-import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin, dryRunOptionSchema } from '../../dist/std/core';
-import { configPlugin } from '../../dist/std/config';
-import verbosePlugin from '../../dist/std/logger/plugins/verbose';
-
-const basicPluginKit = [
+import z from "zod";
+import { createCli, defineCommand, defineMiddleware, executeCli } from "cheloni";
+import {
+  deprecationPlugin,
   errorHandlerPlugin,
   helpPlugin,
   versionPlugin,
-  deprecationPlugin,
-] as const;
+  dryRunOptionSchema,
+} from "cheloni/std/core";
+import { configPlugin } from "cheloni/std/config";
+import { verbosePlugin } from "cheloni/std/logger";
+
+const basicPluginKit = [errorHandlerPlugin, helpPlugin, versionPlugin, deprecationPlugin] as const;
 
 const loggerMiddleware = defineMiddleware(async ({ next }) => {
-  console.log('logger');
+  console.log("logger");
   return next();
 });
 
 const configMiddleware = defineMiddleware(async ({ next }) => {
-  console.log('config');
+  console.log("config");
   return next({ ctx: { config: { verbose: true } } });
 });
 
 const authMiddleware = defineMiddleware(async ({ next }) => {
-  console.log('auth');
-  return next({ ctx: { session: { user: 'test' } } });
+  console.log("auth");
+  return next({ ctx: { session: { user: "test" } } });
 });
 
 const deploy = defineCommand({
-  name: 'deploy',
-  description: 'Deploy to production',
-  paths: ['deploy', 'd'], // `d` is now considered a alias for the command
-  positional: z.enum(['staging', 'production']).meta({ description: 'Environment' }),
+  name: "deploy",
+  description: "Deploy to production",
+  paths: ["deploy", "d"], // `d` is now considered a alias for the command
+  positional: z.enum(["staging", "production"]).meta({ description: "Environment" }),
   options: z.object({
     dryRun: dryRunOptionSchema,
-    force: z.boolean().optional().meta({ aliases: ['f'] }),
-    variadic: z.array(z.string()).optional().meta({ description: 'Variadic arguments', aliases: ['v'] }),
+    force: z
+      .boolean()
+      .optional()
+      .meta({ aliases: ["f"] }),
+    variadic: z
+      .array(z.string())
+      .optional()
+      .meta({ description: "Variadic arguments", aliases: ["v"] }),
   }),
   middleware: [loggerMiddleware, configMiddleware, authMiddleware],
-  examples: ['deploy staging', 'deploy production --force'],
-  details: 'Deploys your application to the specified environment.',
-  handler: async ({ positional, options, ctx }) => {
+  examples: ["deploy staging", "deploy production --force"],
+  details: "Deploys your application to the specified environment.",
+  handler: async ({ positional, options }) => {
     /**
      * Full type inference:
      * {
@@ -49,18 +56,21 @@ const deploy = defineCommand({
      * }
      */
     console.log(`Deploying to ${positional}...`);
-    if (options.dryRun) console.log('Dry run mode');
-    if (options.force) console.log('Force mode enabled');
+    if (options.dryRun) console.log("Dry run mode");
+    if (options.force) console.log("Force mode enabled");
   },
 });
 
 const run = defineCommand({
   name: "run",
   options: z.object({
-    watch: z.boolean().default(true).meta({
-      aliases: ["w"],
-      description: "Re-run when files change",
-    }),
+    watch: z
+      .boolean()
+      .default(true)
+      .meta({
+        aliases: ["w"],
+        description: "Re-run when files change",
+      }),
   }),
   handler: ({ options }) => {
     // options.watch is boolean
@@ -103,7 +113,7 @@ const show2 = defineCommand({
   positional: z.array(z.string()).meta({ name: "scripts" }),
   handler: ({ positional }) => {
     // positional: string[]
-    console.log("Showing:", positional.join(', '));
+    console.log("Showing:", positional.join(", "));
   },
 });
 

@@ -1,4 +1,4 @@
-import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from "cheloni/std/core";
 
 export const basicPluginKit = [
   errorHandlerPlugin,

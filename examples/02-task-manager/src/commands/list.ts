@@ -1,21 +1,21 @@
-import { defineCommand } from 'cheloni';
-import z from 'zod';
-import { workspaceMiddleware } from '../middleware/workspace';
-import { statusFilterOptionSchema } from '../schemas/task';
+import { defineCommand } from "cheloni";
+import z from "zod";
+import { workspaceMiddleware } from "../middleware/workspace";
+import { statusFilterOptionSchema } from "../schemas/task";
 
 export const listCommand = defineCommand({
-  name: 'list',
-  description: 'List all tasks',
+  name: "list",
+  description: "List all tasks",
   options: z.object({
     status: statusFilterOptionSchema,
   }),
   middleware: [workspaceMiddleware],
   handler: async ({ options, ctx }) => {
     const workspace = ctx.workspace;
-    const status = options.status || 'all';
+    const status = options.status || "all";
     console.log(`Tasks in ${workspace.projectName} (${status}):`);
-    console.log('  1. Review documentation [pending]');
-    console.log('  2. Write tests [pending]');
-    console.log('  3. Deploy to staging [completed]');
+    console.log("  1. Review documentation [pending]");
+    console.log("  2. Write tests [pending]");
+    console.log("  3. Deploy to staging [completed]");
   },
 });

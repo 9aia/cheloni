@@ -7,6 +7,7 @@ The Creation layer builds runtime instances from definitions, creating the comma
 ### `createCli(definition)`
 
 Creates a CLI instance from a definition. This function:
+
 - Resolves optional `name`, `version`, and `description` from the nearest `package.json` when `metaUrl` is set (see below)
 - Extracts the manifest
 - Creates the root command tree
@@ -14,6 +15,7 @@ Creates a CLI instance from a definition. This function:
 - Calls `onInit` hooks for all plugins
 
 **Parameters:**
+
 - `definition: CliDefinition` - The CLI definition
 
 **Returns:** `Promise<Cli>`
@@ -21,18 +23,20 @@ Creates a CLI instance from a definition. This function:
 **Package metadata:** If `definition.metaUrl` is set (typically `import.meta.url` from your CLI entry file), any of `name`, `version`, or `description` that are omitted are read from the closest `package.json` found by walking parent directories from that module’s path. Omitted fields are not merged if you do not set `metaUrl`. If `name` and `version` are both set explicitly, `package.json` is not read unless `description` is still omitted. Explicit definition values always override `package.json`.
 
 **Example:**
+
 ```typescript
 import { defineCli, createCli } from "cheloni";
 
 const definition = defineCli({
   name: "my-cli",
-  command: { handler: () => {} }
+  command: { handler: () => {} },
 });
 
 const cli = await createCli(definition);
 ```
 
 **Example (defaults from `package.json`):**
+
 ```typescript
 import { createCli, defineRootCommand } from "cheloni";
 
@@ -49,17 +53,19 @@ const cli = await createCli({
 Creates a command instance from a definition. Recursively creates child commands.
 
 **Parameters:**
+
 - `definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>` - The command definition
 
 **Returns:** `Command<TPositionalDefinition, TOptionsDefinition>`
 
 **Example:**
+
 ```typescript
 import { defineCommand, createCommand } from "cheloni";
 
 const definition = defineCommand({
   name: "build",
-  handler: () => {}
+  handler: () => {},
 });
 
 const command = createCommand(definition);
@@ -70,16 +76,18 @@ const command = createCommand(definition);
 Creates a root command instance from a definition.
 
 **Parameters:**
+
 - `definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>` - The root command definition
 
 **Returns:** `RootCommand<TPositionalDefinition, TOptionsDefinition>`
 
 **Example:**
+
 ```typescript
 import { defineRootCommand, createRootCommand } from "cheloni";
 
 const definition = defineRootCommand({
-  handler: () => {}
+  handler: () => {},
 });
 
 const rootCommand = createRootCommand(definition);
@@ -90,18 +98,20 @@ const rootCommand = createRootCommand(definition);
 Creates an option runtime object from a definition, attaching the computed manifest.
 
 **Parameters:**
+
 - `definition: OptionDefinition` - The option definition
 
 **Returns:** `Option`
 
 **Example:**
+
 ```typescript
 import { defineOption, createOption } from "cheloni";
 import { z } from "zod";
 
 const definition = defineOption({
   name: "config",
-  schema: z.string()
+  schema: z.string(),
 });
 
 const option = createOption(definition);
@@ -112,17 +122,19 @@ const option = createOption(definition);
 Creates a plugin instance from a definition.
 
 **Parameters:**
+
 - `definition: PluginDefinition` - The plugin definition
 
 **Returns:** `Plugin`
 
 **Example:**
+
 ```typescript
 import { definePlugin, createPlugin } from "cheloni";
 
 const definition = definePlugin({
   name: "my-plugin",
-  onInit: () => {}
+  onInit: () => {},
 });
 
 const plugin = createPlugin(definition);
@@ -137,7 +149,7 @@ Registered on the CLI definition:
 ```typescript
 const cli = await createCli({
   name: "my-cli",
-  plugins: [myPlugin] // or [plugin1, plugin2]
+  plugins: [myPlugin], // or [plugin1, plugin2]
 });
 ```
 
@@ -154,7 +166,7 @@ Registered on a command definition:
 const command = defineCommand({
   name: "build",
   plugins: [myPlugin], // or [plugin1, plugin2]
-  handler: () => {}
+  handler: () => {},
 });
 ```
 
@@ -180,7 +192,7 @@ interface Cli {
 ```typescript
 interface Command<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionSchema = any
+  TOptionsDefinition extends OptionSchema = any,
 > {
   definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
   manifest: CommandManifest;
@@ -196,7 +208,7 @@ interface Command<
 ```typescript
 type RootCommand<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionSchema = any
+  TOptionsDefinition extends OptionSchema = any,
 > = Command<TPositionalDefinition, TOptionsDefinition>;
 ```
 
@@ -205,7 +217,7 @@ type RootCommand<
 ```typescript
 interface CommandHandlerParams<
   TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionSchema
+  TOptionsDefinition extends OptionSchema,
 > {
   positional: InferPositionalType<TPositionalDefinition>;
   options: InferOptionsType<TOptionsDefinition>;
@@ -220,7 +232,7 @@ interface CommandHandlerParams<
 ```typescript
 type CommandHandler<
   TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionSchema
+  TOptionsDefinition extends OptionSchema,
 > = (params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition>) => Promisable<void>;
 ```
 
@@ -264,7 +276,7 @@ Like command middleware, an option handler must **return** the result of `next()
 
 ```typescript
 type OptionHandler<TSchema extends OptionSchema> = (
-  params: OptionHandlerParams<TSchema>
+  params: OptionHandlerParams<TSchema>,
 ) => Promisable<MiddlewareResult<Context>>;
 ```
 
@@ -290,17 +302,18 @@ Middleware must **return** the result of calling `next()` (with or without extra
 
 ```typescript
 type Middleware<TCtxOut extends Record<string, any> = Record<string, any>> = (
-  params: MiddlewareParams
+  params: MiddlewareParams,
 ) => Promisable<MiddlewareResult<TCtxOut>>;
 ```
 
 ### `MiddlewareFactory<TOptions, TMiddleware>`
+
 A helper type for creating a middleware from some configuration/options.
 
 ```typescript
 type MiddlewareFactory<
   TOptions extends Record<string, any>,
-  TMiddleware extends Middleware<any> = Middleware<any>
+  TMiddleware extends Middleware<any> = Middleware<any>,
 > = (options: TOptions) => TMiddleware;
 ```
 
@@ -336,8 +349,9 @@ type HaltFunction = () => never;
 Infers the TypeScript type from an options Zod schema.
 
 ```typescript
-type InferOptionsType<TSchema extends OptionSchema> =
-  [TSchema] extends [OptionSchema] ? z.infer<TSchema> : {};
+type InferOptionsType<TSchema extends OptionSchema> = [TSchema] extends [OptionSchema]
+  ? z.infer<TSchema>
+  : {};
 ```
 
 ### `InferPositionalType<TSchema>`
@@ -345,6 +359,7 @@ type InferOptionsType<TSchema extends OptionSchema> =
 Infers the TypeScript type from a positional Zod schema.
 
 ```typescript
-type InferPositionalType<TSchema extends PositionalSchema> =
-  [TSchema] extends [PositionalSchema] ? z.infer<TSchema> : undefined;
+type InferPositionalType<TSchema extends PositionalSchema> = [TSchema] extends [PositionalSchema]
+  ? z.infer<TSchema>
+  : undefined;
 ```

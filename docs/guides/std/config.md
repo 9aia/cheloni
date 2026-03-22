@@ -51,7 +51,9 @@ import { configOption } from "cheloni/std";
 
 const rootCommand = defineRootCommand({
   bequeathOptions: [configOption],
-  commands: [/* ... */],
+  commands: [
+    /* ... */
+  ],
 });
 
 const cli = await createCli({
@@ -82,6 +84,7 @@ const cli = await createCli({
 - Ensures `--config` / `-c` is available to all commands
 
 ### Plugin Options
+
 - `c12Options?: LoadConfigOptions` — forwarded to `c12.loadConfig`
 - `schema?: z.ZodTypeAny` — validates the final resolved config and throws if invalid
 

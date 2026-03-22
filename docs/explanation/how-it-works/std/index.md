@@ -15,6 +15,7 @@ The standard library consists of a small set of focused plugins:
 ### `helpPlugin`
 
 Uses `onInit` to mutate the CLI structure:
+
 - **No root command exists** — creates one with help command as default handler and injects `help` subcommand
 - **Root command exists** — preserves existing definition and appends `help` subcommand
 
@@ -23,6 +24,7 @@ Adds `--help` / `-h` global option that short-circuits to render command-specifi
 ### `versionPlugin`
 
 Uses `onInit` to mutate the CLI structure:
+
 - **No root command exists** — creates one (with help as fallback) and injects `version` subcommand, merging `--version` into root options
 - **Root command exists** — preserves existing definition, appends `version` subcommand, and merges `--version` into existing options
 
@@ -50,6 +52,7 @@ Note: config merging is handled by `c12`. For full control, pass more options th
 ### `helpService`
 
 `showHelp()` dispatches based on whether a command name is provided:
+
 - **Root help** — prints usage, version, description, lists subcommands with paths and deprecation warnings
 - **Command help** — searches command tree by name or path, prints usage, aliases, positional, subcommands, options (merged with bequeath options), and examples
 

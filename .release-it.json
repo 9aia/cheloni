@@ -13,8 +13,11 @@
     "publish": true
   },
   "hooks": {
-    "after:bump": ["bun run build", "bun run docs:build"],
-    "after:release": ["bun run docs:deploy", "echo Successfully released v${version} to ${repo.repository}."]
+    "after:bump": ["vp run cheloni#build", "vp run -w docs:build"],
+    "after:release": [
+      "vp run -w docs:deploy",
+      "echo Successfully released v${version} to ${repo.repository}."
+    ]
   },
   "plugins": {}
 }

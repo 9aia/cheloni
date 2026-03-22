@@ -9,20 +9,19 @@
     For bigger projects, we suggest organizing commands in separate files and import them into a single `manifest.ts`.
 
     ```typescript
-    import { createCli, defineCommand, executeCli } from 'cheloni';
+    import { createCli, defineRootCommand, defineCommand, executeCli } from 'cheloni';
 
     // commands/manifest.ts
     import command1 from './command1';
     import command2 from './command2';
 
-    const rootCommand = defineCommand({
-    name: 'root',
-    commands: [command1, command2],
+    const rootCommand = defineRootCommand({
+      commands: [command1, command2],
     });
 
     const cli = await createCli({
-    name: 'my-cli',
-    command: rootCommand,
+      name: 'my-cli',
+      command: rootCommand,
     });
 
     await executeCli({ cli });
@@ -41,10 +40,10 @@ Wrap `createCli` and `executeCli` in try-catch to handle panic situations:
 ```typescript
 try {
   const cli = await createCli({
-    name: 'my-cli',
+    name: "my-cli",
     command: rootCommand,
   });
-  
+
   await executeCli({ cli });
 } catch (error) {
   if (error instanceof Error) {
@@ -56,6 +55,7 @@ try {
 ```
 
 **Key points:**
+
 - `createCli` can throw if command definitions are invalid
 - `executeCli` automatically handles command execution errors
 - Handle initialization errors explicitly if needed

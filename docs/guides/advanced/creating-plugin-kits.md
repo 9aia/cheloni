@@ -6,22 +6,19 @@ A **plugin kit** is a reusable array of plugin definitions that you spread into 
 
 ```typescript
 // src/plugin-kits/monitoring.ts
-import { definePlugin } from 'cheloni';
+import { definePlugin } from "cheloni";
 
-export const monitoringKit = [
-  metricsPlugin,
-  tracingPlugin,
-] as const;
+export const monitoringKit = [metricsPlugin, tracingPlugin] as const;
 ```
 
 ```typescript
 // cli.ts
-import { createCli, defineCli, definePlugin } from 'cheloni';
-import { monitoringKit } from './plugin-kits/monitoring';
+import { createCli, defineCli, definePlugin } from "cheloni";
+import { monitoringKit } from "./plugin-kits/monitoring";
 
 const cli = await createCli(
   defineCli({
-    name: 'my-cli',
+    name: "my-cli",
     plugins: [otherPlugins, ...monitoringKit],
   }),
 );
@@ -32,11 +29,11 @@ const cli = await createCli(
 For help, version, deprecation warnings, and default error handling, use the array exported from `cheloni/std/core`:
 
 ```typescript
-import { basicPluginKit } from 'cheloni/std/core';
+import { basicPluginKit } from "cheloni/std/core";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [...basicPluginKit],
 });
 ```

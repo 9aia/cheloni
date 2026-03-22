@@ -27,7 +27,7 @@ These generics propagate through creation and into the handler, where `z.infer<T
 
 ## Root Commands
 
-`RootCommandDefinition` is `CommandDefinition` with `name` omitted. `defineRootCommand()` adds `name: "root"` automatically, so the user never needs to name the root.
+`RootCommandDefinition` is `CommandDefinition` with `name` omitted. `defineRootCommand()` adds `name: "__root__"` automatically, so the user never needs to name the root.
 
 ## Zod as the Schema Layer
 

@@ -8,14 +8,16 @@ Add metadata to help users understand what the positional argument expects:
 
 ```typescript
 {
-  positional: z.string().describe('Path to the JPEG image to convert').meta({ 
-    name: 'file',
-    details: dedent`
+  positional: z.string()
+    .describe("Path to the JPEG image to convert")
+    .meta({
+      name: "file",
+      details: dedent`
       Specify the path to the input JPEG file you wish to convert to PDF.
       Relative and absolute paths are accepted.
     `,
-    examples: ['my-cli convert ./images/photo.jpg'],
-  })
+      examples: ["my-cli convert ./images/photo.jpg"],
+    });
 }
 ```
 
@@ -27,7 +29,7 @@ Use the `name` meta field to give your positional argument a meaningful display 
 {
   // Without name: Usage: my-cli convert <positional> [options]
   // With name:    Usage: my-cli convert <file> [options]
-  positional: z.string().describe('Input file path').meta({ name: 'file' })
+  positional: z.string().describe("Input file path").meta({ name: "file" });
 }
 ```
 

@@ -1,48 +1,21 @@
-import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
-import dts from "vite-plugin-dts";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  build: {
-    lib: {
-      entry: {
-        "core/index": resolve(__dirname, "src/core/index.ts"),
-        "plugin-kits/index": resolve(__dirname, "src/plugin-kits/index.ts"),
-        "std/config/index": resolve(__dirname, "src/std/config/index.ts"),
-        "std/core/index": resolve(__dirname, "src/std/core/index.ts"),
-        "std/git/index": resolve(__dirname, "src/std/git/index.ts"),
-        "std/logger/index": resolve(__dirname, "src/std/logger/index.ts"),
-        "std/npm/index": resolve(__dirname, "src/std/npm/index.ts"),
-        "std/os/index": resolve(__dirname, "src/std/os/index.ts"),
-        "std/parse/index": resolve(__dirname, "src/std/parse/index.ts"),
-        "std/semver/index": resolve(__dirname, "src/std/semver/index.ts"),
-        "std/ui/index": resolve(__dirname, "src/std/ui/index.ts"),
-        "utils/index": resolve(__dirname, "src/utils/index.ts"),
-      },
-      formats: ["es"],
-    },
-    rollupOptions: {
-      // This package targets Node CLIs; keep runtime deps external.
-      // Bundling c12 drags browser-incompatible transitive deps (tinyexec/giget).
-      external: ["zod", "mri", "c12", "defu", "semver", "yaml", /^node:/],
-    },
-    target: "esnext",
-    minify: true,
-    sourcemap: true,
+  staged: {
+    "*": "vp check --fix",
   },
-  resolve: {
-    alias: {
-      "~": resolve(__dirname, "src"),
+  test: {
+    globals: true,
+    environment: "node",
+    projects: ["packages/*/vite.config.ts", "examples/*/vite.config.ts"],
+  },
+  lint: {
+    options: {
+      typeAware: true,
+      typeCheck: true,
     },
   },
-  plugins: [
-    dts({
-      tsconfigPath: "./tsconfig.json",
-      include: ["src"],
-      entryRoot: "src",
-    }),
-  ],
+  fmt: {
+    ignorePatterns: [".agents/skills/**"],
+  },
 });

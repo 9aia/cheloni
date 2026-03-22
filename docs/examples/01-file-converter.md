@@ -24,9 +24,9 @@ $ bun start convert config.toml -p
 ### `src/cli.ts`
 
 ```typescript
-import { createCli, executeCli } from 'cheloni';
-import rootCommand from './commands/__root__';
-import { basicPluginKit } from './plugin-kits/basic-kit';
+import { createCli, executeCli } from "cheloni";
+import rootCommand from "./commands/__root__";
+import { basicPluginKit } from "./plugin-kits/basic-kit";
 
 const cli = await createCli({
   metaUrl: import.meta.url,
@@ -40,8 +40,8 @@ await executeCli({ cli });
 ### `src/commands/__root__.ts`
 
 ```typescript
-import { defineRootCommand } from 'cheloni';
-import { convertCommand } from './convert';
+import { defineRootCommand } from "cheloni";
+import { convertCommand } from "./convert";
 
 export default defineRootCommand({
   commands: [convertCommand],
@@ -51,18 +51,21 @@ export default defineRootCommand({
 ### `src/commands/convert.ts`
 
 ```typescript
-import { defineCommand } from 'cheloni';
-import { outputOptionSchema, pathSchema } from 'cheloni/std/os';
-import z from 'zod';
+import { defineCommand } from "cheloni";
+import { outputOptionSchema, pathSchema } from "cheloni/std/os";
+import z from "zod";
 
 export const convertCommand = defineCommand({
-  name: 'convert',
-  paths: ['c', 'conv'],
-  description: 'Convert files between formats',
-  positional: pathSchema.meta({ description: 'Input file' }),
+  name: "convert",
+  paths: ["c", "conv"],
+  description: "Convert files between formats",
+  positional: pathSchema.meta({ description: "Input file" }),
   options: z.object({
     output: outputOptionSchema,
-    format: z.enum(['json', 'yaml', 'toml']).default('json').meta({ aliases: ['f'] }),
+    format: z
+      .enum(["json", "yaml", "toml"])
+      .default("json")
+      .meta({ aliases: ["f"] }),
   }),
   handler: async ({ positional, options }) => {
     const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
@@ -74,7 +77,7 @@ export const convertCommand = defineCommand({
 ### `src/plugin-kits/basic-kit.ts`
 
 ```typescript
-import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from "cheloni/std/core";
 
 export const basicPluginKit = [
   errorHandlerPlugin,

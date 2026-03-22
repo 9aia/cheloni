@@ -9,7 +9,7 @@ Middleware runs **before** the command handler and lets you inject context, guar
 Use `defineMiddleware` and **always return** the result of `next()` to continue the middleware chain:
 
 ```typescript
-import { defineMiddleware } from 'cheloni';
+import { defineMiddleware } from "cheloni";
 
 // Inject context — the handler receives `ctx.user`
 const authMiddleware = defineMiddleware(async ({ next }) => {
@@ -19,9 +19,9 @@ const authMiddleware = defineMiddleware(async ({ next }) => {
 
 // Side-effect only — no context added
 const loggerMiddleware = defineMiddleware(async ({ next }) => {
-  console.log('before');
+  console.log("before");
   const result = await next();
-  console.log('after');
+  console.log("after");
   return result;
 });
 ```
@@ -30,13 +30,13 @@ const loggerMiddleware = defineMiddleware(async ({ next }) => {
 
 Every middleware receives a **readonly** params object (frozen at runtime):
 
-| Parameter | Description                                                                |
-| --------- | -------------------------------------------------------------------------- |
-| `ctx`     | The cumulative context from all previous middleware in the chain           |
-| `next`    | Function to proceed to the next middleware (optionally merging new context)|
-| `cli`     | The current CLI instance                                                   |
-| `command` | The command definition being executed                                      |
-| `halt`    | Function to halt execution silently, without throwing an error             |
+| Parameter | Description                                                                 |
+| --------- | --------------------------------------------------------------------------- |
+| `ctx`     | The cumulative context from all previous middleware in the chain            |
+| `next`    | Function to proceed to the next middleware (optionally merging new context) |
+| `cli`     | The current CLI instance                                                    |
+| `command` | The command definition being executed                                       |
+| `halt`    | Function to halt execution silently, without throwing an error              |
 
 ## Context Accumulation
 
@@ -48,11 +48,11 @@ const configMiddleware = defineMiddleware(async ({ next }) => {
 });
 
 const authMiddleware = defineMiddleware(async ({ next }) => {
-  return next({ ctx: { session: { user: 'test' } } });
+  return next({ ctx: { session: { user: "test" } } });
 });
 
 defineCommand({
-  name: 'deploy',
+  name: "deploy",
   middleware: [configMiddleware, authMiddleware],
   handler: async ({ ctx }) => {
     // ctx: { config: { verbose: boolean }, session: { user: string } }
@@ -67,7 +67,7 @@ Call `halt()` to stop the middleware chain and the command handler **silently** 
 ```typescript
 const guardMiddleware = defineMiddleware(async ({ next, halt }) => {
   if (!isAllowed()) {
-    console.log('Access denied.');
+    console.log("Access denied.");
     halt(); // stops everything, no error thrown to the user
   }
   return next();
@@ -80,8 +80,8 @@ Throw an error to stop the chain **with** an error message. The framework displa
 
 ```typescript
 const authMiddleware = defineMiddleware(async ({ next }) => {
-  if (!await isAuthenticated()) {
-    throw new Error('Authentication required. Please log in first.');
+  if (!(await isAuthenticated())) {
+    throw new Error("Authentication required. Please log in first.");
   }
   return next({ ctx: { user: await getUser() } });
 });
@@ -92,21 +92,20 @@ const authMiddleware = defineMiddleware(async ({ next }) => {
 Middleware runs **only on the command that was matched** (the resolved leaf from argv). Parent or root `middleware` arrays are **not** run when a subcommand is selected. To reuse the same stack on several commands, share an array (for example via `defineMiddlewareArray`) and attach it to each command that needs it.
 
 ```typescript
-import { createCli, defineCommand, defineMiddlewareArray, defineRootCommand } from 'cheloni';
+import { createCli, defineCommand, defineMiddlewareArray, defineRootCommand } from "cheloni";
 
-const baseMiddleware = defineMiddlewareArray([
-  loggerMiddleware,
-  authMiddleware,
-]);
+const baseMiddleware = defineMiddlewareArray([loggerMiddleware, authMiddleware]);
 
 await createCli({
-  name: 'my-cli',
+  name: "my-cli",
   command: defineRootCommand({
     commands: [
       defineCommand({
-        name: 'deploy',
+        name: "deploy",
         middleware: [...baseMiddleware, configMiddleware],
-        handler: async ({ ctx }) => { /* ... */ },
+        handler: async ({ ctx }) => {
+          /* ... */
+        },
       }),
     ],
   }),

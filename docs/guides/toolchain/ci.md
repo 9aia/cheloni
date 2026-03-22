@@ -21,4 +21,3 @@ This workflow is planned and may change.
 ## Combined checks
 
 - `cheloni check`: runs `format:check`, then `lint`
-

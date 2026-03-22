@@ -48,10 +48,10 @@ All iterations completed
 ### `src/cli.ts`
 
 ```typescript
-import { createCli, executeCli } from 'cheloni';
-import rootCommand from './commands/__root__';
-import { basicPluginKit } from './plugin-kits/basic-kit';
-import timePlugin from './plugins/time';
+import { createCli, executeCli } from "cheloni";
+import rootCommand from "./commands/__root__";
+import { basicPluginKit } from "./plugin-kits/basic-kit";
+import timePlugin from "./plugins/time";
 
 const cli = await createCli({
   metaUrl: import.meta.url,
@@ -65,8 +65,8 @@ await executeCli({ cli });
 ### `src/commands/__root__.ts`
 
 ```typescript
-import { defineRootCommand } from 'cheloni';
-import { runCommand } from './run';
+import { defineRootCommand } from "cheloni";
+import { runCommand } from "./run";
 
 export default defineRootCommand({
   commands: [runCommand],
@@ -76,15 +76,15 @@ export default defineRootCommand({
 ### `src/commands/run.ts`
 
 ```typescript
-import { defineCommand } from 'cheloni';
-import z from 'zod';
+import { defineCommand } from "cheloni";
+import z from "zod";
 
 export const runCommand = defineCommand({
-  name: 'run',
-  description: 'Run a command and measure its execution time',
-  positional: z.string().meta({ description: 'Command to execute' }),
+  name: "run",
+  description: "Run a command and measure its execution time",
+  positional: z.string().meta({ description: "Command to execute" }),
   options: z.object({
-    iterations: z.number().optional().meta({ description: 'Number of iterations to run' }),
+    iterations: z.number().optional().meta({ description: "Number of iterations to run" }),
   }),
   handler: async ({ positional, options }) => {
     const command = positional;
@@ -111,7 +111,7 @@ export const runCommand = defineCommand({
 ### `src/plugin-kits/basic-kit.ts`
 
 ```typescript
-import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from "cheloni/std/core";
 
 export const basicPluginKit = [
   errorHandlerPlugin,
@@ -124,10 +124,10 @@ export const basicPluginKit = [
 ### `src/plugins/time.ts`
 
 ```typescript
-import { definePlugin } from 'cheloni';
+import { definePlugin } from "cheloni";
 
 export default definePlugin({
-  name: 'time',
+  name: "time",
   onBeforeCommandExecution: async ({ execute }) => {
     return await execute({
       ctx: {

@@ -1,18 +1,16 @@
 # TODO
 
-- Fix framework issues found while working on examples
 - Improve help generation with chalk and chalk-template
   - Turn help plugin into a plugin factory and add optional help footer config
 - Rename option to named
-- Refactor src to monorepo (3 main packages: packages/core, packages/cli, packages/create (create-cheloni))
-  - Add examples/ (monorepo)
 - Add type-safety to config
 - Rename `"root"` to `"__root__"`
 - Improve CLI developer-facing error handling design
 - Add shell completion plugin
 - Ensure error handling by throwing errors instead of `process.exit(1)`
-- Add scaffolding tool for creating (create-cheloni, `$ cheloni init`)
-- Implement plugin-kit generation via Cheloni CLI (`cheloni generate plugin-kit`)
+- Add scaffolding tool for creating (packages/create-cheloni, `$ cheloni init`)
+- Add Cheloni CLI package (packages/cli)
+  - Implement plugin-kit generation via Cheloni CLI (`cheloni generate plugin-kit`)
 - Add dependencies for commands, so it can inherit types
 - Global user-extendable option types, useful for programmatic CLI definition global types
 - Improve option inference to include inheritance from parent commands

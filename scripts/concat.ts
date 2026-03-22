@@ -4,10 +4,7 @@ import path from "node:path";
 const ROOT = process.cwd();
 const TARGET_DIRS = ["src/std"];
 const OUTPUT_FILE = "CONCAT.md";
-const IGNORED_DIRS = new Set([
-  "docs/.vitepress/dist",
-  "docs/.vitepress/cache",
-]);
+const IGNORED_DIRS = new Set(["docs/.vitepress/dist", "docs/.vitepress/cache"]);
 
 function languageFromFilePath(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
@@ -73,9 +70,7 @@ async function main() {
     throw new Error("Neither src/ nor docs/ exist in this repository.");
   }
 
-  const files = (
-    await Promise.all(existingDirs.map((dir) => collectFilesRecursive(dir)))
-  )
+  const files = (await Promise.all(existingDirs.map((dir) => collectFilesRecursive(dir))))
     .flat()
     .sort((a, b) => a.localeCompare(b));
 

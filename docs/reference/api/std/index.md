@@ -14,8 +14,8 @@ import { helpCommand } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   command: {
-    commands: [helpCommand]
-  }
+    commands: [helpCommand],
+  },
 });
 ```
 
@@ -29,8 +29,8 @@ import { versionCommand } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   command: {
-    commands: [versionCommand]
-  }
+    commands: [versionCommand],
+  },
 });
 ```
 
@@ -110,6 +110,7 @@ showVersion({ cliManifest: cli.manifest });
 ```
 
 ### `validateConfig(config, schema?)`
+
 Validates a resolved config object against an optional Zod schema.
 
 If validation fails, it throws a `ConfigValidationError` and attaches the original `ZodError` as `cause` (which the framework uses to render prettified config validation output).
@@ -126,10 +127,10 @@ import { z } from "zod";
 
 const options = mergeOptionsWith(
   z.object({
-    verbose: z.boolean()
+    verbose: z.boolean(),
   }),
   "debug",
-  z.boolean().optional()
+  z.boolean().optional(),
 );
 ```
 
@@ -143,8 +144,8 @@ import { z } from "zod";
 
 const options = mergeOptionsWithVersion(
   z.object({
-    verbose: z.boolean()
-  })
+    verbose: z.boolean(),
+  }),
 );
 ```
 
@@ -171,7 +172,7 @@ import { helpPlugin } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
-  plugins: [helpPlugin]
+  plugins: [helpPlugin],
 });
 ```
 
@@ -187,7 +188,7 @@ import { versionPlugin } from "cheloni/std";
 const cli = await createCli({
   name: "my-cli",
   version: "1.0.0",
-  plugins: [versionPlugin]
+  plugins: [versionPlugin],
 });
 ```
 

@@ -1,0 +1,367 @@
+import { describe, it, expect } from "vite-plus/test";
+import z from "zod";
+import {
+  defineCommand,
+  definePlugin,
+  defineRootCommand,
+  getCommandManifest,
+  getRootCommandsManifest,
+} from "~/core";
+
+describe("getCommandManifest", () => {
+  it("extracts basic command manifest", () => {
+    const definition = defineCommand({
+      name: "test",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.name).toBe("test");
+    expect(manifest.paths).toEqual(["test"]);
+    expect(manifest.commands).toEqual([]);
+  });
+
+  it("includes paths", () => {
+    const definition = defineCommand({
+      name: "test",
+      paths: ["t", "test"],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.paths).toEqual(["t", "test"]);
+  });
+
+  it("defaults paths to command name when not provided", () => {
+    const definition = defineCommand({
+      name: "my-command",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.paths).toEqual(["my-command"]);
+  });
+
+  it("includes description and details", () => {
+    const definition = defineCommand({
+      name: "test",
+      description: "Test command",
+      details: "More details",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.description).toBe("Test command");
+    expect(manifest.details).toBe("More details");
+  });
+
+  it("handles missing description and details", () => {
+    const definition = defineCommand({
+      name: "test",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.description).toBeUndefined();
+    expect(manifest.details).toBeUndefined();
+  });
+
+  it("includes examples", () => {
+    const definition = defineCommand({
+      name: "test",
+      examples: ["test --flag"],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.examples).toEqual(["test --flag"]);
+  });
+
+  it("handles multiple examples", () => {
+    const definition = defineCommand({
+      name: "test",
+      examples: ["test --flag", "test --other"],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.examples).toEqual(["test --flag", "test --other"]);
+  });
+
+  it("includes deprecated flag", () => {
+    const definition = defineCommand({
+      name: "test",
+      deprecated: true,
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.deprecated).toBe(true);
+  });
+
+  it("includes deprecated message", () => {
+    const definition = defineCommand({
+      name: "test",
+      deprecated: "Use new command",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.deprecated).toBe("Use new command");
+  });
+
+  it("handles missing deprecated flag", () => {
+    const definition = defineCommand({
+      name: "test",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.deprecated).toBe(false);
+  });
+
+  it("includes positional manifest with description", () => {
+    const definition = defineCommand({
+      name: "test",
+      positional: z.string().describe("input file"),
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.positional).toBeDefined();
+    expect(manifest.positional).toHaveProperty("description");
+  });
+
+  it("includes positional manifest with name from meta", () => {
+    const definition = defineCommand({
+      name: "test",
+      positional: z.string().describe("input file").meta({ name: "file" }),
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.positional).toBeDefined();
+    expect(manifest.positional?.name).toBe("file");
+    expect(manifest.positional?.description).toBe("input file");
+  });
+
+  it("handles positional without description", () => {
+    const definition = defineCommand({
+      name: "test",
+      positional: z.string(),
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.positional).toBeDefined();
+  });
+
+  it("handles missing positional", () => {
+    const definition = defineCommand({
+      name: "test",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.positional).toBeUndefined();
+  });
+
+  it("includes options manifest", () => {
+    const definition = defineCommand({
+      name: "test",
+      options: z.object({
+        verbose: z.boolean().describe("verbose output"),
+        count: z.number().optional(),
+      }),
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.options).toHaveLength(2);
+    expect(manifest.options?.[0]?.name).toBe("verbose");
+    expect(manifest.options?.[1]?.name).toBe("count");
+  });
+
+  it("handles missing options", () => {
+    const definition = defineCommand({
+      name: "test",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.options).toBeDefined();
+    expect(manifest.options).toHaveLength(0);
+  });
+
+  it("includes nested commands in manifest", () => {
+    const definition = defineCommand({
+      name: "parent",
+      commands: [
+        defineCommand({
+          name: "child1",
+          handler: async () => {},
+        }),
+        defineCommand({
+          name: "child2",
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.commands).toHaveLength(2);
+    expect(manifest.commands?.[0]?.name).toBe("child1");
+    expect(manifest.commands?.[1]?.name).toBe("child2");
+  });
+
+  it("handles single nested command", () => {
+    const definition = defineCommand({
+      name: "parent",
+      commands: [
+        defineCommand({
+          name: "child",
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.commands).toHaveLength(1);
+    expect(manifest.commands?.[0]?.name).toBe("child");
+  });
+
+  it("handles deeply nested commands", () => {
+    const definition = defineCommand({
+      name: "__root__",
+      commands: [
+        defineCommand({
+          name: "level1",
+          commands: [
+            defineCommand({
+              name: "level2",
+              handler: async () => {},
+            }),
+          ],
+          handler: async () => {},
+        }),
+      ],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.commands).toHaveLength(1);
+    expect(manifest.commands?.[0]?.name).toBe("level1");
+    expect(manifest.commands?.[0]?.commands).toHaveLength(1);
+    expect(manifest.commands?.[0]?.commands?.[0]?.name).toBe("level2");
+  });
+
+  it("includes plugins in manifest", () => {
+    const definition = defineCommand({
+      name: "test",
+      plugins: [definePlugin({ name: "plugin1" }), definePlugin({ name: "plugin2" })],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.plugins).toHaveLength(2);
+    expect(manifest.plugins?.[0]?.name).toBe("plugin1");
+    expect(manifest.plugins?.[1]?.name).toBe("plugin2");
+  });
+
+  it("handles single plugin (array of one)", () => {
+    const definition = defineCommand({
+      name: "test",
+      plugins: [definePlugin({ name: "plugin1" })],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.plugins).toHaveLength(1);
+    expect(manifest.plugins?.[0]?.name).toBe("plugin1");
+  });
+
+  it("handles missing plugins", () => {
+    const definition = defineCommand({
+      name: "test",
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.plugins).toBeDefined();
+    expect(manifest.plugins).toHaveLength(0);
+  });
+
+  it("extracts complete command manifest with all fields", () => {
+    const definition = defineCommand({
+      name: "convert",
+      paths: ["c", "convert"],
+      description: "Convert files",
+      details: "Detailed description",
+      examples: ["convert file.png", "convert file.png --output out.jpg"],
+      deprecated: "Use transform instead",
+      positional: z.string().describe("input file"),
+      options: z.object({
+        output: z.string().optional().describe("output path"),
+        quality: z.number().min(0).max(100).optional(),
+      }),
+      commands: [
+        defineCommand({
+          name: "subcommand",
+          handler: async () => {},
+        }),
+      ],
+      plugins: [definePlugin({ name: "analytics" })],
+      handler: async () => {},
+    });
+
+    const manifest = getCommandManifest(definition);
+    expect(manifest.name).toBe("convert");
+    expect(manifest.paths).toEqual(["c", "convert"]);
+    expect(manifest.description).toBe("Convert files");
+    expect(manifest.details).toBe("Detailed description");
+    expect(manifest.examples).toEqual(["convert file.png", "convert file.png --output out.jpg"]);
+    expect(manifest.deprecated).toBe("Use transform instead");
+    // Description extraction depends on Zod internals - just verify manifest exists
+    expect(manifest.positional).toBeDefined();
+    expect(manifest.options).toHaveLength(2);
+    expect(manifest.commands).toHaveLength(1);
+    expect(manifest.plugins).toHaveLength(1);
+  });
+});
+
+describe("getRootCommandsManifest", () => {
+  it('extracts root command manifest with name "__root__"', () => {
+    const definition = defineRootCommand({
+      commands: [
+        defineCommand({
+          name: "test",
+          handler: async () => {},
+        }),
+      ],
+    });
+
+    const manifest = getRootCommandsManifest(definition);
+    expect(manifest.name).toBe("__root__");
+    expect(manifest.paths).toEqual([]);
+    expect(manifest.commands).toHaveLength(1);
+    expect(manifest.commands?.[0]?.name).toBe("test");
+  });
+
+  it("preserves all root command properties", () => {
+    const definition = defineRootCommand({
+      description: "Root command",
+      commands: [
+        defineCommand({
+          name: "test",
+          handler: async () => {},
+        }),
+      ],
+    });
+
+    const manifest = getRootCommandsManifest(definition);
+    expect(manifest.name).toBe("__root__");
+    expect(manifest.description).toBe("Root command");
+  });
+});

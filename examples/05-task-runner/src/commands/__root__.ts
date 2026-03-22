@@ -1,7 +1,7 @@
-import { defineRootCommand } from 'cheloni';
-import { CheloniError } from 'cheloni/utils';
-import type { TasksConfig } from '../configs/tasks';
-import z from 'zod';
+import { defineRootCommand } from "cheloni";
+import { CheloniError } from "cheloni/utils";
+import type { TasksConfig } from "../configs/tasks";
+import z from "zod";
 
 class NoTasksJsonError extends CheloniError {
   constructor(fileName: string) {
@@ -10,21 +10,21 @@ class NoTasksJsonError extends CheloniError {
 }
 
 export default defineRootCommand({
-  description: 'Run tasks defined in tasks.json',
-  positional: z.string().meta({ description: 'Task name to execute', name: 'task' }),
+  description: "Run tasks defined in tasks.json",
+  positional: z.string().meta({ description: "Task name to execute", name: "task" }),
   handler: async ({ positional, ctx }) => {
     const taskName = positional;
     const { config, configFile } = ctx as { config: TasksConfig; configFile?: string };
 
     if (Object.keys(config).length === 0) {
-      throw new NoTasksJsonError(configFile ?? 'tasks.json');
+      throw new NoTasksJsonError(configFile ?? "tasks.json");
     }
 
     const taskCommand = config[taskName];
 
     if (!taskCommand) {
       console.error(`Task "${taskName}" not found in tasks.json`);
-      console.error(`Available tasks: ${Object.keys(config).join(', ')}`);
+      console.error(`Available tasks: ${Object.keys(config).join(", ")}`);
       process.exit(1);
     }
 

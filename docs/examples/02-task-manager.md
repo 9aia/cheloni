@@ -27,9 +27,9 @@ $ bun start delete 2
 ### `src/cli.ts`
 
 ```typescript
-import { createCli, executeCli } from 'cheloni';
-import rootCommand from './commands/__root__';
-import { basicPluginKit } from './plugin-kits/basic-kit';
+import { createCli, executeCli } from "cheloni";
+import rootCommand from "./commands/__root__";
+import { basicPluginKit } from "./plugin-kits/basic-kit";
 
 const cli = await createCli({
   metaUrl: import.meta.url,
@@ -42,11 +42,11 @@ await executeCli({ cli });
 ### `src/commands/__root__.ts`
 
 ```typescript
-import { defineRootCommand } from 'cheloni';
-import { addCommand } from './add';
-import { completeCommand } from './complete';
-import { deleteCommand } from './delete';
-import { listCommand } from './list';
+import { defineRootCommand } from "cheloni";
+import { addCommand } from "./add";
+import { completeCommand } from "./complete";
+import { deleteCommand } from "./delete";
+import { listCommand } from "./list";
 
 export default defineRootCommand({
   commands: [addCommand, listCommand, completeCommand, deleteCommand],
@@ -56,14 +56,14 @@ export default defineRootCommand({
 ### `src/commands/add.ts`
 
 ```typescript
-import { defineCommand } from 'cheloni';
-import z from 'zod';
-import { workspaceMiddleware } from '../middleware/workspace';
-import { priorityOptionSchema, taskNamePositionalSchema } from '../schemas/task';
+import { defineCommand } from "cheloni";
+import z from "zod";
+import { workspaceMiddleware } from "../middleware/workspace";
+import { priorityOptionSchema, taskNamePositionalSchema } from "../schemas/task";
 
 export const addCommand = defineCommand({
-  name: 'add',
-  description: 'Add a new task',
+  name: "add",
+  description: "Add a new task",
   positional: taskNamePositionalSchema,
   options: z.object({
     priority: priorityOptionSchema,
@@ -71,7 +71,7 @@ export const addCommand = defineCommand({
   middleware: [workspaceMiddleware],
   handler: async ({ positional, options, ctx }) => {
     const workspace = ctx.workspace;
-    const priority = options.priority || 'medium';
+    const priority = options.priority || "medium";
     console.log(`✓ Added task "${positional}" (${priority}) to ${workspace.projectName}`);
   },
 });
@@ -80,13 +80,13 @@ export const addCommand = defineCommand({
 ### `src/commands/complete.ts`
 
 ```typescript
-import { defineCommand } from 'cheloni';
-import { workspaceMiddleware } from '../middleware/workspace';
-import { taskIdPositionalSchema } from '../schemas/task';
+import { defineCommand } from "cheloni";
+import { workspaceMiddleware } from "../middleware/workspace";
+import { taskIdPositionalSchema } from "../schemas/task";
 
 export const completeCommand = defineCommand({
-  name: 'complete',
-  description: 'Mark a task as completed',
+  name: "complete",
+  description: "Mark a task as completed",
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
   handler: async ({ positional, ctx }) => {
@@ -99,13 +99,13 @@ export const completeCommand = defineCommand({
 ### `src/commands/delete.ts`
 
 ```typescript
-import { defineCommand } from 'cheloni';
-import { workspaceMiddleware } from '../middleware/workspace';
-import { taskIdPositionalSchema } from '../schemas/task';
+import { defineCommand } from "cheloni";
+import { workspaceMiddleware } from "../middleware/workspace";
+import { taskIdPositionalSchema } from "../schemas/task";
 
 export const deleteCommand = defineCommand({
-  name: 'delete',
-  description: 'Delete a task',
+  name: "delete",
+  description: "Delete a task",
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
   handler: async ({ positional, ctx }) => {
@@ -118,25 +118,25 @@ export const deleteCommand = defineCommand({
 ### `src/commands/list.ts`
 
 ```typescript
-import { defineCommand } from 'cheloni';
-import z from 'zod';
-import { workspaceMiddleware } from '../middleware/workspace';
-import { statusFilterOptionSchema } from '../schemas/task';
+import { defineCommand } from "cheloni";
+import z from "zod";
+import { workspaceMiddleware } from "../middleware/workspace";
+import { statusFilterOptionSchema } from "../schemas/task";
 
 export const listCommand = defineCommand({
-  name: 'list',
-  description: 'List all tasks',
+  name: "list",
+  description: "List all tasks",
   options: z.object({
     status: statusFilterOptionSchema,
   }),
   middleware: [workspaceMiddleware],
   handler: async ({ options, ctx }) => {
     const workspace = ctx.workspace;
-    const status = options.status || 'all';
+    const status = options.status || "all";
     console.log(`Tasks in ${workspace.projectName} (${status}):`);
-    console.log('  1. Review documentation [pending]');
-    console.log('  2. Write tests [pending]');
-    console.log('  3. Deploy to staging [completed]');
+    console.log("  1. Review documentation [pending]");
+    console.log("  2. Write tests [pending]");
+    console.log("  3. Deploy to staging [completed]");
   },
 });
 ```
@@ -144,17 +144,17 @@ export const listCommand = defineCommand({
 ### `src/middleware/workspace.ts`
 
 ```typescript
-import { defineMiddleware } from 'cheloni';
-import type { Workspace } from '../types';
+import { defineMiddleware } from "cheloni";
+import type { Workspace } from "../types";
 
 export const workspaceMiddleware = defineMiddleware(async ({ next }) => {
-  const projectName = process.env.PROJECT_NAME || 'default';
-  const workspace = process.env.WORKSPACE || 'personal';
+  const projectName = process.env.PROJECT_NAME || "default";
+  const workspace = process.env.WORKSPACE || "personal";
 
   return await next({
     ctx: {
       workspace: { name: workspace, projectName } as Workspace,
-    }
+    },
   });
 });
 ```
@@ -162,7 +162,7 @@ export const workspaceMiddleware = defineMiddleware(async ({ next }) => {
 ### `src/plugin-kits/basic-kit.ts`
 
 ```typescript
-import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from "cheloni/std/core";
 
 export const basicPluginKit = [
   errorHandlerPlugin,
@@ -175,24 +175,27 @@ export const basicPluginKit = [
 ### `src/schemas/task.ts`
 
 ```typescript
-import z from 'zod';
+import z from "zod";
 
-export const priorityOptionSchema = z.enum(['low', 'medium', 'high']).optional().describe('Task priority');
+export const priorityOptionSchema = z
+  .enum(["low", "medium", "high"])
+  .optional()
+  .describe("Task priority");
 
 export const statusFilterOptionSchema = z
-  .enum(['pending', 'completed', 'all'])
+  .enum(["pending", "completed", "all"])
   .optional()
-  .describe('Filter by status');
+  .describe("Filter by status");
 
-export const taskIdPositionalSchema = z.number().describe('Task ID');
-export const taskNamePositionalSchema = z.string().describe('Task name');
+export const taskIdPositionalSchema = z.number().describe("Task ID");
+export const taskNamePositionalSchema = z.string().describe("Task name");
 ```
 
 ### `src/types.d.ts`
 
 ```typescript
 export interface Workspace {
-    name: string;
-    projectName: string;
+  name: string;
+  projectName: string;
 }
 ```

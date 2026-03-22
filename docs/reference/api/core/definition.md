@@ -9,18 +9,20 @@ The Definition layer provides functions to define CLI structure using plain obje
 Creates a CLI definition.
 
 **Parameters:**
+
 - `definition: CliDefinition` - The CLI definition object
 
 **Returns:** `CliDefinition`
 
 **Example (basic):**
+
 ```typescript
 import { defineCli } from "cheloni";
 
 const cli = defineCli({
   name: "my-cli",
   version: "1.0.0",
-  description: "My CLI tool"
+  description: "My CLI tool",
 });
 ```
 
@@ -32,10 +34,7 @@ import { basicPluginKit } from "cheloni/std/core";
 
 const loggingPlugin = definePlugin({ name: "logging" });
 
-const monitoringKit = [
-  definePlugin({ name: "analytics" }),
-  definePlugin({ name: "tracing" }),
-];
+const monitoringKit = [definePlugin({ name: "analytics" }), definePlugin({ name: "tracing" })];
 
 const cli = defineCli({
   name: "my-cli",
@@ -52,11 +51,13 @@ When you call `createCli()` with this definition, `plugins` is a single list. `o
 Creates a command definition.
 
 **Parameters:**
+
 - `definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>` - The command definition
 
 **Returns:** `CommandDefinition<TPositionalDefinition, TOptionsDefinition>`
 
 **Example:**
+
 ```typescript
 import { defineCommand } from "cheloni";
 import { z } from "zod";
@@ -65,11 +66,11 @@ const command = defineCommand({
   name: "build",
   description: "Build the project",
   options: z.object({
-    verbose: z.boolean().optional()
+    verbose: z.boolean().optional(),
   }),
   handler: ({ options }) => {
     console.log("Building...", options);
-  }
+  },
 });
 ```
 
@@ -78,18 +79,20 @@ const command = defineCommand({
 Creates a root command definition (command without a name).
 
 **Parameters:**
+
 - `definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>` - The root command definition
 
 **Returns:** `CommandDefinition<TPositionalDefinition, TOptionsDefinition>`
 
 **Example:**
+
 ```typescript
 import { defineRootCommand } from "cheloni";
 
 const rootCommand = defineRootCommand({
   handler: ({ options }) => {
     console.log("Root command");
-  }
+  },
 });
 ```
 
@@ -98,11 +101,13 @@ const rootCommand = defineRootCommand({
 Creates an inline option schema for use inside a `z.object()`.
 
 **Parameters:**
+
 - `schema: OptionSchema` - A Zod schema
 
 **Returns:** `OptionSchema`
 
 **Example:**
+
 ```typescript
 import { defineOption } from "cheloni";
 import { z } from "zod";
@@ -116,11 +121,13 @@ defineCommand({ options: z.object({ force }) });
 Creates a reusable, named option definition that can be passed to `bequeathOptions` so subcommands inherit it automatically.
 
 **Parameters:**
+
 - `definition: OptionDefinition<TSchema>` - The option definition
 
 **Returns:** `OptionDefinition<TSchema>`
 
 **Example:**
+
 ```typescript
 import { defineOption } from "cheloni";
 import { z } from "zod";
@@ -140,11 +147,13 @@ const dryRun = defineOption({
 Creates a positional argument definition (typically used as a Zod schema).
 
 **Parameters:**
+
 - `definition: PositionalDefinition` - A Zod schema or `undefined`
 
 **Returns:** `PositionalDefinition`
 
 **Example:**
+
 ```typescript
 import { definePositional } from "cheloni";
 import { z } from "zod";
@@ -152,17 +161,18 @@ import { z } from "zod";
 const positional = definePositional(z.string());
 ```
 
-
 ### `defineMiddleware(definition)`
 
 Creates a middleware definition.
 
 **Parameters:**
+
 - `definition: MiddlewareDefinition` - The middleware function
 
 **Returns:** `MiddlewareDefinition`
 
 **Example:**
+
 ```typescript
 import { defineMiddleware } from "cheloni";
 
@@ -179,11 +189,13 @@ const middleware = defineMiddleware(async ({ next }) => {
 Creates a plugin definition.
 
 **Parameters:**
+
 - `definition: PluginDefinition` - The plugin definition
 
 **Returns:** `PluginDefinition`
 
 **Example:**
+
 ```typescript
 import { definePlugin } from "cheloni";
 
@@ -191,7 +203,7 @@ const plugin = definePlugin({
   name: "my-plugin",
   onInit: ({ cli }) => {
     console.log("Plugin initialized");
-  }
+  },
 });
 ```
 
@@ -204,6 +216,7 @@ Runs once during CLI creation, before any commands are executed. This is the onl
 **When it runs:** During `createCli()`, for each global plugin in order.
 
 **What you can do:**
+
 - Modify `cli.command` (replace the root command, add bequeathOptions)
 - Modify `cli.plugins`
 - Access `cli.manifest`
@@ -211,6 +224,7 @@ Runs once during CLI creation, before any commands are executed. This is the onl
 **Error handling:** If `onInit` throws, `createCli()` fails immediately.
 
 **Example:**
+
 ```typescript
 import { definePlugin, createCommand, createOption, defineOption } from "cheloni";
 import z from "zod";
@@ -218,57 +232,76 @@ import z from "zod";
 const plugin = definePlugin({
   name: "my-plugin",
   onInit: ({ cli }) => {
-    console.log('Plugin initialized');
-  }
+    console.log("Plugin initialized");
+  },
 });
 ```
 
 ### `onBeforeCommandExecution`
 
-Runs before a command handler executes, after argument parsing and validation.
+Runs after argv is parsed into raw positionals and options, and **before** middleware and schema validation.
 
-**When it runs:** During `executeCommand()`, before the handler runs. Global plugins run first, then command plugins.
+**When it runs:** During `executeCommand()`. Global plugins run first, then command plugins.
 
 **What you can do:**
-- Access parsed `command` definition
-- Access `cli` instance
-- Throw to prevent handler execution
 
-**Error handling:** If `onBeforeCommandExecution` throws, the handler does not run.
+- Access unvalidated `parsedOptions` / `parsedPositionals`
+- Access `cli` and the matched `command` definition
+- Call `execute({ ctx })` to continue the pipeline and merge values into command `ctx` (same merge rules as middleware `next({ ctx })`). Remaining before-hooks run next, then middleware, validation, and the handler.
+- Return without calling `execute` — the pipeline still continues automatically (backward compatible).
+- Throw to abort before middleware runs.
+
+**Error handling:** If `onBeforeCommandExecution` throws, middleware and the handler do not run.
 
 **Example:**
+
 ```typescript
 const authPlugin = definePlugin({
   name: "auth",
   onBeforeCommandExecution: ({ command, cli }) => {
-    // Check authentication before command runs
     if (!isAuthenticated() && command.name !== "login") {
       throw new Error("Authentication required");
     }
-  }
+  },
+});
+```
+
+**Example (inject context, middleware-style):**
+
+```typescript
+const timingPlugin = definePlugin({
+  name: "timing",
+  onBeforeCommandExecution: async ({ execute }) => {
+    await execute({ ctx: { startTime: Date.now() } });
+  },
+  onAfterCommandExecution: async ({ data }) => {
+    const start = data.startTime as number | undefined;
+    if (start !== undefined) console.log(Date.now() - start, "ms");
+  },
 });
 ```
 
 ### `onAfterCommandExecution`
 
-Runs after a command handler executes, even if the handler threw an error.
+Runs after the handler attempt, in a `finally` block — even if validation or the handler threw.
 
-**When it runs:** During `executeCommand()`, in a `finally` block after the handler.
+**When it runs:** During `executeCommand()`, after the try/catch around middleware, validation, and the handler.
 
 **What you can do:**
-- Cleanup resources
-- Log execution results
-- Access `command` and `cli`
+
+- Read `data`: merged validated command options layered over accumulated `ctx` (plugin-injected + middleware + bequeath handlers), when those stages completed. If execution failed earlier, `data` is best-effort partial context.
+- Cleanup, logging, telemetry
 
 **Error handling:** Errors are logged but don't override the original error.
 
 **Example:**
+
 ```typescript
 const plugin = definePlugin({
   name: "logging-plugin",
   onAfterCommandExecution: ({ command }) => {
     console.log(`Command ${command.name} completed`);
-  }
+  },
 });
 ```
 
@@ -279,6 +312,7 @@ Runs when the CLI execution completes, even if an error occurred.
 **When it runs:** During `executeCli()`, in a `finally` block.
 
 **What you can do:**
+
 - Cleanup resources
 - Close connections
 - Final logging
@@ -286,13 +320,14 @@ Runs when the CLI execution completes, even if an error occurred.
 **Error handling:** Errors are logged but don't throw.
 
 **Example:**
+
 ```typescript
 const plugin = definePlugin({
   name: "db-plugin",
   onDestroy: ({ cli }) => {
     // Close database connections
     db.close();
-  }
+  },
 });
 ```
 
@@ -321,7 +356,7 @@ interface CliDefinition {
 ```typescript
 interface CommandDefinition<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionSchema = any
+  TOptionsDefinition extends OptionSchema = any,
 > {
   name: string;
   paths?: string[];
@@ -345,7 +380,7 @@ interface CommandDefinition<
 ```typescript
 type RootCommandDefinition<
   TPositionalDefinition extends PositionalDefinition = any,
-  TOptionsDefinition extends OptionSchema = any
+  TOptionsDefinition extends OptionSchema = any,
 > = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition>, "name">;
 ```
 
@@ -385,8 +420,8 @@ type MiddlewareDefinition = Middleware;
 interface PluginDefinition {
   name: string;
   onInit?: PluginHook;
-  onBeforeCommandExecution?: PluginCommandHook;
-  onAfterCommandExecution?: PluginCommandHook;
+  onBeforeCommandExecution?: PluginBeforeCommandHook;
+  onAfterCommandExecution?: PluginAfterCommandHook;
   onDestroy?: PluginHook;
 }
 ```
@@ -400,26 +435,41 @@ type PluginHook = (params: PluginHookParams) => Promisable<void>;
 ```
 
 **Parameters:**
+
 - `params.cli: Cli` - The CLI instance
 - `params.plugin: Plugin` - The plugin instance
 
-### `PluginCommandHook`
-
-Called before (`onBeforeCommandExecution`) or after (`onAfterCommandExecution`) command execution.
+### `PluginBeforeCommandHook`
 
 ```typescript
-type PluginCommandHook = (params: PluginCommandHookParams) => Promisable<void>;
+type PluginBeforeCommandHook = (params: PluginBeforeCommandHookParams) => Promisable<void>;
 ```
 
 **Parameters:**
+
 - `params.cli: Cli` - The CLI instance
 - `params.plugin: Plugin` - The plugin instance
 - `params.command: CommandDefinition` - The command being executed
+- `params.parsedOptions` / `params.parsedPositionals` - Raw parse output (unvalidated)
+- `params.execute` - `async (opts?: { ctx?: Record<string, unknown> }) => void` — continues remaining before-hooks, then middleware, validation, and handler; merges `ctx` like middleware `next({ ctx })`
+
+### `PluginAfterCommandHook`
+
+```typescript
+type PluginAfterCommandHook = (params: PluginAfterCommandHookParams) => Promisable<void>;
+```
+
+**Parameters:**
+
+- `params.cli: Cli` - The CLI instance
+- `params.plugin: Plugin` - The plugin instance
+- `params.command: CommandDefinition` - The command being executed
+- `params.data: Record<string, unknown>` - Options merged over accumulated `ctx` when available (see `onAfterCommandExecution` above)
 
 ### `ExtrageousOptionsBehavior`
 
 ```typescript
-type ExtrageousOptionsBehavior = 'throw' | 'filter-out' | 'pass-through';
+type ExtrageousOptionsBehavior = "throw" | "filter-out" | "pass-through";
 ```
 
 - `'throw'` - Throw an error when extrageous options are found (default)

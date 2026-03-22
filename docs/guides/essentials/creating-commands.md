@@ -6,8 +6,8 @@ Define command aliases using the `paths` property. This allows multiple invocati
 
 ```typescript
 const build = defineCommand({
-  name: 'build',
-  paths: ['build', 'b'], // both 'build' and 'b' will map to this command
+  name: "build",
+  paths: ["build", "b"], // both 'build' and 'b' will map to this command
   handler: async ({ options }) => {
     // Use 'my-cli build' or 'my-cli b'
   },
@@ -21,15 +21,15 @@ const build = defineCommand({
 > ```typescript
 > // ✅ Correct: includes both the name and the alias
 > defineCommand({
->   name: 'join',
->   paths: ['join', 'j'],
+>   name: "join",
+>   paths: ["join", "j"],
 >   // ...
 > });
 >
 > // ❌ Wrong: 'join' will NOT be a valid path, only 'j' will work
 > defineCommand({
->   name: 'join',
->   paths: ['j'],
+>   name: "join",
+>   paths: ["j"],
 >   // ...
 > });
 > ```
@@ -42,20 +42,23 @@ When wrapping another CLI tool, use `throwOnExtrageousOptions: 'pass-through'` t
 const build = defineCommand({
   options: z.object({
     // Only define wrapper-specific options
-    dryRun: z.boolean().optional().meta({ aliases: ['d'] }),
+    dryRun: z
+      .boolean()
+      .optional()
+      .meta({ aliases: ["d"] }),
   }),
-  throwOnExtrageousOptions: 'pass-through', // Pass through unknown options
+  throwOnExtrageousOptions: "pass-through", // Pass through unknown options
   handler: async ({ options }) => {
     const { dryRun, ...forwardedOptions } = options;
-    
+
     if (dryRun) {
-      console.log('Would run:', forwardedOptions);
+      console.log("Would run:", forwardedOptions);
       return;
     }
-    
+
     // Forward to underlying tool
-    execSync('webpack', [
-      ...Object.entries(forwardedOptions).flatMap(([k, v]) => [`--${k}`, String(v)])
+    execSync("webpack", [
+      ...Object.entries(forwardedOptions).flatMap(([k, v]) => [`--${k}`, String(v)]),
     ]);
   },
 });
@@ -90,17 +93,18 @@ handler: async ({ positional, options }) => {
   if (!fs.existsSync(positional)) {
     throw new Error(`File not found: ${positional}`);
   }
-  
+
   try {
     await processFile(positional);
   } catch (error) {
     // Re-throw after cleanup if needed
     throw new Error(`Failed to process file: ${error.message}`);
   }
-}
+};
 ```
 
 **Key points:**
+
 - Throw descriptive errors with actionable messages
 - Don't manually validate schema-defined inputs (Zod handles this)
 - Use try-catch only for cleanup or recovery, then re-throw
@@ -112,7 +116,7 @@ handler: async ({ positional, options }) => {
 
 **Do**: `const command = defineCommand({ ... })` or `export default defineCommand({ ... })`
 
-**Don't**: `const command: Command = { ... }`  
+**Don't**: `const command: Command = { ... }`
 
 **Why**: Using `defineCommand` gives you type-safe access to values in your handler, making your code safer and developer experience better.
 
@@ -124,8 +128,8 @@ Provide global examples to help users understand how to use the command:
 defineCommand({
   // ...
   examples: [
-    'my-cli convert ./images/photo.jpg',
-    'my-cli convert ~/Downloads/photo.jpg --normalize',
+    "my-cli convert ./images/photo.jpg",
+    "my-cli convert ~/Downloads/photo.jpg --normalize",
   ],
 });
 ```

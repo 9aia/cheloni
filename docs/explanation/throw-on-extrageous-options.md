@@ -3,6 +3,7 @@
 ## Why Three Behaviors
 
 A boolean forces a false dichotomy. Real-world CLI tools need:
+
 - `'throw'`: Strict validation for most commands
 - `'filter-out'`: Silently ignore extras when they're harmless
 - `'pass-through'`: Forward options to underlying tools in wrappers

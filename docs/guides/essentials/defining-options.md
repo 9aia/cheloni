@@ -9,12 +9,18 @@ Option aliases are set using the `aliases` property in the Zod metadata:
 ```typescript
 const command = defineCommand({
   options: z.object({
-    output: z.string().optional().meta({
-      aliases: ['o'] // Single alias: -o
-    }),
-    normalize: z.boolean().optional().meta({ 
-      aliases: ['n', 'c'] // Multiple aliases: -n and --normalize
-    }),
+    output: z
+      .string()
+      .optional()
+      .meta({
+        aliases: ["o"], // Single alias: -o
+      }),
+    normalize: z
+      .boolean()
+      .optional()
+      .meta({
+        aliases: ["n", "c"], // Multiple aliases: -n and --normalize
+      }),
   }),
   handler: async ({ options }) => {
     // Accepts --output or -o; --normalize, -n or -c
@@ -23,6 +29,7 @@ const command = defineCommand({
 ```
 
 **Notes:**
+
 - Aliases are automatically included in error messages
 - The standard library help command shows all available aliases
 - Both `-o` and `--o` forms are accepted for any alias
@@ -39,7 +46,7 @@ const updateJson = defineCommand({
   handler: async ({ options }) => {
     const someObject = {};
     Object.assign(someObject, options);
-    console.log('Updated JSON:', someObject);
+    console.log("Updated JSON:", someObject);
   },
 });
 ```
@@ -55,25 +62,31 @@ Provide both `description` (short) and `details` (long) for better help output:
 ```typescript
 {
   options: z.object({
-    output: z.string().optional().meta({
-      description: 'Output file path',
-      aliases: ['o'],
-      examples: [
-        'my-cli convert ./images/photo.jpg -o ./images/photo.pdf',
-        'my-cli convert ~/Downloads/photo.jpg -o ~/Downloads/photo.pdf',
-      ]
-    }),
-    normalize: z.boolean().optional().meta({
-      description: 'Normalize the filename',
-      details: dedent`
+    output: z
+      .string()
+      .optional()
+      .meta({
+        description: "Output file path",
+        aliases: ["o"],
+        examples: [
+          "my-cli convert ./images/photo.jpg -o ./images/photo.pdf",
+          "my-cli convert ~/Downloads/photo.jpg -o ~/Downloads/photo.pdf",
+        ],
+      }),
+    normalize: z
+      .boolean()
+      .optional()
+      .meta({
+        description: "Normalize the filename",
+        details: dedent`
         Normalize the filename by removing diacritical marks,
         replacing special characters with underscores, and
         collapsing multiple underscores.
       `,
-      aliases: ['n'],
-      examples: ['my-cli convert ~/Downloads/photo.jpg -n'],
-    }),
-  })
+        aliases: ["n"],
+        examples: ["my-cli convert ~/Downloads/photo.jpg -n"],
+      }),
+  });
 }
 ```
 

@@ -46,4 +46,4 @@ Manifest extraction happens at two points:
 1. **During creation** — `createCli()` calls `getCliManifest()` to build the top-level manifest. `createCommand()` calls `getCommandManifest()` for each command. The extracted manifests are stored on the runtime objects (`cli.manifest`, `command.manifest`).
 2. **During error handling** — `handleError()` calls `getOptionsManifest()` and `getPositionalManifest()` to enrich validation error messages with field descriptions from the schema.
 
-The manifest is a snapshot. If plugins mutate the CLI structure during `onInit`, the manifest on `cli.manifest` reflects the state *before* those mutations (it's extracted first). Individual command manifests created after mutation will reflect the updated structure.
+The manifest is a snapshot. If plugins mutate the CLI structure during `onInit`, the manifest on `cli.manifest` reflects the state _before_ those mutations (it's extracted first). Individual command manifests created after mutation will reflect the updated structure.

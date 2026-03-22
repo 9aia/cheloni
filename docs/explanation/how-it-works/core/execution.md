@@ -50,15 +50,16 @@ Splits raw argv into `{ positional: string[], options: Record<string, any> }` us
 
 ### 3. Pre-Execution Plugin Hooks
 
-Runs `onBeforeCommandExecution` for global plugins, then command plugins, in order. Hooks receive **unvalidated** `parsedOptions` and `parsedPositionals`. If a hook throws, the rest of the pipeline (including middleware and handler) does not run.
+Runs `onBeforeCommandExecution` for global plugins, then command plugins, in order. Hooks receive **unvalidated** `parsedOptions` and `parsedPositionals`, plus `execute({ ctx })`. Calling `execute` continues with the **next** before-hooks, then middleware, validation, and the handler, merging `ctx` the same way as middleware `next({ ctx })` (via defu). If a hook returns without calling `execute`, the pipeline still advances (backward compatible). If a hook throws, the rest of the pipeline does not run.
 
 ### 4. Middleware
 
-Runs the **matched command’s** `middleware` array only (not parent commands’ arrays), in order. Each step receives frozen params `{ ctx, next, cli, command, halt }`. Context grows when a middleware **returns** `next({ ctx: { ... } })` (deep-merge via defu). Each middleware must **return** the result of `next()`. The final context is passed to bequeath option handlers and the command handler as `ctx`.
+Runs the **matched command’s** `middleware` array only (not parent commands’ arrays), in order. Each step receives frozen params `{ ctx, next, cli, command, halt }`. The initial `ctx` includes any values merged from pre-hooks via `execute({ ctx })`. Context grows when a middleware **returns** `next({ ctx: { ... } })` (deep-merge via defu). Each middleware must **return** the result of `next()`. The final context is passed to bequeath option handlers and the command handler as `ctx`.
 
 ### 5. Extraneous Options
 
 Checks parsed options against the schema + bequeath option names. Behavior depends on `throwOnExtrageousOptions`:
+
 - `'throw'` (default): throws `InvalidOptionsError`
 - `'filter-out'`: silently drops unknown options
 - `'pass-through'`: keeps them for the handler
@@ -66,6 +67,7 @@ Checks parsed options against the schema + bequeath option names. Behavior depen
 ### 6. Bequeath Option Handlers
 
 Iterates bequeath options. If a bequeath option is present in parsed args:
+
 - Validates its value against its Zod schema
 - If it has a handler (e.g. `--help`, `--version`): executes it and **returns early** (short-circuits the rest of the pipeline)
 
@@ -80,13 +82,14 @@ Separates valid vs. extra options, then runs `schema.parse()` on valid options. 
 ### 9. Handler
 
 Calls the command handler with:
+
 ```
 { positional, options, ctx, command, cli }
 ```
 
 ### 10. Post-Execution Plugin Hooks
 
-Runs `onAfterCommandExecution` in a `finally` block — always executes, even if the handler threw. Hook errors are logged but don't override the original error.
+Runs `onAfterCommandExecution` in a `finally` block — always executes, even if the handler threw. Hooks receive `data`: validated command options merged over accumulated `ctx` when those stages completed (otherwise best-effort partial context). Hook errors are logged but don't override the original error.
 
 ## Error Handling
 

@@ -1,121 +1,46 @@
 {
-  "name": "cheloni",
-  "version": "0.6.0",
-  "description": "A modern, type-safe CLI framework for TypeScript. Build command-line tools with full type inference, Zod validation, and a powerful plugin system—zero manual types required.",
-  "type": "module",
-  "main": "./dist/core/index.js",
-  "types": "./dist/core/index.d.ts",
-  "module": "./dist/core/index.js",
-  "exports": {
-    ".": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
-    },
-    "./std/config": {
-      "types": "./dist/std/config/index.d.ts",
-      "import": "./dist/std/config/index.js"
-    },
-    "./std/core": {
-      "types": "./dist/std/core/index.d.ts",
-      "import": "./dist/std/core/index.js"
-    },
-    "./std/git": {
-      "types": "./dist/std/git/index.d.ts",
-      "import": "./dist/std/git/index.js"
-    },
-    "./std/logger": {
-      "types": "./dist/std/logger/index.d.ts",
-      "import": "./dist/std/logger/index.js"
-    },
-    "./std/npm": {
-      "types": "./dist/std/npm/index.d.ts",
-      "import": "./dist/std/npm/index.js"
-    },
-    "./std/os": {
-      "types": "./dist/std/os/index.d.ts",
-      "import": "./dist/std/os/index.js"
-    },
-    "./std/parse": {
-      "types": "./dist/std/parse/index.d.ts",
-      "import": "./dist/std/parse/index.js"
-    },
-    "./std/semver": {
-      "types": "./dist/std/semver/index.d.ts",
-      "import": "./dist/std/semver/index.js"
-    },
-    "./std/ui": {
-      "types": "./dist/std/ui/index.d.ts",
-      "import": "./dist/std/ui/index.js"
-    },
-    "./plugin-kits": {
-      "types": "./dist/plugin-kits/index.d.ts",
-      "import": "./dist/plugin-kits/index.js"
-    },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js"
+  "name": "@cheloni/monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "examples/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "@types/node": "^24",
+      "typescript": "^5",
+      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+      "vitest": "npm:@voidzero-dev/vite-plus-test@latest",
+      "vite-plus": "latest"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "type": "module",
   "scripts": {
-    "build": "vite build",
-    "prepublishOnly": "bun run build",
-    "typecheck": "bunx tsc --noEmit",
-    "release": "release-it",
-    "release:dry": "release-it --dry-run",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
+    "ready": "vp fmt && vp lint && vp run test -r && vp run build -r",
+    "dev": "vp run -r build --watch",
+    "build": "vp run -r build",
+    "test": "vp run -r test",
+    "prepare": "vp config",
+    "release": "vp run cheloni#release",
+    "release:dry": "vp run cheloni#release:dry",
     "docsgen:examples": "bun run scripts/docsgen-examples.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "bun run docsgen:examples && vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "docs:deploy": "gh-pages -d docs/.vitepress/dist"
   },
-  "keywords": [
-    "cli",
-    "typescript",
-    "zod",
-    "schema",
-    "command-line",
-    "type-safe"
-  ],
-  "author": "Luis Emidio",
-  "license": "MIT",
-  "homepage": "https://github.com/9aia/cheloni#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/9aia/cheloni.git"
-  },
-  "bugs": {
-    "url": "https://github.com/9aia/cheloni/issues"
-  },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/semver": "^7.7.1",
     "gh-pages": "^6.1.1",
-    "release-it": "^19.2.4",
-    "semver": "^7.7.4",
-    "type-fest": "^5.4.4",
-    "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.5.4",
-    "vitepress": "^2.0.0-alpha.16",
-    "vitest": "^4.0.18",
-    "yaml": "^2.8.2",
-    "zod": "^4.3.6"
+    "vite-plus": "catalog:",
+    "vitepress": "^2.0.0-alpha.16"
   },
-  "peerDependencies": {
-    "semver": "^7.7.4",
-    "typescript": "^5",
-    "yaml": "^2.8.2",
-    "zod": "^4.0.0"
+  "overrides": {
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
-  "dependencies": {
-    "c12": "^4.0.0-beta.4",
-    "defu": "^6.1.4",
-    "mri": "^1.2.0"
-  }
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.32.1"
 }

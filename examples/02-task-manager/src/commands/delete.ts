@@ -1,10 +1,10 @@
-import { defineCommand } from 'cheloni';
-import { workspaceMiddleware } from '../middleware/workspace';
-import { taskIdPositionalSchema } from '../schemas/task';
+import { defineCommand } from "cheloni";
+import { workspaceMiddleware } from "../middleware/workspace";
+import { taskIdPositionalSchema } from "../schemas/task";
 
 export const deleteCommand = defineCommand({
-  name: 'delete',
-  description: 'Delete a task',
+  name: "delete",
+  description: "Delete a task",
   positional: taskIdPositionalSchema,
   middleware: [workspaceMiddleware],
   handler: async ({ positional, ctx }) => {

@@ -5,11 +5,11 @@ Add help command and `--help` / `-h` option to your CLI.
 ## Using the Plugin
 
 ```typescript
-import { helpPlugin } from 'cheloni/std';
+import { helpPlugin } from "cheloni/std";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [helpPlugin],
 });
 ```
@@ -40,11 +40,11 @@ $ my-cli deploy --help
 For most CLIs, spread `basicPluginKit` from `cheloni/std/core` (deprecation, help, version, and default error handling):
 
 ```typescript
-import { basicPluginKit } from 'cheloni/std/core';
+import { basicPluginKit } from "cheloni/std/core";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [...basicPluginKit],
 });
 ```

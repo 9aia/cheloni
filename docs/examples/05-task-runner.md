@@ -37,11 +37,11 @@ Available tasks: build, start, test, lint
 ### `src/cli.ts`
 
 ```typescript
-import { createCli, executeCli } from 'cheloni';
-import { configPlugin } from 'cheloni/std/config';
-import rootCommand from './commands/__root__';
-import { tasksConfigSchema } from './configs/tasks';
-import { basicPluginKit } from './plugin-kits/basic-kit';
+import { createCli, executeCli } from "cheloni";
+import { configPlugin } from "cheloni/std/config";
+import rootCommand from "./commands/__root__";
+import { tasksConfigSchema } from "./configs/tasks";
+import { basicPluginKit } from "./plugin-kits/basic-kit";
 
 const cli = await createCli({
   metaUrl: import.meta.url,
@@ -49,7 +49,7 @@ const cli = await createCli({
   plugins: [
     ...basicPluginKit,
     configPlugin({
-      c12Options: { configFile: 'tasks' },
+      c12Options: { configFile: "tasks" },
       schema: tasksConfigSchema,
     }),
   ],
@@ -61,10 +61,10 @@ await executeCli({ cli });
 ### `src/commands/__root__.ts`
 
 ```typescript
-import { defineRootCommand } from 'cheloni';
-import { CheloniError } from 'cheloni/utils';
-import type { TasksConfig } from '../configs/tasks';
-import z from 'zod';
+import { defineRootCommand } from "cheloni";
+import { CheloniError } from "cheloni/utils";
+import type { TasksConfig } from "../configs/tasks";
+import z from "zod";
 
 class NoTasksJsonError extends CheloniError {
   constructor(fileName: string) {
@@ -73,21 +73,21 @@ class NoTasksJsonError extends CheloniError {
 }
 
 export default defineRootCommand({
-  description: 'Run tasks defined in tasks.json',
-  positional: z.string().meta({ description: 'Task name to execute', name: 'task' }),
+  description: "Run tasks defined in tasks.json",
+  positional: z.string().meta({ description: "Task name to execute", name: "task" }),
   handler: async ({ positional, ctx }) => {
     const taskName = positional;
     const { config, configFile } = ctx as { config: TasksConfig; configFile?: string };
 
     if (Object.keys(config).length === 0) {
-      throw new NoTasksJsonError(configFile ?? 'tasks.json');
+      throw new NoTasksJsonError(configFile ?? "tasks.json");
     }
 
     const taskCommand = config[taskName];
 
     if (!taskCommand) {
       console.error(`Task "${taskName}" not found in tasks.json`);
-      console.error(`Available tasks: ${Object.keys(config).join(', ')}`);
+      console.error(`Available tasks: ${Object.keys(config).join(", ")}`);
       process.exit(1);
     }
 
@@ -101,7 +101,7 @@ export default defineRootCommand({
 ### `src/configs/tasks.ts`
 
 ```typescript
-import z from 'zod';
+import z from "zod";
 
 export const tasksConfigSchema = z.record(z.string(), z.string());
 export type TasksConfig = z.infer<typeof tasksConfigSchema>;
@@ -110,7 +110,7 @@ export type TasksConfig = z.infer<typeof tasksConfigSchema>;
 ### `src/plugin-kits/basic-kit.ts`
 
 ```typescript
-import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from 'cheloni/std/core';
+import { deprecationPlugin, errorHandlerPlugin, helpPlugin, versionPlugin } from "cheloni/std/core";
 
 export const basicPluginKit = [
   errorHandlerPlugin,

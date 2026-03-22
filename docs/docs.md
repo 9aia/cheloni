@@ -7,7 +7,7 @@ Welcome to the Cheloni documentation!
 This documentation follows the [Diataxis](https://diataxis.fr/) framework:
 
 - _Tutorial (coming soon)_ – Step-by-step processes for learning the framework
-- [Guides](./guides/index.md) – Practical how-tos 
+- [Guides](./guides/index.md) – Practical how-tos
   - [Getting Started](./guides/getting-started/introduction.md) – Installation & first steps
 - [Reference](./reference/api/index.md) – Technical details and information
   - [API Reference](./reference/api/index.md)

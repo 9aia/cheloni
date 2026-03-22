@@ -1,16 +1,16 @@
 {
   "name": "benchmark",
   "version": "0.0.1",
-  "type": "module",
   "private": true,
   "bin": {
     "benchmark": "./src/cli.ts"
   },
+  "type": "module",
   "scripts": {
     "start": "bun run src/cli.ts"
   },
   "dependencies": {
-    "cheloni": "file:../..",
+    "cheloni": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {

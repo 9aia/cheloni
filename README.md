@@ -8,24 +8,27 @@
 ## Overview
 
 ```typescript
-import { createCli, defineCommand, defineRootCommand, executeCli } from 'cheloni';
-import { configPlugin } from 'cheloni/std/config';
-import { dryRunOptionSchema } from 'cheloni/std/core';
-import { basicPluginKit } from './plugin-kits/basic-kit';
-import { authMiddleware, loggerMiddleware } from 'your-lib';
-import z from 'zod';
+import { createCli, defineCommand, defineRootCommand, executeCli } from "cheloni";
+import { configPlugin } from "cheloni/std/config";
+import { dryRunOptionSchema } from "cheloni/std/core";
+import { basicPluginKit } from "./plugin-kits/basic-kit";
+import { authMiddleware, loggerMiddleware } from "your-lib";
+import z from "zod";
 
 const deploy = defineCommand({
-  name: 'deploy',
-  description: 'Deploy to production',
-  paths: ['deploy', 'd'], // `d` is now considered a alias for the command
-  positional: z.string().meta({ description: 'Environment (staging|production)' }),
+  name: "deploy",
+  description: "Deploy to production",
+  paths: ["deploy", "d"], // `d` is now considered a alias for the command
+  positional: z.string().meta({ description: "Environment (staging|production)" }),
   options: z.object({
     dryRun: dryRunOptionSchema,
-    force: z.boolean().optional().meta({ aliases: ['f'] }),
+    force: z
+      .boolean()
+      .optional()
+      .meta({ aliases: ["f"] }),
   }),
-  examples: ['deploy staging', 'deploy production --force'],
-  details: 'Deploys your application to the specified environment.',
+  examples: ["deploy staging", "deploy production --force"],
+  details: "Deploys your application to the specified environment.",
   middleware: [authMiddleware],
   handler: async ({ positional, options, ctx }) => {
     // Full type inference:
@@ -35,8 +38,8 @@ const deploy = defineCommand({
     //   ctx: { session: Session }
     // }
     console.log(`Deploying to ${positional}...`);
-    if (options.dryRun) console.log('Dry run mode');
-    if (options.force) console.log('Force mode enabled');
+    if (options.dryRun) console.log("Dry run mode");
+    if (options.force) console.log("Force mode enabled");
   },
 });
 
@@ -50,8 +53,8 @@ const cli = await createCli({
   }),
   plugins: [
     configPlugin,
-    ...basicPluginKit // Adds deprecation warnings, help/version support, and default error handling
-  ], 
+    ...basicPluginKit, // Adds deprecation warnings, help/version support, and default error handling
+  ],
 });
 
 await executeCli({ cli });
@@ -62,6 +65,32 @@ await executeCli({ cli });
 ## Contributing
 
 You can contribute to the project by submitting pull requests or by creating an issue.
+
+## Development
+
+- Check everything is ready:
+
+```bash
+vp run ready
+```
+
+- Run the tests:
+
+```bash
+vp run test
+```
+
+- Build the monorepo:
+
+```bash
+vp run build
+```
+
+- Build the monorepo in development mode:
+
+```bash
+vp run dev
+```
 
 ---
 

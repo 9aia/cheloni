@@ -5,11 +5,11 @@ Add version command and `--version` / `-v` option to your CLI.
 ## Using the Plugin
 
 ```typescript
-import { versionPlugin } from 'cheloni/std';
+import { versionPlugin } from "cheloni/std";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [versionPlugin],
 });
 ```
@@ -39,11 +39,11 @@ $ my-cli --version
 For most CLIs, spread `basicPluginKit` from `./plugin-kits/basic-kit`:
 
 ```typescript
-import { basicPluginKit } from './plugin-kits/basic-kit';
+import { basicPluginKit } from "./plugin-kits/basic-kit";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [...basicPluginKit],
 });
 ```

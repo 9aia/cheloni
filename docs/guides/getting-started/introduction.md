@@ -13,22 +13,25 @@ Cheloni follows a four-phase architecture: **Definition** → **Manifest** → *
 Define your CLI structure using `define*` functions. These return plain objects with full type inference — nothing is created or executed yet.
 
 ```typescript
-import { defineCommand, defineRootCommand, defineOption, definePlugin, defineCli } from 'cheloni';
-import z from 'zod';
+import { defineCommand, defineRootCommand, defineOption, definePlugin, defineCli } from "cheloni";
+import z from "zod";
 
 const convert = defineCommand({
-  name: 'convert',
-  paths: ['convert', 'c'],
-  description: 'Convert a file',
-  positional: z.string().meta({ description: 'Input file' }),
+  name: "convert",
+  paths: ["convert", "c"],
+  description: "Convert a file",
+  positional: z.string().meta({ description: "Input file" }),
   options: z.object({
-    output: z.string().optional().meta({ aliases: ['o'], description: 'Output path' }),
+    output: z
+      .string()
+      .optional()
+      .meta({ aliases: ["o"], description: "Output path" }),
     quality: z.number().min(0).max(100).optional(),
   }),
   middleware: [authMiddleware],
   plugins: [telemetryPlugin],
-  examples: ['my-cli convert image.png --output result.webp'],
-  throwOnExtrageousOptions: 'throw',
+  examples: ["my-cli convert image.png --output result.webp"],
+  throwOnExtrageousOptions: "throw",
   handler: async ({ positional, options, ctx, command, cli }) => {
     // positional: string, options: { output?: string, quality?: number }
     // ctx: merged middleware + bequeath-option handler context
@@ -38,24 +41,27 @@ const convert = defineCommand({
 const root = defineRootCommand({ commands: [convert, ...otherCommands] });
 
 const verboseOption = defineOption({
-  name: 'verbose',
-  schema: z.boolean().optional().meta({ aliases: ['V'] }),
+  name: "verbose",
+  schema: z
+    .boolean()
+    .optional()
+    .meta({ aliases: ["V"] }),
 });
 
 const tokenOption = defineOption({
-  name: 'token',
-  schema: z.string().meta({ aliases: ['t'] }),
+  name: "token",
+  schema: z.string().meta({ aliases: ["t"] }),
   handler: async ({ value, next }) => {
     const session = await getSession(value);
     if (!session) {
-      throw new Error('Unauthorized');
+      throw new Error("Unauthorized");
     }
     return next({ ctx: { user: session.user } });
   },
 });
 
 const circuitBreakerOption = defineOption({
-  name: 'circuit-breaker',
+  name: "circuit-breaker",
   handler: async ({ next, halt }) => {
     if (yourConditionToShortCircuitExecution) {
       return halt();
@@ -65,23 +71,33 @@ const circuitBreakerOption = defineOption({
 });
 
 const analytics = definePlugin({
-  name: 'analytics',
-  onInit: async ({ cli }) => { /* ... */ },
-  onBeforeCommandExecution: async ({ cli, command }) => { /* ... */ },
-  onAfterCommandExecution: async ({ cli, command }) => { /* ... */ },
-  onDestroy: async ({ cli }) => { /* ... */ },
+  name: "analytics",
+  onInit: async ({ cli }) => {
+    /* ... */
+  },
+  onBeforeCommandExecution: async ({ cli, command }) => {
+    /* ... */
+  },
+  onAfterCommandExecution: async ({ cli, command }) => {
+    /* ... */
+  },
+  onDestroy: async ({ cli }) => {
+    /* ... */
+  },
 });
 
 const observabilityKit = [analytics, ...otherPlugins];
 
 const rootCommand = defineRootCommand({
-  commands: [/* ... */],
+  commands: [
+    /* ... */
+  ],
   bequeathOptions: [circuitBreakerOption, ...otherBequeathOptions], // Available to all commands
 });
 
 const cli = defineCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   command: rootCommand,
   plugins: [...observabilityKit],
 });
@@ -92,10 +108,10 @@ const cli = defineCli({
 Manifests are metadata extracted from definitions. Used for help generation and introspection without accessing runtime logic.
 
 ```typescript
-cli.manifest        // { name: 'my-cli', /* ... */ }
-command.manifest    // { name: 'convert', /* ... */ }
-option.manifest     // { name: 'output', /* ... */ }
-plugin.manifest     // { name: 'analytics' }
+cli.manifest; // { name: 'my-cli', /* ... */ }
+command.manifest; // { name: 'convert', /* ... */ }
+option.manifest; // { name: 'output', /* ... */ }
+plugin.manifest; // { name: 'analytics' }
 ```
 
 ### Creation
@@ -103,17 +119,19 @@ plugin.manifest     // { name: 'analytics' }
 `createCli` turns definitions into runtime objects. It extracts manifests, builds the command tree, creates plugins, then runs plugin `onInit` hooks (which can mutate the CLI structure).
 
 ```typescript
-import { createCli, defineRootCommand } from 'cheloni';
-import { basicPluginKit } from 'cheloni/std/core';
+import { createCli, defineRootCommand } from "cheloni";
+import { basicPluginKit } from "cheloni/std/core";
 
 const rootCommand = defineRootCommand({
   bequeathOptions: [verboseOption], // Available to all commands
-  commands: [/* ... */],
+  commands: [
+    /* ... */
+  ],
 });
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   command: rootCommand,
   plugins: [analytics, ...basicPluginKit],
 });
@@ -124,6 +142,7 @@ const cli = await createCli({
 ```
 
 **What happens during `createCli`:**
+
 1. Manifest is extracted from the definition (metadata for help/introspection)
 2. Root command tree is built recursively (`createCommand` / `createRootCommand`)
 3. Plugins are created
@@ -134,20 +153,21 @@ const cli = await createCli({
 `executeCli` runs the CLI: resolves the command from `argv`, parses args, runs plugin pre-hooks, then middleware, then validates and calls the handler.
 
 ```typescript
-import { executeCli } from 'cheloni';
+import { executeCli } from "cheloni";
 
 await executeCli({ cli });
 // Or with explicit args: await executeCli({ cli, args: ['convert', 'file.png'] });
 ```
 
 **Execution pipeline:**
+
 1. Command resolved from `argv` by walking the command tree
 2. Args parsed into positional values and options (with alias resolution)
-3. Plugin `onBeforeCommandExecution` hooks run (unvalidated parsed args)
-4. Middleware chain runs on the matched command only
+3. Plugin `onBeforeCommandExecution` hooks run (unvalidated parsed args; optional `execute({ ctx })` continues the chain and merges into command `ctx`)
+4. Middleware chain runs on the matched command only (starts from plugin-merged `ctx`)
 5. Options and positionals validated (unknown-option policy, bequeath option handlers, then Zod)
 6. Command handler runs
-7. Plugin `onAfterCommandExecution` hooks run (even on error)
+7. Plugin `onAfterCommandExecution` hooks run with `data` (options over `ctx` when available; even on error)
 8. Plugin `onDestroy` hooks run in `executeCli`’s `finally` block
 
 ## Core Concepts
@@ -158,8 +178,8 @@ Commands define CLI operations. They can have positional arguments, options, sub
 
 ```typescript
 defineCommand({
-  name: 'greet',
-  paths: ['greet', 'g'], // Aliases
+  name: "greet",
+  paths: ["greet", "g"], // Aliases
   positional: z.string(),
   options: z.object({ loud: z.boolean().optional() }),
   commands: [subcommand], // Nested subcommands
@@ -181,11 +201,11 @@ defineCommand({
 Middleware runs on the **matched command only** (the leaf command resolved from argv), in array order, before option validation and the handler. Extend context with `return next({ ctx: { ... } })` (deep-merged); always **return** the promise or value from `next()`.
 
 ```typescript
-import { defineMiddleware } from 'cheloni';
+import { defineMiddleware } from "cheloni";
 
 const auth = defineMiddleware(async ({ next }) => {
   const user = await authenticate();
-  if (!user) throw new Error('Unauthorized');
+  if (!user) throw new Error("Unauthorized");
   return next({
     ctx: {
       user,
@@ -212,8 +232,11 @@ Bequeath options are inherited by subcommands. When placed on the root command, 
 
 ```typescript
 defineOption({
-  name: 'verbose',
-  schema: z.boolean().optional().meta({ aliases: ['V'] }),
+  name: "verbose",
+  schema: z
+    .boolean()
+    .optional()
+    .meta({ aliases: ["V"] }),
   handler: async ({ value, next }) => {
     return next({ ctx: { verbose: Boolean(value) } });
   },
@@ -225,14 +248,16 @@ defineOption({
 Plugins hook into the CLI lifecycle at specific points. They can be applied globally or per-command.
 
 **Lifecycle hooks:**
+
 - `onInit` — runs during `createCli`, can mutate CLI structure
-- `onBeforeCommandExecution` — runs before command handler
-- `onAfterCommandExecution` — runs after handler (even on error)
+- `onBeforeCommandExecution` — runs after parse, before middleware and validation; may call `execute({ ctx })`
+- `onAfterCommandExecution` — runs after handler attempt with `data` (even on error)
 - `onDestroy` — runs on CLI shutdown
 
 **Use cases:** telemetry, auth, feature flags, service integration, context enrichment, CLI manipulation, cleanup.
 
 **Plugin use cases:**
+
 - **Telemetry**: Report usage or metrics
 - **Feature Flags**: Enable/disable features dynamically
 - **Auth**: Enforce authentication/authorization
@@ -250,16 +275,17 @@ The standard library (`cheloni/std`) provides ready-to-use components for common
 The `basicPluginKit` export (`cheloni/std/core`) is an array of plugins that add deprecation warnings, help and version support, and default error handling:
 
 ```typescript
-import { basicPluginKit } from 'cheloni/std/core';
+import { basicPluginKit } from "cheloni/std/core";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [...basicPluginKit],
 });
 ```
 
 **What it adds:**
+
 - Deprecation warnings — warns when the CLI, a command, or provided args/options are marked deprecated
 - `help` command — shows root help or help for a specific command
 - `version` command — prints the CLI version
@@ -274,16 +300,17 @@ const cli = await createCli({
 You can also use the plugins individually:
 
 ```typescript
-import { helpPlugin, versionPlugin } from 'cheloni/std';
+import { helpPlugin, versionPlugin } from "cheloni/std";
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   plugins: [helpPlugin, versionPlugin],
 });
 ```
 
 **Usage examples:**
+
 ```sh
 $ my-cli help
 $ my-cli help deploy
@@ -292,6 +319,7 @@ $ my-cli --version
 ```
 
 **Output examples:**
+
 ```sh
 $ my-cli help
 my-cli v2.0.0
@@ -304,7 +332,7 @@ $ my-cli greet --help
 Usage: greet <positional> [options]
 
 Options:
-  -l, --loud    
+  -l, --loud
 
 $ my-cli --version
 2.0.0
@@ -324,22 +352,25 @@ import {
   showVersion,
   mergeOptionsWith,
   mergeOptionsWithVersion,
-} from 'cheloni/std';
+} from "cheloni/std";
 ```
 
 ## Complete Example
 
 ```typescript
-import { defineCommand, defineRootCommand, createCli, executeCli } from 'cheloni';
-import { basicPluginKit } from 'cheloni/std/core';
-import z from 'zod';
+import { defineCommand, defineRootCommand, createCli, executeCli } from "cheloni";
+import { basicPluginKit } from "cheloni/std/core";
+import z from "zod";
 
 const greet = defineCommand({
-  name: 'greet',
-  paths: ['greet', 'g'],
-  positional: z.string().meta({ description: 'Name to greet' }),
+  name: "greet",
+  paths: ["greet", "g"],
+  positional: z.string().meta({ description: "Name to greet" }),
   options: z.object({
-    loud: z.boolean().optional().meta({ aliases: ['l'] }),
+    loud: z
+      .boolean()
+      .optional()
+      .meta({ aliases: ["l"] }),
   }),
   handler: async ({ positional, options }) => {
     const msg = `Hello, ${positional}!`;
@@ -348,8 +379,8 @@ const greet = defineCommand({
 });
 
 const cli = await createCli({
-  name: 'my-cli',
-  version: '1.0.0',
+  name: "my-cli",
+  version: "1.0.0",
   command: defineRootCommand({ commands: [greet] }),
   plugins: [...basicPluginKit],
 });

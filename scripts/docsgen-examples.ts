@@ -18,13 +18,11 @@ async function cleanDocsExamples(): Promise<void> {
     throw e;
   }
   await Promise.all(
-    names
-      .filter((n) => n.endsWith(".md"))
-      .map((n) => fs.unlink(path.join(OUT_DIR, n))),
+    names.filter((n) => n.endsWith(".md")).map((n) => fs.unlink(path.join(OUT_DIR, n))),
   );
 }
 
-async function collectTsFiles(dir: string, base: string): Promise<string[]> {
+async function collectTsFiles(dir: string): Promise<string[]> {
   let entries: import("node:fs").Dirent[];
   try {
     entries = await fs.readdir(dir, { withFileTypes: true });
@@ -37,7 +35,7 @@ async function collectTsFiles(dir: string, base: string): Promise<string[]> {
     const abs = path.join(dir, e.name);
     if (e.isDirectory()) {
       if (e.name === "node_modules") continue;
-      out.push(...(await collectTsFiles(abs, base)));
+      out.push(...(await collectTsFiles(abs)));
     } else if (e.isFile() && e.name.endsWith(".ts")) {
       out.push(abs);
     }
@@ -53,7 +51,7 @@ async function writeExamplePage(exampleName: string, examplePath: string): Promi
   const readmePath = path.join(examplePath, "README.md");
   const readme = await fs.readFile(readmePath, "utf8");
 
-  const tsFiles = await collectTsFiles(path.join(examplePath, "src"), examplePath);
+  const tsFiles = await collectTsFiles(path.join(examplePath, "src"));
   const parts: string[] = [readme.trimEnd()];
 
   if (tsFiles.length > 0) {

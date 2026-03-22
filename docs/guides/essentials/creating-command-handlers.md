@@ -12,7 +12,7 @@ handler: async ({ positional, options }) => {
     throw new Error(`File not found: ${positional}`);
   }
   // Your application logic
-}
+};
 ```
 
 ## Best Practices
@@ -54,7 +54,7 @@ handler: async ({ positional, options }) => {
 
 ```typescript
 // ❌ Less helpful
-throw new Error('Error');
+throw new Error("Error");
 
 // ✅ Better
 throw new Error(`File not found: ${filePath}`);
@@ -81,7 +81,7 @@ handler: async ({ options }) => {
     }
     throw error; // Re-throw so framework can display it
   }
-}
+};
 ```
 
 ### Throw Errors for Application Failures

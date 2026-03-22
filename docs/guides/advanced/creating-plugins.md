@@ -5,20 +5,20 @@ Plugins extend CLI functionality with lifecycle hooks. Use them for analytics, t
 ## Basic Structure
 
 ```typescript
-import { definePlugin } from 'cheloni';
+import { definePlugin } from "cheloni";
 
 export interface MyPluginConfig {
-  level?: 'info' | 'debug';
+  level?: "info" | "debug";
 }
 
 const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
-  name: 'my-plugin',
+  name: "my-plugin",
   onInit: async ({ cli, plugin }) => {
     // Called when CLI is created
   },
   onBeforeCommandExecution: async ({ cli, plugin, command }) => {
-    if (options.level === 'debug') {
-      console.debug('About to run', command.name);
+    if (options.level === "debug") {
+      console.debug("About to run", command.name);
     }
   },
   onAfterCommandExecution: async ({ cli, plugin, command }) => {
@@ -30,28 +30,42 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
 }));
 ```
 
+## Injecting context with `execute()`
+
+`onBeforeCommandExecution` receives `execute`, similar to middleware `next`. Call `await execute({ ctx: { ... } })` to run the remaining before-hooks, then middleware, validation, and the handler. Merged fields become part of command `ctx` (same `defu` rules as `next({ ctx })`).
+
+If you return without calling `execute`, Cheloni still continues the pipeline (backward compatible).
+
+`onAfterCommandExecution` receives `data`: validated command options merged over accumulated `ctx` when those stages ran, so you can combine injected values (for example `startTime`) with parsed flags.
+
+See the [benchmark example](../examples/03-benchmark.md) (`src/plugins/time.ts`).
+
 ## Lifecycle Hooks
 
 ### `onInit`
+
 Runs once when the CLI is created, before any commands execute. Use it to:
+
 - Modify CLI structure (add commands, options)
 - Initialize services
 - Set up configuration
 
 ```typescript
-import { createOption, defineOption } from 'cheloni';
-import z from 'zod';
+import { createOption, defineOption } from "cheloni";
+import z from "zod";
 
 const plugin = definePlugin({
-  name: 'my-plugin',
+  name: "my-plugin",
   onInit: async ({ cli }) => {
-    console.log('CLI initialized');
+    console.log("CLI initialized");
   },
 });
 ```
 
 ### `onBeforeCommand`
+
 Runs before each command handler. Use it for:
+
 - Authentication checks
 - Logging command start
 - Performance tracking
@@ -61,11 +75,13 @@ onBeforeCommand: async ({ cli, command }) => {
   console.log(`Executing: ${command.manifest.name}`);
   const startTime = Date.now();
   // Store in plugin state for onAfterCommand
-}
+};
 ```
 
 ### `onAfterCommand`
+
 Runs after each command handler, even if it throws. Use it for:
+
 - Cleanup
 - Logging completion
 - Error tracking
@@ -74,11 +90,13 @@ Runs after each command handler, even if it throws. Use it for:
 onAfterCommand: async ({ cli, command }) => {
   console.log(`Completed: ${command.manifest.name}`);
   // Always runs, even if handler failed
-}
+};
 ```
 
 ### `onDestroy`
+
 Runs when the CLI is shutting down. Use it for:
+
 - Closing connections
 - Flushing logs
 - Cleanup
@@ -87,7 +105,7 @@ Runs when the CLI is shutting down. Use it for:
 onDestroy: async ({ cli }) => {
   await flushLogs();
   await closeDatabase();
-}
+};
 ```
 
 ## Usage
@@ -97,17 +115,17 @@ onDestroy: async ({ cli }) => {
 Apply to all commands:
 
 ```typescript
-import { createCli, definePlugin } from 'cheloni';
+import { createCli, definePlugin } from "cheloni";
 
 const analyticsPlugin = definePlugin({
-  name: 'analytics',
+  name: "analytics",
   onBeforeCommand: async ({ command }) => {
     trackCommandUsage(command.manifest.name);
   },
 });
 
 const cli = await createCli({
-  name: 'my-cli',
+  name: "my-cli",
   plugins: [analyticsPlugin],
   command: rootCommand,
 });
@@ -118,17 +136,17 @@ const cli = await createCli({
 Apply only to specific commands:
 
 ```typescript
-import { defineCommand, definePlugin } from 'cheloni';
+import { defineCommand, definePlugin } from "cheloni";
 
 const deploymentPlugin = definePlugin({
-  name: 'deployment-plugin',
+  name: "deployment-plugin",
   onBeforeCommand: async () => {
     await checkDeploymentPermissions();
   },
 });
 
 const deployCommand = defineCommand({
-  name: 'deploy',
+  name: "deploy",
   plugins: [deploymentPlugin],
   handler: async ({ options }) => {
     // ...
@@ -142,15 +160,15 @@ const deployCommand = defineCommand({
 
 ```typescript
 const analyticsPlugin = definePlugin({
-  name: 'analytics',
+  name: "analytics",
   onBeforeCommand: async ({ command }) => {
-    await trackEvent('command_started', {
+    await trackEvent("command_started", {
       command: command.manifest.name,
       timestamp: Date.now(),
     });
   },
   onAfterCommand: async ({ command }) => {
-    await trackEvent('command_completed', {
+    await trackEvent("command_completed", {
       command: command.manifest.name,
     });
   },
@@ -161,7 +179,7 @@ const analyticsPlugin = definePlugin({
 
 ```typescript
 const loggingPlugin = definePlugin({
-  name: 'logging',
+  name: "logging",
   onBeforeCommand: async ({ command }) => {
     console.log(`[${new Date().toISOString()}] Starting: ${command.manifest.name}`);
   },
@@ -174,18 +192,18 @@ const loggingPlugin = definePlugin({
 ### CLI Modification Plugin
 
 ```typescript
-import { createCommand, defineCommand } from 'cheloni';
+import { createCommand, defineCommand } from "cheloni";
 
 const customHelpPlugin = definePlugin({
-  name: 'custom-help',
+  name: "custom-help",
   onInit: async ({ cli }) => {
     if (!cli.command) return;
 
     // Add a custom subcommand to the root command
     const customHelpCommand = defineCommand({
-      name: 'custom-help',
+      name: "custom-help",
       handler: async () => {
-        console.log('Custom help text');
+        console.log("Custom help text");
       },
     });
 
@@ -202,10 +220,10 @@ const customHelpPlugin = definePlugin({
 ## Example
 
 ```typescript
-import { definePlugin, defineCommand, createCli } from 'cheloni';
+import { definePlugin, defineCommand, createCli } from "cheloni";
 
 const timer = definePlugin({
-  name: 'timer',
+  name: "timer",
   onBeforeCommandExecution: async ({ command }) => {
     console.time(command.name);
   },
@@ -216,16 +234,18 @@ const timer = definePlugin({
 
 // Global — will run for every command
 const cli = await createCli({
-  name: 'my-cli',
+  name: "my-cli",
   plugins: [timer],
   command: rootCommand,
 });
 
 // Per-command — will run only for this command
 defineCommand({
-  name: 'deploy',
+  name: "deploy",
   plugins: [timer],
-  handler: async () => { /* ... */ },
+  handler: async () => {
+    /* ... */
+  },
 });
 ```
 
@@ -240,7 +260,7 @@ defineCommand({
 
 ```typescript
 const plugin = definePlugin({
-  name: 'my-plugin',
+  name: "my-plugin",
   onBeforeCommand: async ({ command }) => {
     if (!hasPermission(command)) {
       throw new Error(`Permission denied for command: ${command.manifest.name}`);
@@ -251,13 +271,14 @@ const plugin = definePlugin({
       await logCommandExecution(command);
     } catch (error) {
       // Log but don't throw - original error takes precedence
-      console.error('Failed to log execution:', error);
+      console.error("Failed to log execution:", error);
     }
   },
 });
 ```
 
 **Key points:**
+
 - Throw errors in `onInit` and `onBeforeCommand` to stop execution
 - Don't throw in `onAfterCommand` or `onDestroy` - handle errors internally
 - Use try-catch in cleanup hooks to prevent masking original errors
@@ -275,4 +296,4 @@ const plugin = definePlugin({
 2. **Keep hooks focused** - Each hook should do one thing well
 3. **Handle errors gracefully** - `onAfterCommandExecution` and `onDestroy` should not throw
 4. **Use command plugins for command-specific behavior** - Global plugins for cross-cutting concerns
-5. **Avoid side effects in `onBeforeCommandExecution`** - Use it for validation/checks, not mutations
+5. **Use `execute({ ctx })` when middleware needs your data** - Inject early context before the middleware chain; read it back from `onAfterCommandExecution`’s `data` if you also need validated options

@@ -7,6 +7,7 @@ The Execution layer handles command routing, argument parsing, validation, middl
 ### `executeCli(options)`
 
 Executes a CLI with the provided arguments. This function:
+
 - Resolves the command from the argument list
 - Executes the command
 - Handles errors
@@ -15,23 +16,26 @@ Executes a CLI with the provided arguments. This function:
 Note: deprecation warnings are typically provided via plugins (e.g. the standard library `deprecationPlugin`).
 
 **Parameters:**
+
 - `options: ExecuteCliOptions` - Execution options
 
 **Returns:** `Promise<void>`
 
 **Example:**
+
 ```typescript
 import { executeCli } from "cheloni";
 
 await executeCli({
   cli,
-  args: process.argv.slice(2) // optional, defaults to process.argv.slice(2)
+  args: process.argv.slice(2), // optional, defaults to process.argv.slice(2)
 });
 ```
 
 ### `executeCommand(options)`
 
 Executes a command with the provided arguments. This function:
+
 - Parses arguments
 - Executes middleware
 - Validates options and positional arguments
@@ -43,18 +47,20 @@ Executes a command with the provided arguments. This function:
 Note: plugin hook failures (e.g. `onInit`, `onBeforeCommandExecution`, `onError` throwing) are wrapped as plugin errors and routed directly to `cli.onError` to avoid error-handler plugin loops.
 
 **Parameters:**
+
 - `options: ExecuteCommandOptions` - Command execution options
 
 **Returns:** `Promise<void>`
 
 **Example:**
+
 ```typescript
 import { executeCommand } from "cheloni";
 
 await executeCommand({
   command,
   args: ["--verbose", "file.txt"],
-  cli
+  cli,
 });
 ```
 
@@ -63,19 +69,18 @@ await executeCommand({
 Parses command-line arguments into positional arguments and options.
 
 **Parameters:**
+
 - `args: string[]` - The argument array
 - `aliasMap?: Record<string, string[]>` - Optional alias map
 
 **Returns:** `{ positional: string[], options: Record<string, any> }`
 
 **Example:**
+
 ```typescript
 import { parseArgs } from "cheloni";
 
-const { positional, options } = parseArgs(
-  ["--verbose", "file.txt"],
-  { verbose: ["v"] }
-);
+const { positional, options } = parseArgs(["--verbose", "file.txt"], { verbose: ["v"] });
 // positional: ["file.txt"]
 // options: { verbose: true }
 ```
@@ -85,6 +90,7 @@ const { positional, options } = parseArgs(
 Extracts a positional value from the argument array at the specified index.
 
 **Parameters:**
+
 - `schema: z.ZodTypeAny | undefined` - The positional schema
 - `args: string[]` - The argument array
 - `index: number` - The index to extract
@@ -92,15 +98,12 @@ Extracts a positional value from the argument array at the specified index.
 **Returns:** `any`
 
 **Example:**
+
 ```typescript
 import { extractPositionalValue } from "cheloni";
 import { z } from "zod";
 
-const value = extractPositionalValue(
-  z.string(),
-  ["file.txt", "other.txt"],
-  0
-);
+const value = extractPositionalValue(z.string(), ["file.txt", "other.txt"], 0);
 // value: "file.txt"
 ```
 
@@ -109,11 +112,13 @@ const value = extractPositionalValue(
 Handles command execution errors, formatting them appropriately.
 
 **Parameters:**
+
 - `options: { error: unknown, command: Command }` - Error handling options
 
 **Returns:** `void`
 
 **Example:**
+
 ```typescript
 import { handleError } from "cheloni";
 
@@ -154,7 +159,7 @@ Base class for schema validation errors.
 ```typescript
 class InvalidSchemaError extends Error {
   readonly issues: ReadonlyArray<z.core.$ZodIssue>;
-  
+
   constructor(message: string, issues: ReadonlyArray<z.core.$ZodIssue>);
 }
 ```
@@ -192,17 +197,17 @@ class InvalidPositionalError extends InvalidSchemaError {
 ## Execution Flow
 
 1. **Argument Parsing** - Parse raw arguments into positional and options (alias map applied first)
-2. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks (unvalidated parsed args; runs **before** middleware)
-3. **Middleware Execution** - Execute the **matched command’s** middleware chain only; context from `next({ ctx })` is merged
+2. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks (unvalidated parsed args; each hook may `await execute({ ctx })` to continue and merge into command `ctx`, same semantics as middleware `next({ ctx })`; returning without `execute` still continues the chain)
+3. **Middleware Execution** - Execute the **matched command’s** middleware chain only; starts from plugin-merged `ctx`; context from `next({ ctx })` is merged
 4. **Extraneous Options** - Enforce `throwOnExtrageousOptions` policy against the command schema and bequeath names
 5. **Bequeath Option Handlers** - Execute bequeath option handlers when flags are present (may short-circuit)
 6. **Positional Validation** - Extract and validate positional arguments with Zod
 7. **Option Schema Validation** - Validate command options with Zod
 8. **Handler Execution** - Execute the command handler
-9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks in a `finally` block (always runs, even on error)
+9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks in a `finally` block with `data` (options over `ctx` when available; always runs, even on error)
 
 ## Hook Execution Order
 
-`onBeforeCommandExecution` runs once per invocation, immediately after parse and **before** middleware and validation. `onAfterCommandExecution` runs in `finally` after the handler attempt.
+`onBeforeCommandExecution` runs once per invocation, immediately after parse and **before** middleware and validation. Hooks compose through `execute({ ctx })` like middleware `next`. `onAfterCommandExecution` runs in `finally` after the handler attempt and receives `data` for telemetry and cleanup.
 
 For both hooks, plugins run in the same order: **global** plugins (from `cli.plugins`, in registration order), then **command-level** plugins from the matched command’s definition (in definition order).
