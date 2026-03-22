@@ -1,10 +1,13 @@
 # TODO
 
+- Fix type inference on build
+- Fix version command
+- Merge `onBeforeCommandExecution` and `onAfterCommandExecution` into `onCommandLifecycle`, allowing logic before/after `await execute()`, similar to FastAPI.
+- Add dynamic arg metadata (useful here: `$ my-cli <command> --help`).
 - Improve help generation with chalk and chalk-template
   - Turn help plugin into a plugin factory and add optional help footer config
 - Rename option to named
 - Add type-safety to config
-- Rename `"root"` to `"__root__"`
 - Improve CLI developer-facing error handling design
 - Add shell completion plugin
 - Ensure error handling by throwing errors instead of `process.exit(1)`
