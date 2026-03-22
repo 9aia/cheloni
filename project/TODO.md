@@ -1,24 +1,27 @@
 # TODO
 
 - Fix type inference on build
-- Fix version command
-- Merge `onBeforeCommandExecution` and `onAfterCommandExecution` into `onCommandLifecycle`, allowing logic before/after `await execute()`, similar to FastAPI.
 - Add dynamic arg metadata (useful here: `$ my-cli <command> --help`).
 - Improve help generation with chalk and chalk-template
   - Turn help plugin into a plugin factory and add optional help footer config
 - Rename option to named
 - Add type-safety to config
 - Improve CLI developer-facing error handling design
-- Add shell completion plugin
+- Add shell completion plugin that will add a `completion` command to the CLI, add `complete` to option/positional definition
+- Plugins should be able to extend definition types? Like adding a hook to command definition (this abstraction would help the core to be really minimal and more extensible)
+- Rename `throwOnExtrageousOptions` to `unknownOptionsBehavior`
+- Change positional to be `positional: ZodArraySchema<T>`, e.g. `positional: z.array(z.string()).meta({ name: "files" })` but also compatible with `positional: ZodSchema<T>[]` e.g `positional: [z.string().meta({ name: "input" }), z.string().meta({ name: "output" })]`
 - Ensure error handling by throwing errors instead of `process.exit(1)`
-- Add scaffolding tool for creating (packages/create-cheloni, `$ cheloni init`)
 - Add Cheloni CLI package (packages/cli)
   - Implement plugin-kit generation via Cheloni CLI (`cheloni generate plugin-kit`)
 - Add dependencies for commands, so it can inherit types
-- Global user-extendable option types, useful for programmatic CLI definition global types
-- Improve option inference to include inheritance from parent commands
-- Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
-- Abstract validation and introspection (maybe as a plugin "hook" so we can create a zodPlugin)
+  - Improve option inference to include inheritance from parent commands
+  - Add buildCliManifest plugin "hook" to allow plugins to modify the CLI manifest (instead of mutation using onInit that is not type-safe)
+- Merge `onBeforeCommandExecution` and `onAfterCommandExecution` into `onCommandLifecycle`, allowing logic before/after `await execute()`, similar to FastAPI.
+- Abstract validation and introspection as a plugin "hook"
+  - Add zod plugin
+  - Add validation to definition usage to ensure that the definition is valid
 - Add option(schema, meta), positional(schema, meta)
-- Add validation to definition usage to ensure that the definition is valid
 - Add variadics
+- Add scaffolding tool for creating (packages/create-cheloni, `$ cheloni init`)
+- Global user-extendable option types, useful for programmatic CLI definition global types

@@ -17,9 +17,9 @@ export * from "./creation/plugin/hook";
 
 // Execution
 export * from "./execution/cli";
-export * from "./execution/command/index";
 export * from "./execution/command/errors";
 export * from "./execution/command/handle-error";
+export * from "./execution/command/index";
 export * from "./execution/command/middleware";
 export * from "./execution/command/router";
 export * from "./execution/command/validate";
