@@ -72,7 +72,10 @@ export type InferMiddlewareContext<TMiddleware extends AnyMiddleware> =
 
 /** Recursively intersects context types from a tuple of middleware. */
 export type InferMiddlewareArrayContext<TMiddlewareArray extends readonly AnyMiddleware[]> =
-  TMiddlewareArray extends readonly [infer F extends AnyMiddleware, ...infer R extends readonly AnyMiddleware[]]
+  TMiddlewareArray extends readonly [
+    infer F extends AnyMiddleware,
+    ...infer R extends readonly AnyMiddleware[],
+  ]
     ? InferMiddlewareContext<F> & InferMiddlewareArrayContext<R>
     : UnknownRecord;
 

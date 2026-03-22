@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S tsx
 import { createCli, executeCli } from "cheloni";
 import { configPlugin } from "cheloni/std/config";
 import rootCommand from "./commands/__root__";

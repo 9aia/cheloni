@@ -17,7 +17,7 @@ export const convertCommand = defineCommand({
   handler: async ({ positional, options }) => {
     console.log(positional);
 
-    //const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
-    //console.log(`Converting ${positional} to ${output} (${options.format})`);
+    // const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
+    // console.log(`Converting ${positional} to ${output} (${options.format})`);
   },
 });

@@ -1,22 +1,4 @@
 {
-  "compilerOptions": {
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "Preserve",
-    "moduleDetection": "force",
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "noEmit": true,
-    "types": ["bun"],
-
-    // Path aliases
-    "paths": {
-      "~/*": ["./src/*"],
-      "cheloni": ["../../packages/cheloni/src/core/index.ts"]
-    }
-  },
+  "extends": "../../tsconfig.app.json",
   "include": ["src/**/*.ts"]
 }

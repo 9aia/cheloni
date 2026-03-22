@@ -98,7 +98,12 @@ export function createRootCommand<
   TCtx extends UnknownRecord,
   TMiddlewareArray extends MiddlewareArray<TCtx>,
 >(
-  definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+  definition: RootCommandDefinition<
+    TPositionalDefinition,
+    TOptionsDefinition,
+    TCtx,
+    TMiddlewareArray
+  >,
 ): RootCommand<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray> {
   return createCommand({
     ...definition,

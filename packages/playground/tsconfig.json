@@ -1,35 +1,12 @@
 {
+  "extends": "../../tsconfig.app.json",
   "compilerOptions": {
-    // Environment setup & latest features
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "Preserve",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
-
-    // Bundler mode
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-    "types": ["bun"],
-
-    // Best practices
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-
     "paths": {
       "~/*": ["../cheloni/src/*"],
-      "cheloni": ["../cheloni/src/core/index.ts"]
+      "cheloni": ["../cheloni/src/core/index.ts"],
+      "cheloni/std/core": ["../cheloni/src/std/core/index.ts"],
+      "cheloni/std/config": ["../cheloni/src/std/config/index.ts"],
+      "cheloni/std/logger": ["../cheloni/src/std/logger/index.ts"]
     }
   },
   "include": ["**/*.ts"]

@@ -8,7 +8,7 @@
   },
 
   "files.exclude": {
-    // "**/dist": true,
+    "**/dist": true,
     "**/node_modules": true,
     "**/.pnpm-store": true,
     "**/.cursor/skills": true

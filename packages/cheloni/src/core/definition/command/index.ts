@@ -29,12 +29,7 @@ export interface CommandDefinition<
   details?: string;
   throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
   plugins?: PluginDefinition[];
-  commands?: CommandDefinition<
-    PositionalDefinition,
-    OptionsSchema,
-    UnknownRecord,
-    []
-  >[];
+  commands?: CommandDefinition<PositionalDefinition, OptionsSchema, UnknownRecord, []>[];
   /**
    * Options that are inherited by subcommands.
    * @default []
@@ -55,7 +50,10 @@ export type RootCommandDefinition<
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
   TCtx extends UnknownRecord = UnknownRecord,
   TMiddlewareArray extends MiddlewareArray<TCtx> = [],
-> = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>, "name">;
+> = Omit<
+  CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+  "name"
+>;
 
 /**
  * Defines a command.
@@ -80,7 +78,12 @@ export function defineRootCommand<
   TCtx extends UnknownRecord,
   TMiddlewareArray extends MiddlewareArray<TCtx>,
 >(
-  definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+  definition: RootCommandDefinition<
+    TPositionalDefinition,
+    TOptionsDefinition,
+    TCtx,
+    TMiddlewareArray
+  >,
 ): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray> {
   return {
     ...definition,
