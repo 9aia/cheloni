@@ -1,6 +1,7 @@
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { CommandDefinition } from "~/core/definition/command";
+import type { DefaultMiddlewareCtx } from "~/core/definition/command/middleware";
 import type { Plugin } from "~/core/creation/plugin";
 import type { HaltFunction } from "~/core/execution/command/halt";
 import type { Promisable, UnknownRecord } from "type-fest";
@@ -16,6 +17,17 @@ export interface PluginCommandHookParams extends PluginHookParams {
   parsedOptions?: Record<string, any>;
   parsedPositionals?: string[];
 }
+
+/**
+ * The `execute` function inside `onCommandExecution` (typed variant for {@link definePluginCommandExecutionHook}).
+ *
+ * - `execute()` — proceed without adding context
+ * - `execute({ ctx: { ... } })` — merge new properties into context and proceed
+ */
+export type PluginExecuteFunction<TCtx extends UnknownRecord> = {
+  (): Promisable<DefaultMiddlewareCtx<TCtx>>;
+  <T extends UnknownRecord>(opts: { ctx: T }): Promisable<DefaultMiddlewareCtx<TCtx & T>>;
+};
 
 /**
  * Run the next `onCommandExecution` hooks, then middleware, validation, and the handler.
