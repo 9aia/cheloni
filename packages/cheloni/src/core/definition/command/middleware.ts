@@ -1,15 +1,94 @@
-import type {
-  Middleware,
-  MiddlewareResult,
-  MiddlewareParams,
-  AnyMiddleware,
-} from "~/core/creation/command/middleware";
 import type { Promisable, UnknownRecord } from "type-fest";
+import type { Cli } from "~/core/creation/cli";
+import type { Command } from "~/core/creation/command";
 
 /**
- * A function that runs sequentially before the command handler.
+ * Result returned from middleware via `next()`.
  */
-export type MiddlewareDefinition = Middleware;
+export type MiddlewareResult<TCtx extends UnknownRecord> = Readonly<{
+  ctx: TCtx;
+}>;
+
+/**
+ * The `next` function available inside middleware.
+ *
+ * - `next()` — proceed without adding context
+ * - `next({ ctx: { ... } })` — merge new properties into context and proceed
+ */
+export type NextFunction<TCtx extends UnknownRecord> = {
+  (): Promise<MiddlewareResult<TCtx>>;
+  <T>(opts: { ctx: T }): Promise<MiddlewareResult<TCtx & T>>;
+};
+
+/**
+ * Parameters passed to a middleware function.
+ */
+export type MiddlewareParams<TCtx extends UnknownRecord> = Readonly<{
+  /** Accumulated context from previous middleware. */
+  ctx: TCtx;
+  /** Call to proceed to the next middleware, optionally adding context. */
+  next: NextFunction<TCtx>;
+  /** The CLI being executed. */
+  cli: Cli;
+  /** The command being executed. */
+  command: Command;
+  /** Halt execution of the command and remaining middleware. */
+  halt: () => never;
+}>;
+
+/**
+ * A middleware function.
+ *
+ * Must return the result of calling `next()`:
+ * ```ts
+ * defineMiddleware(async ({ next }) => {
+ *   return next({ ctx: { user: await getUser() } });
+ * })
+ * ```
+ */
+export type Middleware<TCtx extends UnknownRecord> = (
+  params: MiddlewareParams<TCtx>,
+) => Promisable<MiddlewareResult<TCtx>>;
+
+/** Any middleware function (for untyped/dynamic use). */
+export type AnyMiddleware = Middleware<any>;
+
+/**
+ * Factory for creating a middleware function from some configuration.
+ *
+ * Useful for std helpers that want to return a middleware parameterized by options.
+ */
+export type MiddlewareFactory<
+  TOptions extends Record<string, any>,
+  TMiddleware extends AnyMiddleware,
+> = (options: TOptions) => TMiddleware;
+
+/** A middleware array. */
+export type MiddlewareArray<TCtx extends UnknownRecord> = Middleware<TCtx>[];
+
+/** Extracts the output context type from a middleware function. */
+export type InferMiddlewareContext<TMiddleware extends AnyMiddleware> =
+  TMiddleware extends Middleware<infer TCtx> ? TCtx : never;
+
+/** Recursively intersects context types from a tuple of middleware. */
+export type InferMiddlewareArrayContext<TMiddlewareArray extends AnyMiddleware[]> =
+  TMiddlewareArray extends [infer F extends AnyMiddleware, ...infer R extends AnyMiddleware[]]
+    ? InferMiddlewareContext<F> & InferMiddlewareArrayContext<R>
+    : UnknownRecord;
+
+/**
+ * Normalizes inferred middleware output context: `next()` yields `MiddlewareResult<{}>`,
+ * which should be treated as untyped ctx (`UnknownRecord`), not the empty object type.
+ */
+export type DefaultMiddlewareCtx<T extends UnknownRecord> = [keyof T] extends [never]
+  ? UnknownRecord
+  : T;
+
+/**
+ * Alias for the middleware function type.
+ * @see {@link Middleware}
+ */
+export type MiddlewareDefinition<TCtx extends UnknownRecord> = Middleware<TCtx>;
 
 /**
  * Defines a standalone middleware function.
@@ -31,11 +110,15 @@ export type MiddlewareDefinition = Middleware;
  *   return result;
  * });
  * ```
+ *
+ * Context type `T` is inferred from the `MiddlewareResult<T>` returned by `next()` / `next({ ctx })`.
+ * Params use `ctx: {}` so `next` starts as `NextFunction<{}>` and `next({ ctx: { help: true } })`
+ * infers `T` as `{ help: true }` instead of widening to `{}`.
  */
-export function defineMiddleware<TCtxOut extends UnknownRecord = UnknownRecord>(
-  definition: (params: MiddlewareParams) => Promisable<MiddlewareResult<TCtxOut>>,
-): Middleware<TCtxOut> {
-  return definition as Middleware<TCtxOut>;
+export function defineMiddleware<TOut extends UnknownRecord = UnknownRecord>(
+  definition: (params: MiddlewareParams<{}>) => Promisable<MiddlewareResult<TOut>>,
+): Middleware<DefaultMiddlewareCtx<TOut>> {
+  return definition as Middleware<DefaultMiddlewareCtx<TOut>>;
 }
 
 /**
@@ -60,6 +143,9 @@ export function defineMiddleware<TCtxOut extends UnknownRecord = UnknownRecord>(
  * @see {@link defineMiddleware}
  * ```
  */
-export function defineMiddlewareArray<T extends AnyMiddleware[]>(middleware: T): AnyMiddleware[] {
-  return middleware;
+export function defineMiddlewareArray<
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
+  TCtx extends UnknownRecord,
+>(middleware: TMiddlewareArray): MiddlewareArray<TCtx> {
+  return middleware as MiddlewareArray<TCtx>;
 }

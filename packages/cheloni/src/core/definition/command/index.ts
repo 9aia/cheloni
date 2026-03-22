@@ -1,9 +1,16 @@
-import type { CommandHandler } from "~/core/creation/command";
-import type { AnyMiddleware, InferComposedContext } from "~/core/creation/command/middleware";
+import type { UnknownRecord } from "type-fest";
 import type { ExtrageousOptionsBehavior } from "~/core/creation/command/option";
+import type { CommandHandler } from "~/core/definition/command/command-handler";
+import type {
+  AnyMiddleware,
+  InferMiddlewareArrayContext,
+} from "~/core/definition/command/middleware";
 import type { OptionDefinition, OptionsSchema } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import type { PluginDefinition } from "~/core/definition/plugin";
+
+type CommandHandlerCtx<TMiddleware extends readonly AnyMiddleware[]> =
+  InferMiddlewareArrayContext<TMiddleware>;
 
 /**
  * A command definition.
@@ -11,7 +18,7 @@ import type { PluginDefinition } from "~/core/definition/plugin";
 export interface CommandDefinition<
   TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
+  TMiddleware extends readonly AnyMiddleware[] = [],
 > {
   name: string;
   paths?: string[];
@@ -33,7 +40,7 @@ export interface CommandDefinition<
   handler?: CommandHandler<
     TPositionalDefinition,
     TOptionsDefinition,
-    InferComposedContext<TMiddleware>
+    CommandHandlerCtx<TMiddleware>
   >;
 }
 
@@ -43,7 +50,7 @@ export interface CommandDefinition<
 export type RootCommandDefinition<
   TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
+  TMiddleware extends readonly AnyMiddleware[] = [],
 > = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>, "name">;
 
 /**
@@ -52,7 +59,7 @@ export type RootCommandDefinition<
 export function defineCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,
-  TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
+  TMiddleware extends readonly AnyMiddleware[] = [],
 >(
   definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
 ): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware> {
@@ -65,7 +72,7 @@ export function defineCommand<
 export function defineRootCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,
-  TMiddleware extends AnyMiddleware[] = AnyMiddleware[],
+  TMiddleware extends readonly AnyMiddleware[] = [],
 >(
   definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
 ): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware> {

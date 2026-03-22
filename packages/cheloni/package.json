@@ -25,6 +25,7 @@
   ],
   "type": "module",
   "exports": {
+    ".": "./dist/core/index.mjs",
     "./core": "./dist/core/index.mjs",
     "./plugin-kits": "./dist/plugin-kits/index.mjs",
     "./std/config": "./dist/std/config/index.mjs",

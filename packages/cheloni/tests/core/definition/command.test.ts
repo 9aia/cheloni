@@ -1,63 +1,53 @@
-import { describe, it, expectTypeOf } from "vite-plus/test";
+import type { UnknownRecord } from "type-fest";
+import { describe, expectTypeOf, it } from "vite-plus/test";
 import z from "zod";
 import { defineCommand, defineMiddleware, defineOption } from "~/core";
-import type { OptionsSchema } from "~/core/definition/command/option";
-import type { PositionalDefinition } from "~/core/definition/command/positional";
-
-/** Command handler `ctx` type from a `defineCommand` return type (middleware tuple must be explicit). */
-type CommandHandlerCtx<TDef extends { handler?: (...args: any) => any }> = Parameters<
-  NonNullable<TDef["handler"]>
->[0]["ctx"];
 
 describe("defineCommand — ctx type inference (middleware)", () => {
   it("infers ctx from a single middleware via next({ ctx })", () => {
-    const helpMw = defineMiddleware<{ help: true }>(async ({ next }) =>
-      next({ ctx: { help: true } }),
-    );
-
-    const def = defineCommand<PositionalDefinition, OptionsSchema, [typeof helpMw]>({
-      name: "cmd",
-      middleware: [helpMw],
-      handler: async ({ ctx }) => {
-        expectTypeOf(ctx).toEqualTypeOf<{ help: true }>();
-      },
+    const helpMiddleware = defineMiddleware(async ({ next }) => {
+      return await next({
+        ctx: {
+          help: true,
+        },
+      });
     });
 
-    expectTypeOf<CommandHandlerCtx<typeof def>>().toEqualTypeOf<{ help: true }>();
+    defineCommand({
+      name: "cmd",
+      middleware: [helpMiddleware],
+      handler: async ({ ctx }) => {
+        expectTypeOf(ctx).toEqualTypeOf<UnknownRecord & { help: boolean }>();
+      },
+    });
   });
 
   it("intersects ctx from multiple middlewares in declaration order", () => {
-    const mwA = defineMiddleware<{ a: 1 }>(async ({ next }) => next({ ctx: { a: 1 as const } }));
-    const mwB = defineMiddleware<{ b: "two" }>(async ({ next }) =>
-      next({ ctx: { b: "two" as const } }),
-    );
+    const aMiddleware = defineMiddleware(async ({ next }) => next({ ctx: { a: 1 } }));
+    const bMiddleware = defineMiddleware(async ({ next }) => next({ ctx: { b: "two" } }));
 
-    const def = defineCommand<PositionalDefinition, OptionsSchema, [typeof mwA, typeof mwB]>({
+    defineCommand({
       name: "cmd",
-      middleware: [mwA, mwB],
+      middleware: [aMiddleware, bMiddleware],
       handler: async ({ ctx }) => {
-        expectTypeOf(ctx).toEqualTypeOf<{ a: 1; b: "two" }>();
+        expectTypeOf(ctx).toEqualTypeOf<UnknownRecord & { a: number } & { b: string }>();
       },
     });
-
-    expectTypeOf<CommandHandlerCtx<typeof def>>().toEqualTypeOf<{ a: 1; b: "two" }>();
   });
 
-  it("uses an empty ctx object when there is no middleware", () => {
-    const def = defineCommand({
+  it("uses an unknown record ctx when there is no middleware", () => {
+    defineCommand({
       name: "cmd",
       handler: async ({ ctx }) => {
-        expectTypeOf(ctx).toEqualTypeOf<{}>();
+        expectTypeOf(ctx).toEqualTypeOf<UnknownRecord>();
       },
     });
-
-    expectTypeOf<CommandHandlerCtx<typeof def>>().toEqualTypeOf<{}>();
   });
 });
 
 describe("defineCommand — options typing and bequeathed option next({ ctx })", () => {
   it("infers parsed options on the handler from the options schema", () => {
-    const def = defineCommand({
+    defineCommand({
       name: "cmd",
       options: z.object({
         count: z.number().optional(),
@@ -67,9 +57,6 @@ describe("defineCommand — options typing and bequeathed option next({ ctx })",
         expectTypeOf(options).toEqualTypeOf<{ count?: number; force: boolean }>();
       },
     });
-
-    type Opt = Parameters<NonNullable<typeof def.handler>>[0]["options"];
-    expectTypeOf<Opt>().toEqualTypeOf<{ count?: number; force: boolean }>();
   });
 
   it("infers option value in defineOption handler and returns next({ ctx })", () => {

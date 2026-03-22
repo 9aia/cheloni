@@ -301,9 +301,9 @@ interface MiddlewareResult<TCtx extends Record<string, any> = Record<string, any
 Middleware must **return** the result of calling `next()` (with or without extra context).
 
 ```typescript
-type Middleware<TCtxOut extends Record<string, any> = Record<string, any>> = (
+type Middleware<TCtx extends Record<string, any> = Record<string, any>> = (
   params: MiddlewareParams,
-) => Promisable<MiddlewareResult<TCtxOut>>;
+) => Promisable<MiddlewareResult<TCtx>>;
 ```
 
 ### `MiddlewareFactory<TOptions, TMiddleware>`

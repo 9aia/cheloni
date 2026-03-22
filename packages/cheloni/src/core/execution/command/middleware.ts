@@ -6,14 +6,14 @@ import type {
   AnyMiddleware,
   MiddlewareResult,
   NextFunction,
-} from "~/core/creation/command/middleware";
+} from "~/core/definition/command/middleware";
 import { halt } from "~/core/execution/command";
 
 /**
  * Options for executing a middleware chain.
  */
-export interface ExecuteMiddlewareOptions {
-  middleware: AnyMiddleware[];
+export interface ExecuteMiddlewareOptions<TMiddlewareArray extends AnyMiddleware[]> {
+  middleware: TMiddlewareArray;
   cli: Cli;
   command: Command;
   /**
@@ -30,7 +30,9 @@ export interface ExecuteMiddlewareOptions {
  * Uses a slim executor in production and a safe executor (with next()-usage
  * validation) in development.
  */
-export async function executeMiddleware(options: ExecuteMiddlewareOptions): Promise<UnknownRecord> {
+export async function executeMiddleware<TMiddlewareArray extends AnyMiddleware[]>(
+  options: ExecuteMiddlewareOptions<TMiddlewareArray>,
+): Promise<UnknownRecord> {
   const { middleware, cli, command, ctx } = options;
 
   if (middleware.length === 0) {

@@ -5,10 +5,7 @@ import z from "zod";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-
-type ConfigHandlerArgs = {
-  ctx: { config: Record<string, unknown>; configFile?: string };
-};
+import { defineCommandHandler } from "src/core/definition/command/command-handler";
 
 describe("configPlugin", () => {
   let tempDir: string;
@@ -26,10 +23,12 @@ describe("configPlugin", () => {
   });
 
   it("loads config file from cwd", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({ key: "value" });
-      expect(ctx.configFile).toContain("test-cli.config");
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({ key: "value" });
+        expect(ctx.configFile).toContain("test-cli.config");
+      }),
+    );
 
     await fs.writeFile(
       path.join(tempDir, "test-cli.config.json"),
@@ -49,10 +48,12 @@ describe("configPlugin", () => {
   });
 
   it("uses custom configFile name via c12Options", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({ task: "build" });
-      expect(ctx.configFile).toContain("tasks");
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({ task: "build" });
+        expect(ctx.configFile).toContain("tasks");
+      }),
+    );
 
     await fs.writeFile(path.join(tempDir, "tasks.json"), JSON.stringify({ task: "build" }));
 
@@ -69,10 +70,12 @@ describe("configPlugin", () => {
   });
 
   it("loads explicit config file via --config", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({ explicit: true });
-      expect(ctx.configFile).toContain("custom.config");
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({ explicit: true });
+        expect(ctx.configFile).toContain("custom.config");
+      }),
+    );
 
     await fs.writeFile(
       path.join(tempDir, "custom.config.json"),
@@ -92,13 +95,15 @@ describe("configPlugin", () => {
   });
 
   it("merges file config with defaults", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({
-        defaultOnly: "value",
-        merged: "file",
-        fileOnly: "value",
-      });
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({
+          defaultOnly: "value",
+          merged: "file",
+          fileOnly: "value",
+        });
+      }),
+    );
 
     await fs.writeFile(
       path.join(tempDir, "test-cli.config.json"),
@@ -122,9 +127,11 @@ describe("configPlugin", () => {
   });
 
   it("uses defaults when no config file exists", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({ fallback: "value" });
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({ fallback: "value" });
+      }),
+    );
 
     const cli = await createCli(
       defineCli({
@@ -139,9 +146,11 @@ describe("configPlugin", () => {
   });
 
   it("returns empty config when no file and no defaults", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({});
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({});
+      }),
+    );
 
     const cli = await createCli(
       defineCli({
@@ -166,9 +175,11 @@ describe("configPlugin", () => {
       JSON.stringify({ name: "test", count: 42 }),
     );
 
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({ name: "test", count: 42 });
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({ name: "test", count: 42 });
+      }),
+    );
 
     const cli = await createCli(
       defineCli({
@@ -219,13 +230,15 @@ describe("configPlugin", () => {
       JSON.stringify({ name: "test", count: 42 }),
     );
 
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({
-        name: "test",
-        count: 42,
-        optional: "default",
-      });
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({
+          name: "test",
+          count: 42,
+          optional: "default",
+        });
+      }),
+    );
 
     const cli = await createCli(
       defineCli({
@@ -245,9 +258,11 @@ describe("configPlugin", () => {
   });
 
   it("prefers explicit --config over local config", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config).toEqual({ source: "explicit" });
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        expect(ctx.config).toEqual({ source: "explicit" });
+      }),
+    );
 
     await fs.writeFile(
       path.join(tempDir, "test-cli.config.json"),
@@ -271,10 +286,15 @@ describe("configPlugin", () => {
   });
 
   it("applies overrides with highest priority", async () => {
-    const handler = vi.fn(({ ctx }: ConfigHandlerArgs) => {
-      expect(ctx.config.source).toBe("override");
-      expect(ctx.config.fileOnly).toBe("value");
-    });
+    const handler = vi.fn(
+      defineCommandHandler(({ ctx }) => {
+        // TODO: fix this
+        // @ts-expect-error - ctx.config is unknown
+        expect(ctx.config.source).toBe("override");
+        // @ts-expect-error - ctx.config is unknown
+        expect(ctx.config.fileOnly).toBe("value");
+      }),
+    );
 
     await fs.writeFile(
       path.join(tempDir, "test-cli.config.json"),

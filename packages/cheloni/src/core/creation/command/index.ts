@@ -41,14 +41,6 @@ export interface CommandHandlerParams<
   cli: Cli;
 }
 
-export type CommandHandler<
-  TPositionalDefinition extends PositionalDefinition,
-  TOptionsDefinition extends OptionsSchema,
-  TContext extends UnknownRecord = UnknownRecord,
-> = (
-  params: CommandHandlerParams<TPositionalDefinition, TOptionsDefinition, TContext>,
-) => Promisable<void>;
-
 export function createCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,

@@ -15,7 +15,7 @@ export const convertCommand = defineCommand({
       .meta({ aliases: ["f"] }),
   }),
   handler: async ({ positional, options }) => {
-    console.log(positional)
+    console.log(positional);
 
     //const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
     //console.log(`Converting ${positional} to ${output} (${options.format})`);
