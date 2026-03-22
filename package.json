@@ -9,6 +9,8 @@
     ],
     "catalog": {
       "@types/node": "^24",
+      "oxc-minify": "^0.121.0",
+      "tsx": "^4.21.0",
       "typescript": "^5",
       "vite": "npm:@voidzero-dev/vite-plus-core@latest",
       "vitest": "npm:@voidzero-dev/vite-plus-test@latest",
@@ -24,15 +26,16 @@
     "prepare": "vp config",
     "release": "vp run cheloni#release",
     "release:dry": "vp run cheloni#release:dry",
-    "docsgen:examples": "bun run scripts/docsgen-examples.ts",
+    "docsgen:examples": "vp exec tsx scripts/docsgen-examples.ts",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "bun run docsgen:examples && vitepress build docs",
+    "docs:build": "vp run -w docsgen:examples && vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "docs:deploy": "gh-pages -d docs/.vitepress/dist"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "gh-pages": "^6.1.1",
+    "tsx": "catalog:",
     "vite-plus": "catalog:",
     "vitepress": "^2.0.0-alpha.16"
   },

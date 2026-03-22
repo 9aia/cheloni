@@ -6,18 +6,19 @@ A benchmark tool demonstrating bequeath options (`--verbose`), a positional argu
 
 ```bash
 git clone https://github.com/9aia/cheloni.git
-cd cheloni/examples/03-benchmark
-bun install
-bun start [...args]
+cd cheloni
+vp install
+cd examples/03-benchmark
+vp run start -- [...args]
 ```
 
 ## Usage Examples
 
 ```bash
-$ bun start run "npm test"
+$ vp run start -- run "npm test"
 ⏱️  127ms
 
-$ bun start run "npm test" --verbose
+$ vp run start -- run "npm test" --verbose
 Running: npm test
 Iterations: 1
 ✓ npm test completed
@@ -25,7 +26,7 @@ All iterations completed
 
 ⏱️  Command executed in 142ms
 
-$ bun start run "npm test" --iterations 3 --verbose
+$ vp run start -- run "npm test" --iterations 3 --verbose
 Running: npm test
 Iterations: 3
 

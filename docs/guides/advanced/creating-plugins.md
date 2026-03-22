@@ -38,7 +38,7 @@ If you neither return `execute(...)` nor `halt()`, Cheloni throws `PluginCommand
 
 `await execute()` resolves to the post-attempt context snapshot — validated options merged over accumulated command `ctx` when those stages ran — so you can combine injected values (for example `startTime`) with parsed flags in the same hook.
 
-See the [benchmark example](../examples/03-benchmark.md) (`src/plugins/time.ts`).
+See the [benchmark example](../../examples/03-benchmark.md) (`src/plugins/time.ts`).
 
 ## Lifecycle Hooks
 

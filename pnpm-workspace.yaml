@@ -2,14 +2,16 @@ packages:
   - examples/*
   - packages/*
 
-catalogMode: prefer
-
 catalog:
   "@types/node": ^24
+  oxc-minify: ^0.121.0
+  tsx: ^4.21.0
   typescript: ^5
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
   vite-plus: latest
+  vitest: npm:@voidzero-dev/vite-plus-test@latest
+
+catalogMode: prefer
 overrides:
   vite: "catalog:"
   vitest: "catalog:"

@@ -59,10 +59,12 @@ async function writeExamplePage(exampleName: string, examplePath: string): Promi
     for (const abs of tsFiles) {
       const rel = relFromExample(examplePath, abs);
       let body = await fs.readFile(abs, "utf8");
-      if (body.startsWith("#!/usr/bin/env bun\n")) {
-        body = body.slice("#!/usr/bin/env bun\n".length);
-      } else if (body.startsWith("#!/usr/bin/env node\n")) {
-        body = body.slice("#!/usr/bin/env node\n".length);
+      // Remove any shebang (e.g. #!/usr/bin/env node or similar) at start of file
+      if (body.startsWith("#!")) {
+        const idx = body.indexOf("\n");
+        if (idx !== -1) {
+          body = body.slice(idx + 1);
+        }
       }
       parts.push(`### \`${rel}\``, "", "```typescript", body.trimEnd(), "```", "");
     }

@@ -1,6 +1,6 @@
 # Examples
 
-Runnable example projects under `examples/`. Each folder is a small Bun + Cheloni CLI you can copy or extend.
+Runnable example projects under `examples/`. Each folder is a small Cheloni CLI that uses the monorepo’s Vite+ toolchain (`vp install`, `vp run start`, `vp check`).
 
 ## Examples
 

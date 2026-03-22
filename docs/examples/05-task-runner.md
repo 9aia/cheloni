@@ -6,28 +6,29 @@ A lightweight task runner demonstrating the std config plugin, positional argume
 
 ```bash
 git clone https://github.com/9aia/cheloni.git
-cd cheloni/examples/05-task-runner
-bun install
-bun start [...args]
+cd cheloni
+vp install
+cd examples/05-task-runner
+vp run start -- [...args]
 ```
 
 ## Usage Examples
 
 ```bash
 # Using explicit config file
-$ bun start build --config tasks.dev.json
+$ vp run start -- build --config tasks.dev.json
 Running task: build
 Command: tsc
 ✓ Task "build" completed
 
 # Using default config file (tasks.json)
-$ bun start start
+$ vp run start -- start
 Running task: start
 Command: node dist/app.js
 ✓ Task "start" completed
 
 # Error handling
-$ bun start unknown
+$ vp run start -- unknown
 Task "unknown" not found in tasks.json
 Available tasks: build, start, test, lint
 ```

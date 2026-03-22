@@ -6,15 +6,16 @@ A practical file converter tool demonstrating validation, type-safety, and optio
 
 ```bash
 git clone https://github.com/9aia/cheloni.git
-cd cheloni/examples/01-file-converter
-bun install
-bun start [...args]
+cd cheloni
+vp install
+cd examples/01-file-converter
+vp run start -- [...args]
 ```
 
 ## Usage Examples
 
 ```bash
-$ bun start convert data.txt --format yaml --pretty
-$ bun start c data.txt -f json -o output.json
-$ bun start convert config.toml -p
+$ vp run start -- convert data.txt --format yaml --pretty
+$ vp run start -- c data.txt -f json -o output.json
+$ vp run start -- convert config.toml -p
 ```
