@@ -1,3 +1,4 @@
+import type { MiddlewareArray } from "src/core/definition/command/middleware";
 import type { UnknownRecord } from "type-fest";
 import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
 import type { OptionsSchema } from "~/core/definition/command/option";
@@ -19,8 +20,13 @@ export interface CommandManifest extends Manifest {
   details?: string;
 }
 
-function defaultPathsForCommand(
-  definition: CommandDefinition<PositionalDefinition, OptionsSchema, UnknownRecord, any>,
+function defaultPathsForCommand<
+  TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+  TOptionsDefinition extends OptionsSchema = OptionsSchema,
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
+>(
+  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
 ): string[] {
   if (definition.paths !== undefined && definition.paths !== null) {
     return definition.paths;
@@ -32,8 +38,13 @@ function defaultPathsForCommand(
   return [definition.name];
 }
 
-export function getCommandManifest(
-  definition: CommandDefinition<PositionalDefinition, OptionsSchema, UnknownRecord, any>,
+export function getCommandManifest<
+  TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+  TOptionsDefinition extends OptionsSchema = OptionsSchema,
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
+>(
+  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
 ): CommandManifest {
   return {
     name: definition.name,
@@ -53,7 +64,14 @@ export interface RootCommandManifest extends CommandManifest {
   name: "__root__";
 }
 
-export function getRootCommandsManifest(command: RootCommandDefinition): RootCommandManifest {
+export function getRootCommandsManifest<
+  TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
+  TOptionsDefinition extends OptionsSchema = OptionsSchema,
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
+>(
+  command: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+): RootCommandManifest {
   return {
     ...getCommandManifest({
       ...command,

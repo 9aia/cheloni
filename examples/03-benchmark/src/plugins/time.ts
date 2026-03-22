@@ -9,7 +9,10 @@ export default definePlugin({
       },
     });
     const startTime = ctx.startTime;
-    if (startTime === undefined) return ctx;
+    if (typeof startTime !== "number") {
+      console.error("startTime is not a number", startTime);
+      return ctx;
+    }
     const duration = Date.now() - startTime;
     const verbose = ctx.verbose === true;
 

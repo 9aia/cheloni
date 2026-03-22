@@ -11,12 +11,12 @@ describe("definePluginCommandExecutionHook — execute ctx type inference", () =
         },
       });
       expectTypeOf(ctx.startTime).toEqualTypeOf<number>();
-      expectTypeOf(ctx).toMatchObjectType<{ startTime: number }>();
+      expectTypeOf(ctx).toEqualTypeOf<{ startTime: number }>();
       return ctx;
     });
   });
 
-  it("accumulates ctx types on successive execute-shaped merges (single call)", () => {
+  it("infers multiple properties from execute({ ctx })", () => {
     definePluginCommandExecutionHook(async ({ execute }) => {
       const ctx = await execute({
         ctx: {

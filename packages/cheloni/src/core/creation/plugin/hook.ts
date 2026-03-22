@@ -1,7 +1,7 @@
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { CommandDefinition } from "~/core/definition/command";
-import type { DefaultMiddlewareCtx } from "~/core/definition/command/middleware";
+import type { DefaultMiddlewareCtx, MiddlewareArray } from "~/core/definition/command/middleware";
 import type { Plugin } from "~/core/creation/plugin";
 import type { HaltFunction } from "~/core/execution/command/halt";
 import type { Promisable, UnknownRecord } from "type-fest";
@@ -35,10 +35,14 @@ export type PluginExecuteFunction<TCtx extends UnknownRecord> = {
  * Resolves with the post-attempt context snapshot: validated options merged over accumulated command
  * `ctx` when those stages completed; otherwise best-effort partial (e.g. early halt or validation error).
  */
-export type PluginCommandExecuteFn = (opts?: { ctx?: UnknownRecord }) => Promisable<UnknownRecord>;
+export type PluginCommandExecuteFn<TCtx extends UnknownRecord> = (opts?: {
+  ctx?: TCtx;
+}) => Promisable<DefaultMiddlewareCtx<TCtx>>;
 
-export interface PluginCommandExecutionHookParams extends PluginCommandHookParams {
-  execute: PluginCommandExecuteFn;
+export interface PluginCommandExecutionHookParams<
+  TCtx extends UnknownRecord,
+> extends PluginCommandHookParams {
+  execute: PluginCommandExecuteFn<TCtx>;
   /** Stop the command pipeline without error (same as command middleware `halt`). */
   halt: HaltFunction;
 }
@@ -53,8 +57,8 @@ export type PluginHook = (params: PluginHookParams) => Promisable<void>;
  * Wrap the rest of the pipeline: call `await execute({ ctx })`, then run your teardown logic.
  * Must **return** `await execute(...)` or `halt()`.
  */
-export type PluginCommandExecutionHook = (
-  params: PluginCommandExecutionHookParams,
-) => Promisable<UnknownRecord | void>;
+export type PluginCommandExecutionHook<TCtx extends UnknownRecord> = (
+  params: PluginCommandExecutionHookParams<TCtx>,
+) => Promisable<DefaultMiddlewareCtx<TCtx> | void>;
 /** Return `true` to indicate the error was handled and stop further propagation. */
 export type PluginErrorHook = (params: PluginErrorHookParams) => Promisable<boolean | void>;

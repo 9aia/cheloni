@@ -75,8 +75,5 @@
     "typescript": "^5",
     "yaml": "^2.8.2",
     "zod": "^4.0.0"
-  },
-  "inlinedDependencies": {
-    "type-fest": "5.5.0"
   }
 }

@@ -6,8 +6,12 @@ import type {
   PluginHook,
 } from "~/core/creation/plugin/hook";
 import type { JsonObject, Promisable, UnknownRecord } from "type-fest";
+import type { MiddlewareArray } from "..";
 
-export interface PluginDefinition {
+export interface PluginDefinition<
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
+> {
   name: string;
   /** Hook that runs once CLI is created. */
   onInit?: PluginHook;
@@ -15,7 +19,7 @@ export interface PluginDefinition {
    * Wrap command execution: run setup, `const ctx = await execute({ ctx })`, then teardown.
    * `execute` runs remaining plugin hooks, then middleware, validation, and the handler.
    */
-  onCommandExecution?: PluginCommandExecutionHook;
+  onCommandExecution?: PluginCommandExecutionHook<TCtx>;
   /** Hook that runs when any error occurs in the CLI. Return `true` to mark it as handled. */
   onError?: PluginErrorHook;
   /** Hook that runs once CLI is destroyed. */

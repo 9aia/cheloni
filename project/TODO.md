@@ -12,6 +12,7 @@
 - Rename `throwOnExtrageousOptions` to `unknownOptionsBehavior`
 - Change positional to be `positional: ZodArraySchema<T>`, e.g. `positional: z.array(z.string()).meta({ name: "files" })` but also compatible with `positional: ZodSchema<T>[]` e.g `positional: [z.string().meta({ name: "input" }), z.string().meta({ name: "output" })]`
 - Ensure error handling by throwing errors instead of `process.exit(1)`
+- Move `./src/plugin-kits/basic-kit` to `cheloni.config.ts`
 - Add Cheloni CLI package (packages/cli)
   - Implement plugin-kit generation via Cheloni CLI (`cheloni generate plugin-kit`)
 - Add dependencies for commands, so it can inherit types

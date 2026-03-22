@@ -4,6 +4,7 @@ import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type {
   AnyMiddleware,
+  MiddlewareArray,
   MiddlewareResult,
   NextFunction,
 } from "~/core/definition/command/middleware";
@@ -30,13 +31,14 @@ export interface ExecuteMiddlewareOptions<TMiddlewareArray extends AnyMiddleware
  * Uses a slim executor in production and a safe executor (with next()-usage
  * validation) in development.
  */
-export async function executeMiddleware<TMiddlewareArray extends AnyMiddleware[]>(
-  options: ExecuteMiddlewareOptions<TMiddlewareArray>,
-): Promise<UnknownRecord> {
+export async function executeMiddleware<
+  TCtx extends UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
+>(options: ExecuteMiddlewareOptions<TMiddlewareArray>): Promise<TCtx> {
   const { middleware, cli, command, ctx } = options;
 
   if (middleware.length === 0) {
-    return ctx ? { ...ctx } : {};
+    return ctx ? { ...ctx } : ({} as TCtx);
   }
 
   for (const fn of middleware) {

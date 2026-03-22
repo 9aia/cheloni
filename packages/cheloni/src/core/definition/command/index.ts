@@ -29,7 +29,7 @@ export interface CommandDefinition<
   details?: string;
   throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
   plugins?: PluginDefinition[];
-  commands?: CommandDefinition<PositionalDefinition, OptionsSchema, UnknownRecord, []>[];
+  commands?: CommandDefinition<PositionalDefinition, OptionsSchema, TCtx, MiddlewareArray<TCtx>>[];
   /**
    * Options that are inherited by subcommands.
    * @default []

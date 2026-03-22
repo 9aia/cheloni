@@ -118,7 +118,7 @@ export type MiddlewareDefinition<TCtx extends UnknownRecord> = Middleware<TCtx>;
  * Params use `ctx: {}` so `next` starts as `NextFunction<{}>` and `next({ ctx: { help: true } })`
  * infers `T` as `{ help: true }` instead of widening to `{}`.
  */
-export function defineMiddleware<TOut extends UnknownRecord = UnknownRecord>(
+export function defineMiddleware<TOut extends UnknownRecord>(
   definition: (params: MiddlewareParams<{}>) => Promisable<MiddlewareResult<TOut>>,
 ): Middleware<DefaultMiddlewareCtx<TOut>> {
   return definition as Middleware<DefaultMiddlewareCtx<TOut>>;

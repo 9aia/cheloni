@@ -1,10 +1,10 @@
-import type { MiddlewareArray } from "src/core/definition/command/middleware";
 import type { UnknownRecord } from "type-fest";
 import type { Cli } from "~/core/creation/cli";
 import type { InferOptionsType, Option } from "~/core/creation/command/option";
 import { createOption } from "~/core/creation/command/option";
 import type { InferPositionalType } from "~/core/creation/command/positional";
 import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
+import type { AnyMiddleware, MiddlewareArray } from "~/core/definition/command/middleware";
 import type { OptionsSchema } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import { getCommandManifest, type CommandManifest } from "~/core/manifest/command";
@@ -14,8 +14,10 @@ import { ManifestKeyedMap } from "~/utils/definition";
 export interface Command<
   TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
 > extends RuntimeObject<CommandManifest> {
-  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>;
+  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>;
   commands: ManifestKeyedMap<Command>;
   paths: string[];
   /**
@@ -52,7 +54,7 @@ export function createCommand<
 >(
   definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
   inheritedBequeathOptions: Option[] = [],
-): Command<TPositionalDefinition, TOptionsDefinition> {
+): Command<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray> {
   // Collect bequeathOptions from this command definition
   const bequeathOptionsMap = new ManifestKeyedMap<Option>();
 

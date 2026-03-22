@@ -3,7 +3,7 @@ import type { UnknownRecord } from "type-fest";
 import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
-import type { AnyMiddleware } from "~/core/definition/command/middleware";
+import type { AnyMiddleware, MiddlewareArray } from "~/core/definition/command/middleware";
 import { createPlugin } from "~/core/creation/plugin";
 import { runCommandExecutionChain } from "~/core/execution/plugin/command-hooks";
 import { buildAliasMap } from "~/utils/execution/alias";
@@ -31,17 +31,15 @@ function collectPlugins(cli: Cli, commandDef: Command["definition"]) {
   return [...globalPlugins, ...commandPlugins];
 }
 
-async function executeMiddlewareChain(
-  middleware: AnyMiddleware[] | undefined,
-  cli: Cli,
-  command: Command,
-  ctx?: UnknownRecord,
-): Promise<UnknownRecord> {
+async function executeMiddlewareChain<
+  TCtx extends UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
+>(middleware: TMiddlewareArray | undefined, cli: Cli, command: Command, ctx?: TCtx): Promise<TCtx> {
   if (!middleware?.length) {
-    return ctx ? { ...ctx } : {};
+    return ctx ? { ...ctx } : ({} as TCtx);
   }
   return await executeMiddleware({
-    middleware: middleware,
+    middleware,
     cli,
     command,
     ctx,
