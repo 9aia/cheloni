@@ -44,7 +44,7 @@ Executes a command with the provided arguments. This function:
 - Executes the command handler
 - Calls `onAfterCommandExecution` hooks
 
-Note: plugin hook failures (e.g. `onInit`, `onBeforeCommandExecution`, `onError` throwing) are wrapped as plugin errors and routed directly to `cli.onError` to avoid error-handler plugin loops.
+Note: plugin hook failures (e.g. `onInit`, `onBeforeCommandExecution`, `onError` throwing) are wrapped as plugin errors and routed directly to `cli.onError` to avoid error-handler plugin loops. **`return halt()` from `onBeforeCommandExecution` is not a failure** — it uses the same `HaltError` path as middleware and ends the command quietly; `onAfterCommandExecution` still runs.
 
 **Parameters:**
 
@@ -197,17 +197,17 @@ class InvalidPositionalError extends InvalidSchemaError {
 ## Execution Flow
 
 1. **Argument Parsing** - Parse raw arguments into positional and options (alias map applied first)
-2. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks (unvalidated parsed args; each hook may `await execute({ ctx })` to continue and merge into command `ctx`, same semantics as middleware `next({ ctx })`; returning without `execute` still continues the chain)
+2. **Plugin Hooks (Pre)** - Call `onBeforeCommandExecution` hooks (unvalidated parsed args; each hook must **return** `execute({ ctx })` or `halt()` — same merge semantics as middleware `next({ ctx })`, same stop semantics as middleware `halt()`)
 3. **Middleware Execution** - Execute the **matched command’s** middleware chain only; starts from plugin-merged `ctx`; context from `next({ ctx })` is merged
 4. **Extraneous Options** - Enforce `throwOnExtrageousOptions` policy against the command schema and bequeath names
 5. **Bequeath Option Handlers** - Execute bequeath option handlers when flags are present (may short-circuit)
 6. **Positional Validation** - Extract and validate positional arguments with Zod
 7. **Option Schema Validation** - Validate command options with Zod
 8. **Handler Execution** - Execute the command handler
-9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks in a `finally` block with `data` (options over `ctx` when available; always runs, even on error)
+9. **Plugin Hooks (Post)** - Call `onAfterCommandExecution` hooks in a `finally` block with post-attempt `ctx` (options merged over command context when available; always runs, even on error)
 
 ## Hook Execution Order
 
-`onBeforeCommandExecution` runs once per invocation, immediately after parse and **before** middleware and validation. Hooks compose through `execute({ ctx })` like middleware `next`. `onAfterCommandExecution` runs in `finally` after the handler attempt and receives `data` for telemetry and cleanup.
+`onBeforeCommandExecution` runs once per invocation, immediately after parse and **before** middleware and validation. Hooks compose through **returning** `execute({ ctx })` or `halt()`, like middleware `next` / `halt`. `onAfterCommandExecution` runs in `finally` after the handler attempt and receives post-attempt `ctx` for telemetry and cleanup.
 
 For both hooks, plugins run in the same order: **global** plugins (from `cli.plugins`, in registration order), then **command-level** plugins from the matched command’s definition (in definition order).

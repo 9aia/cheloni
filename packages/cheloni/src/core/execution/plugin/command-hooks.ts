@@ -3,6 +3,8 @@ import type { UnknownRecord } from "type-fest";
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { CommandDefinition } from "~/core/definition/command";
+import { HaltError } from "~/core/execution/command/errors";
+import { halt } from "~/core/execution/command/halt";
 import {
   PluginAfterCommandExecutionError,
   PluginBeforeCommandExecutionError,
@@ -55,8 +57,12 @@ export async function runBeforeCommandExecutionChain(options: {
         parsedOptions,
         parsedPositionals,
         execute,
+        halt,
       });
     } catch (hookError) {
+      if (hookError instanceof HaltError) {
+        throw hookError;
+      }
       const message = getErrorMessage(hookError);
       throw new PluginBeforeCommandExecutionError(
         `Plugin ${plugin.manifest.name} onBeforeCommandExecution hook failed: ${message}`,
@@ -64,12 +70,15 @@ export async function runBeforeCommandExecutionChain(options: {
       );
     }
 
-    if (executeCalled) {
-      await tailPromise;
-      return;
+    if (!executeCalled) {
+      throw new PluginBeforeCommandExecutionError(
+        `Plugin ${plugin.manifest.name} onBeforeCommandExecution must return execute(...) or halt()`,
+      );
     }
 
-    await runFromIndex(index + 1, pluginCtx);
+    if (tailPromise) {
+      await tailPromise;
+    }
   }
 
   await runFromIndex(0, {});
@@ -80,14 +89,14 @@ export async function executePostCommandHooks(options: {
   cli: Cli;
   command: CommandDefinition;
   commandInstance?: Command;
-  data: UnknownRecord;
+  ctx: UnknownRecord;
 }): Promise<void> {
-  const { plugins, cli, command, commandInstance, data } = options;
+  const { plugins, cli, command, commandInstance, ctx } = options;
 
   for (const plugin of plugins) {
     if (plugin.definition.onAfterCommandExecution) {
       try {
-        await plugin.definition.onAfterCommandExecution({ cli, plugin, command, data });
+        await plugin.definition.onAfterCommandExecution({ cli, plugin, command, ctx });
       } catch (hookError) {
         const message = getErrorMessage(hookError);
         const error = new PluginAfterCommandExecutionError(

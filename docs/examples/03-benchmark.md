@@ -135,11 +135,11 @@ export default definePlugin({
       },
     });
   },
-  onAfterCommandExecution: async ({ data }) => {
-    const startTime = data.startTime;
+  onAfterCommandExecution: async ({ ctx }) => {
+    const startTime = ctx.startTime;
     if (startTime === undefined) return;
     const duration = Date.now() - startTime;
-    const verbose = data.verbose === true;
+    const verbose = ctx.verbose === true;
 
     if (verbose) {
       console.log(`\n⏱️  Command executed in ${duration}ms`);

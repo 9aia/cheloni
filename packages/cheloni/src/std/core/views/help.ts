@@ -4,6 +4,14 @@ import type { OptionManifest } from "~/core/manifest/command/option";
 import type { PositionalManifest } from "~/core/manifest/command/positional";
 import { findCommandInTree } from "~/utils/execution/router";
 
+/** Command paths listed as aliases; excludes entries identical to the primary name. */
+function aliasPathsForHelp(commandName: string, paths: string[] | undefined): string[] {
+  if (!paths || paths.length === 0) {
+    return [];
+  }
+  return paths.filter((p) => p !== commandName);
+}
+
 function formatDefaultValue(value: unknown): string {
   if (typeof value === "string") {
     return `"${value}"`;
@@ -101,12 +109,13 @@ function showCommandHelp({ cli, commandName }: ShowCommandHelpParams): void {
   }
 
   const posName = positional?.name || "positional";
-  const usageCommandPart = name === "root" ? "" : ` ${name}`;
+  const usageCommandPart = name === "__root__" ? "" : ` ${name}`;
   const usagePositionalPart = positional ? ` <${posName}>` : "";
   console.log(`Usage: ${cliName}${usageCommandPart}${usagePositionalPart} [options]\n`);
 
-  if (paths.length > 0) {
-    console.log(`Aliases: ${paths.join(", ")}`);
+  const aliasPaths = aliasPathsForHelp(name, paths);
+  if (aliasPaths.length > 0) {
+    console.log(`Aliases: ${aliasPaths.join(", ")}`);
   }
 
   if (deprecated) {
@@ -119,8 +128,9 @@ function showCommandHelp({ cli, commandName }: ShowCommandHelpParams): void {
     for (const cmd of actualCommand.commands.values()) {
       const sub = cmd.manifest;
       let cmdLine = `  ${sub.name}`;
-      if (sub.paths && sub.paths.length > 0) {
-        cmdLine += ` (${sub.paths.join(", ")})`;
+      const subAliasPaths = aliasPathsForHelp(sub.name, sub.paths);
+      if (subAliasPaths.length > 0) {
+        cmdLine += ` (${subAliasPaths.join(", ")})`;
       }
       cmdLine += `    ${sub.description || ""}`;
       console.log(cmdLine);
@@ -219,8 +229,9 @@ function showRootHelp({ cli }: ShowRootHelpParams): void {
       const cmdDeprecated = command.deprecated;
 
       let cmdLine = `  ${name}`;
-      if (paths.length > 0) {
-        cmdLine += ` (${paths.join(", ")})`;
+      const rootAliasPaths = aliasPathsForHelp(name, paths);
+      if (rootAliasPaths.length > 0) {
+        cmdLine += ` (${rootAliasPaths.join(", ")})`;
       }
       cmdLine += `    ${commandDescription}`;
       console.log(cmdLine);

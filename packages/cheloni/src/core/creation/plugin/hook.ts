@@ -2,6 +2,7 @@ import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
 import type { CommandDefinition } from "~/core/definition/command";
 import type { Plugin } from "~/core/creation/plugin";
+import type { HaltFunction } from "~/core/execution/command/halt";
 import type { Promisable, UnknownRecord } from "type-fest";
 
 export interface PluginHookParams {
@@ -19,19 +20,23 @@ export interface PluginCommandHookParams extends PluginHookParams {
 /**
  * Continue with the next `onBeforeCommandExecution` hooks, then middleware, validation, and the handler.
  * Pass `ctx` to deep-merge into command context (same merge rules as middleware `next({ ctx })`).
- *
- * If a hook returns without calling `execute`, the pipeline continues automatically (backward compatible).
  */
 export type PluginBeforeExecuteFn = (opts?: { ctx?: UnknownRecord }) => Promisable<void>;
 
 export interface PluginBeforeCommandHookParams extends PluginCommandHookParams {
   execute: PluginBeforeExecuteFn;
+  /** Stop the command pipeline without error (same as command middleware `halt`). */
+  halt: HaltFunction;
 }
 
-/** `onAfterCommandExecution` — `data` merges validated `options` over accumulated `ctx` when available. */
+/**
+ * `onAfterCommandExecution` — `ctx` is the context snapshot after the command attempt:
+ * validated options merged over accumulated command `ctx` when those stages ran; otherwise
+ * best-effort partial (e.g. early halt or validation error).
+ */
 export interface PluginAfterCommandHookParams extends PluginHookParams {
   command: CommandDefinition;
-  data: UnknownRecord;
+  ctx: UnknownRecord;
 }
 
 export interface PluginErrorHookParams extends PluginHookParams {
@@ -40,6 +45,7 @@ export interface PluginErrorHookParams extends PluginHookParams {
 }
 
 export type PluginHook = (params: PluginHookParams) => Promisable<void>;
+/** Must return `execute(...)` or `halt()` so the pipeline can continue or stop cleanly. */
 export type PluginBeforeCommandHook = (params: PluginBeforeCommandHookParams) => Promisable<void>;
 export type PluginAfterCommandHook = (params: PluginAfterCommandHookParams) => Promisable<void>;
 /** Return `true` to indicate the error was handled and stop further propagation. */

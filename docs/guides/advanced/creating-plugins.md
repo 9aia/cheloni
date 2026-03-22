@@ -16,10 +16,11 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
   onInit: async ({ cli, plugin }) => {
     // Called when CLI is created
   },
-  onBeforeCommandExecution: async ({ cli, plugin, command }) => {
+  onBeforeCommandExecution: async ({ cli, plugin, command, execute }) => {
     if (options.level === "debug") {
       console.debug("About to run", command.name);
     }
+    return execute();
   },
   onAfterCommandExecution: async ({ cli, plugin, command }) => {
     // Called after each command execution (even if it fails)
@@ -30,13 +31,13 @@ const myPlugin = definePlugin((options: MyPluginConfig = {}) => ({
 }));
 ```
 
-## Injecting context with `execute()`
+## Injecting context with `execute()` and stopping with `halt()`
 
-`onBeforeCommandExecution` receives `execute`, similar to middleware `next`. Call `await execute({ ctx: { ... } })` to run the remaining before-hooks, then middleware, validation, and the handler. Merged fields become part of command `ctx` (same `defu` rules as `next({ ctx })`).
+`onBeforeCommandExecution` receives `execute` and `halt`, like middleware `next` / `halt`. **Return** `await execute({ ctx: { ... } })` to run the remaining before-hooks, then middleware, validation, and the handler. Merged fields become part of command `ctx` (same `defu` rules as `next({ ctx })`). **Return** `halt()` to stop the command cleanly with no error.
 
-If you return without calling `execute`, Cheloni still continues the pipeline (backward compatible).
+If you neither return `execute(...)` nor `halt()`, Cheloni throws a `PluginBeforeCommandExecutionError`.
 
-`onAfterCommandExecution` receives `data`: validated command options merged over accumulated `ctx` when those stages ran, so you can combine injected values (for example `startTime`) with parsed flags.
+`onAfterCommandExecution` receives `ctx`: a snapshot after the command attempt — validated options merged over accumulated command context when those stages ran, so you can combine injected values (for example `startTime`) with parsed flags.
 
 See the [benchmark example](../examples/03-benchmark.md) (`src/plugins/time.ts`).
 
@@ -224,8 +225,9 @@ import { definePlugin, defineCommand, createCli } from "cheloni";
 
 const timer = definePlugin({
   name: "timer",
-  onBeforeCommandExecution: async ({ command }) => {
+  onBeforeCommandExecution: async ({ command, execute }) => {
     console.time(command.name);
+    return execute();
   },
   onAfterCommandExecution: async ({ command }) => {
     console.timeEnd(command.name);
@@ -296,4 +298,4 @@ const plugin = definePlugin({
 2. **Keep hooks focused** - Each hook should do one thing well
 3. **Handle errors gracefully** - `onAfterCommandExecution` and `onDestroy` should not throw
 4. **Use command plugins for command-specific behavior** - Global plugins for cross-cutting concerns
-5. **Use `execute({ ctx })` when middleware needs your data** - Inject early context before the middleware chain; read it back from `onAfterCommandExecution`’s `data` if you also need validated options
+5. **Use `execute({ ctx })` when middleware needs your data** - Inject early context before the middleware chain; read it back from `onAfterCommandExecution`’s `ctx` if you also need validated options

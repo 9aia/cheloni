@@ -1,12 +1,12 @@
 import { defineCommand } from "cheloni";
-import { outputOptionSchema, pathSchema } from "cheloni/std/os";
+import { filesPositionalSchema, outputOptionSchema } from "cheloni/std/os";
 import z from "zod";
 
 export const convertCommand = defineCommand({
   name: "convert",
   paths: ["c", "conv"],
   description: "Convert files between formats",
-  positional: pathSchema.meta({ description: "Input file" }),
+  positional: filesPositionalSchema,
   options: z.object({
     output: outputOptionSchema,
     format: z
@@ -15,7 +15,9 @@ export const convertCommand = defineCommand({
       .meta({ aliases: ["f"] }),
   }),
   handler: async ({ positional, options }) => {
-    const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
-    console.log(`Converting ${positional} to ${output} (${options.format})`);
+    console.log(positional)
+
+    //const output = options.output || positional.replace(/\.[^.]+$/, `.${options.format}`);
+    //console.log(`Converting ${positional} to ${output} (${options.format})`);
   },
 });

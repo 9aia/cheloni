@@ -36,7 +36,7 @@ If any `onInit` hook throws, creation fails immediately — the error is logged 
 4. Extracts the command manifest via `getCommandManifest()`
 5. Resolves `paths` — defaults to `[definition.name]` if none provided
 
-`createRootCommand()` is a thin wrapper that adds `name: "root"` and delegates to `createCommand()`.
+`createRootCommand()` is a thin wrapper that adds `name: "__root__"` and delegates to `createCommand()`.
 
 ## `ManifestKeyedMap`
 

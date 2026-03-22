@@ -50,7 +50,7 @@ Splits raw argv into `{ positional: string[], options: Record<string, any> }` us
 
 ### 3. Pre-Execution Plugin Hooks
 
-Runs `onBeforeCommandExecution` for global plugins, then command plugins, in order. Hooks receive **unvalidated** `parsedOptions` and `parsedPositionals`, plus `execute({ ctx })`. Calling `execute` continues with the **next** before-hooks, then middleware, validation, and the handler, merging `ctx` the same way as middleware `next({ ctx })` (via defu). If a hook returns without calling `execute`, the pipeline still advances (backward compatible). If a hook throws, the rest of the pipeline does not run.
+Runs `onBeforeCommandExecution` for global plugins, then command plugins, in order. Hooks receive **unvalidated** `parsedOptions` and `parsedPositionals`, plus `execute({ ctx })` and `halt()`. The hook must **return** `execute(...)` or `halt()` (middleware-style). `execute` continues with the **next** before-hooks, then middleware, validation, and the handler, merging `ctx` like `next({ ctx })` (via defu). `halt` ends the command cleanly with no error. Omitting both is a `PluginBeforeCommandExecutionError`. If a hook throws any other error, the rest of the pipeline does not run.
 
 ### 4. Middleware
 
@@ -89,7 +89,7 @@ Calls the command handler with:
 
 ### 10. Post-Execution Plugin Hooks
 
-Runs `onAfterCommandExecution` in a `finally` block — always executes, even if the handler threw. Hooks receive `data`: validated command options merged over accumulated `ctx` when those stages completed (otherwise best-effort partial context). Hook errors are logged but don't override the original error.
+Runs `onAfterCommandExecution` in a `finally` block — always executes, even if the handler threw. Hooks receive `ctx`: a snapshot after the attempt — validated command options merged over accumulated command context when those stages completed (otherwise best-effort partial). Hook errors are logged but don't override the original error.
 
 ## Error Handling
 

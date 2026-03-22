@@ -247,21 +247,24 @@ Runs after argv is parsed into raw positionals and options, and **before** middl
 
 - Access unvalidated `parsedOptions` / `parsedPositionals`
 - Access `cli` and the matched `command` definition
-- Call `execute({ ctx })` to continue the pipeline and merge values into command `ctx` (same merge rules as middleware `next({ ctx })`). Remaining before-hooks run next, then middleware, validation, and the handler.
-- Return without calling `execute` — the pipeline still continues automatically (backward compatible).
-- Throw to abort before middleware runs.
+- **End the hook with `return execute({ ctx })`** (or `return await execute(...)`) to continue: remaining before-hooks, then middleware, validation, and the handler. Optional `ctx` merges like middleware `next({ ctx })`.
+- **`return halt()`** to stop the command pipeline cleanly with no error (same as command middleware `halt`).
+- Throw to abort with an error before middleware runs.
 
-**Error handling:** If `onBeforeCommandExecution` throws, middleware and the handler do not run.
+**Contract:** The hook must invoke `execute` or `halt` (typically by returning its result). Otherwise Cheloni throws `PluginBeforeCommandExecutionError`.
+
+**Error handling:** If `onBeforeCommandExecution` throws, middleware and the handler do not run. `halt()` is not an error — it is not wrapped as a plugin failure.
 
 **Example:**
 
 ```typescript
 const authPlugin = definePlugin({
   name: "auth",
-  onBeforeCommandExecution: ({ command, cli }) => {
+  onBeforeCommandExecution: ({ command, cli, execute }) => {
     if (!isAuthenticated() && command.name !== "login") {
       throw new Error("Authentication required");
     }
+    return execute();
   },
 });
 ```
@@ -272,10 +275,10 @@ const authPlugin = definePlugin({
 const timingPlugin = definePlugin({
   name: "timing",
   onBeforeCommandExecution: async ({ execute }) => {
-    await execute({ ctx: { startTime: Date.now() } });
+    return await execute({ ctx: { startTime: Date.now() } });
   },
-  onAfterCommandExecution: async ({ data }) => {
-    const start = data.startTime as number | undefined;
+  onAfterCommandExecution: async ({ ctx }) => {
+    const start = ctx.startTime as number | undefined;
     if (start !== undefined) console.log(Date.now() - start, "ms");
   },
 });
@@ -289,7 +292,7 @@ Runs after the handler attempt, in a `finally` block — even if validation or t
 
 **What you can do:**
 
-- Read `data`: merged validated command options layered over accumulated `ctx` (plugin-injected + middleware + bequeath handlers), when those stages completed. If execution failed earlier, `data` is best-effort partial context.
+- Read `ctx`: snapshot after the command attempt — merged validated options layered over accumulated command context (plugin-injected + middleware + bequeath handlers) when those stages completed. If execution failed earlier, `ctx` is best-effort partial.
 - Cleanup, logging, telemetry
 
 **Error handling:** Errors are logged but don't override the original error.
@@ -451,7 +454,8 @@ type PluginBeforeCommandHook = (params: PluginBeforeCommandHookParams) => Promis
 - `params.plugin: Plugin` - The plugin instance
 - `params.command: CommandDefinition` - The command being executed
 - `params.parsedOptions` / `params.parsedPositionals` - Raw parse output (unvalidated)
-- `params.execute` - `async (opts?: { ctx?: Record<string, unknown> }) => void` — continues remaining before-hooks, then middleware, validation, and handler; merges `ctx` like middleware `next({ ctx })`
+- `params.execute` - `async (opts?: { ctx?: Record<string, unknown> }) => void` — continues remaining before-hooks, then middleware, validation, and handler; merges `ctx` like middleware `next({ ctx })`. **Return** this promise (or `halt()`) from the hook.
+- `params.halt` - Same as command middleware `halt()` — stops the pipeline without error
 
 ### `PluginAfterCommandHook`
 
@@ -464,7 +468,7 @@ type PluginAfterCommandHook = (params: PluginAfterCommandHookParams) => Promisab
 - `params.cli: Cli` - The CLI instance
 - `params.plugin: Plugin` - The plugin instance
 - `params.command: CommandDefinition` - The command being executed
-- `params.data: Record<string, unknown>` - Options merged over accumulated `ctx` when available (see `onAfterCommandExecution` above)
+- `params.ctx: Record<string, unknown>` - Context after the attempt: options merged over accumulated command `ctx` when available (see `onAfterCommandExecution` above)
 
 ### `ExtrageousOptionsBehavior`
 

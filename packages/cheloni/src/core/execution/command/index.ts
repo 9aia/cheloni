@@ -101,7 +101,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
   const aliasMap = buildAliasMap(def, cli, command);
   const { positional: positionalArgs, options: rawOptions } = parseArgs(args, aliasMap);
 
-  const dataForAfter: { current: UnknownRecord } = { current: {} };
+  const ctxAfterCommand: { current: UnknownRecord } = { current: {} };
 
   try {
     await runBeforeCommandExecutionChain({
@@ -111,10 +111,10 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
       parsedOptions: rawOptions,
       parsedPositionals: positionalArgs,
       runAfterHooks: async (pluginCtx) => {
-        dataForAfter.current = { ...pluginCtx };
+        ctxAfterCommand.current = { ...pluginCtx };
 
         let commandCtx = await executeMiddlewareChain(def.middleware, cli, command, pluginCtx);
-        dataForAfter.current = commandCtx;
+        ctxAfterCommand.current = commandCtx;
 
         const extrageousOptionsBehavior = def.throwOnExtrageousOptions ?? "throw";
         const optionNames = buildOptionNames(cli, command);
@@ -126,7 +126,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
         );
 
         commandCtx = await validateAndExecuteOptions(validatedOptions, cli, command, commandCtx);
-        dataForAfter.current = commandCtx;
+        ctxAfterCommand.current = commandCtx;
 
         const positionalSchema = def.positional;
         const positional = validatePositional(positionalSchema, positionalArgs);
@@ -139,7 +139,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
           command.bequeathOptions,
         );
 
-        dataForAfter.current = defu(cliOptions as UnknownRecord, commandCtx) as UnknownRecord;
+        ctxAfterCommand.current = defu(cliOptions as UnknownRecord, commandCtx) as UnknownRecord;
 
         if (def.handler) {
           const handlerParams: CommandHandlerParams<typeof positionalSchema, typeof optionsSchema> =
@@ -165,7 +165,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
       cli,
       command: def,
       commandInstance: command,
-      data: dataForAfter.current,
+      ctx: ctxAfterCommand.current,
     });
   }
 }

@@ -1,9 +1,8 @@
 import { createCommand } from "~/core";
 import { definePlugin } from "~/core/definition/plugin";
-import helpCommand from "~/std/core/commands/help";
 import rootCommand from "~/std/core/commands/root";
 import versionCommand from "~/std/core/commands/version";
-import { mergeOptionsWithVersion } from "~/std/core/utils/option";
+import versionOption from "~/std/core/options/version";
 
 export default definePlugin({
   name: "version",
@@ -11,10 +10,11 @@ export default definePlugin({
     if (cli.command) {
       const existingDef = cli.command.definition;
       const existingCommands = existingDef.commands ?? [];
+      const existingBequeath = existingDef.bequeathOptions ?? [];
 
       cli.command = createCommand({
         ...existingDef,
-        options: mergeOptionsWithVersion(existingDef.options),
+        bequeathOptions: [...existingBequeath, versionOption],
         commands: [...existingCommands, versionCommand],
       });
       return;
@@ -22,7 +22,7 @@ export default definePlugin({
 
     cli.command = createCommand({
       ...rootCommand,
-      options: mergeOptionsWithVersion(helpCommand.options),
+      bequeathOptions: [versionOption],
       commands: [versionCommand],
     });
   },

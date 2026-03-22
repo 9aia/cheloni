@@ -20,7 +20,7 @@ function defaultPathsForCommand(definition: CommandDefinition): string[] {
   if (definition.paths !== undefined && definition.paths !== null) {
     return definition.paths;
   }
-  // CLI root (`defineRootCommand`) is not invoked as a "root" argv segment.
+  // CLI root (`defineRootCommand`) is not invoked as a "__root__" argv segment.
   if (definition.name === "__root__") {
     return [];
   }

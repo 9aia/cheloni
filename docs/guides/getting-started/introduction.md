@@ -75,8 +75,9 @@ const analytics = definePlugin({
   onInit: async ({ cli }) => {
     /* ... */
   },
-  onBeforeCommandExecution: async ({ cli, command }) => {
+  onBeforeCommandExecution: async ({ cli, command, execute }) => {
     /* ... */
+    return execute();
   },
   onAfterCommandExecution: async ({ cli, command }) => {
     /* ... */
@@ -163,11 +164,11 @@ await executeCli({ cli });
 
 1. Command resolved from `argv` by walking the command tree
 2. Args parsed into positional values and options (with alias resolution)
-3. Plugin `onBeforeCommandExecution` hooks run (unvalidated parsed args; optional `execute({ ctx })` continues the chain and merges into command `ctx`)
+3. Plugin `onBeforeCommandExecution` hooks run (unvalidated parsed args; each hook **returns** `execute({ ctx })` or `halt()` to continue or stop)
 4. Middleware chain runs on the matched command only (starts from plugin-merged `ctx`)
 5. Options and positionals validated (unknown-option policy, bequeath option handlers, then Zod)
 6. Command handler runs
-7. Plugin `onAfterCommandExecution` hooks run with `data` (options over `ctx` when available; even on error)
+7. Plugin `onAfterCommandExecution` hooks run with post-attempt `ctx` (options merged over command context when available; even on error)
 8. Plugin `onDestroy` hooks run in `executeCli`’s `finally` block
 
 ## Core Concepts
@@ -250,8 +251,8 @@ Plugins hook into the CLI lifecycle at specific points. They can be applied glob
 **Lifecycle hooks:**
 
 - `onInit` — runs during `createCli`, can mutate CLI structure
-- `onBeforeCommandExecution` — runs after parse, before middleware and validation; may call `execute({ ctx })`
-- `onAfterCommandExecution` — runs after handler attempt with `data` (even on error)
+- `onBeforeCommandExecution` — runs after parse, before middleware and validation; **return** `execute({ ctx })` or `halt()`
+- `onAfterCommandExecution` — runs after handler attempt with post-attempt `ctx` (even on error)
 - `onDestroy` — runs on CLI shutdown
 
 **Use cases:** telemetry, auth, feature flags, service integration, context enrichment, CLI manipulation, cleanup.

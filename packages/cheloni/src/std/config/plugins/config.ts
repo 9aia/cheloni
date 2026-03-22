@@ -40,6 +40,7 @@ function configPluginFactory<T extends Record<string, any> = Record<string, any>
     onBeforeCommandExecution: async ({
       cli,
       parsedOptions,
+      execute,
     }: Parameters<PluginBeforeCommandHook>[0]) => {
       const explicitConfigPath = parsedOptions?.config;
       const cliName = cli.manifest.name;
@@ -66,6 +67,8 @@ function configPluginFactory<T extends Record<string, any> = Record<string, any>
         const middleware = configMiddleware({ config: validatedConfig, configFile });
         cli.command.definition.middleware = [middleware, ...(existing || [])];
       }
+
+      return execute();
     },
   });
 }

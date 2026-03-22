@@ -25,11 +25,6 @@
   ],
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/core/index.d.mts",
-      "import": "./dist/core/index.mjs",
-      "default": "./dist/core/index.mjs"
-    },
     "./core": "./dist/core/index.mjs",
     "./plugin-kits": "./dist/plugin-kits/index.mjs",
     "./std/config": "./dist/std/config/index.mjs",
