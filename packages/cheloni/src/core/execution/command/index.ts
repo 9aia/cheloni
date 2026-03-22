@@ -102,7 +102,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
     await runCommandExecutionChain({
       plugins: allPlugins,
       cli,
-      command: def,
+      commandDefinition: def,
       commandInstance: command,
       parsedOptions: rawOptions,
       parsedPositionals: positionalArgs,

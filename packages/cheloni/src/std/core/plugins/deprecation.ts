@@ -11,10 +11,10 @@ export default definePlugin({
   onInit: ({ cli }) => {
     showCliDeprecationWarning({ cli });
   },
-  onCommandExecution: ({ command, parsedOptions, parsedPositionals, execute }) => {
-    showCommandDeprecationWarning({ command });
-    showOptionDeprecationWarnings({ command, parsedOptions });
-    showPositionalDeprecationWarning({ command, parsedPositionals });
+  onCommandExecution: ({ commandDefinition, parsedOptions, parsedPositionals, execute }) => {
+    showCommandDeprecationWarning({ command: commandDefinition });
+    showOptionDeprecationWarnings({ command: commandDefinition, parsedOptions });
+    showPositionalDeprecationWarning({ command: commandDefinition, parsedPositionals });
     return execute();
   },
 });

@@ -12,7 +12,7 @@ export interface PluginHookParams {
 
 /** Shared fields for command-scoped plugin hooks (parsed argv is only meaningful before validation). */
 export interface PluginCommandHookParams extends PluginHookParams {
-  command: CommandDefinition;
+  commandDefinition: CommandDefinition;
   parsedOptions?: Record<string, any>;
   parsedPositionals?: string[];
 }

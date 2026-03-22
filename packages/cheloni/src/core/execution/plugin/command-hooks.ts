@@ -39,8 +39,8 @@ async function reportPostExecuteHookFailure(options: {
 export async function runCommandExecutionChain(options: {
   plugins: Array<{ definition: any; manifest: { name: string } }>;
   cli: Cli;
-  command: CommandDefinition;
-  commandInstance: Command;
+  commandDefinition: CommandDefinition;
+  command: Command;
   parsedOptions?: Record<string, any>;
   parsedPositionals?: string[];
   /** Runs middleware, validation, and handler. Receives ctx merged from preceding `execute({ ctx })` calls. */
@@ -49,8 +49,8 @@ export async function runCommandExecutionChain(options: {
   const {
     plugins,
     cli,
+    commandDefinition,
     command,
-    commandInstance,
     parsedOptions,
     parsedPositionals,
     runAfterHooks,
@@ -87,7 +87,7 @@ export async function runCommandExecutionChain(options: {
       const hookReturn = await hook({
         cli,
         plugin,
-        command,
+        commandDefinition,
         parsedOptions,
         parsedPositionals,
         execute,
@@ -118,7 +118,7 @@ export async function runCommandExecutionChain(options: {
           cli,
           pluginName: plugin.manifest.name,
           hookError,
-          command: commandInstance,
+          command,
         });
         return lastCtx;
       }
