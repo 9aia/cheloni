@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vite-plus/test";
 import z from "zod";
 import { createCli, defineCli, defineCommand, executeCommand } from "~/core";
 
-describe("onBeforeCommandExecution execute()", () => {
-  it("merges ctx into the handler context when hooks call execute", async () => {
+describe("onBeforeCommandExecution execute() / halt()", () => {
+  it("merges ctx into the handler context when hooks return execute", async () => {
     const handler = vi.fn();
     const cli = await createCli(
       defineCli({
@@ -12,7 +12,7 @@ describe("onBeforeCommandExecution execute()", () => {
           {
             name: "inject",
             onBeforeCommandExecution: async ({ execute }) => {
-              await execute({ ctx: { startTime: 42 } });
+              return await execute({ ctx: { startTime: 42 } });
             },
           },
         ],
@@ -32,7 +32,7 @@ describe("onBeforeCommandExecution execute()", () => {
     );
   });
 
-  it("keeps backward compatibility when hooks return without calling execute", async () => {
+  it("throws if the hook neither invokes execute nor halt", async () => {
     const handler = vi.fn();
     const onBefore = vi.fn();
 
@@ -41,7 +41,7 @@ describe("onBeforeCommandExecution execute()", () => {
         name: "test",
         plugins: [
           {
-            name: "legacy",
+            name: "bad",
             onBeforeCommandExecution: async (params) => {
               onBefore(params);
             },
@@ -54,13 +54,41 @@ describe("onBeforeCommandExecution execute()", () => {
       }),
     );
 
-    await executeCommand({ command: cli.command!, args: [], cli });
+    await expect(executeCommand({ command: cli.command!, args: [], cli })).rejects.toThrow(
+      "must return execute(...) or halt()",
+    );
 
     expect(onBefore).toHaveBeenCalledOnce();
-    expect(onBefore.mock.calls[0]![0]).toMatchObject({
-      execute: expect.any(Function),
-    });
-    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("return halt() stops the pipeline without running the handler", async () => {
+    const handler = vi.fn();
+    const onAfter = vi.fn();
+
+    const cli = await createCli(
+      defineCli({
+        name: "test",
+        plugins: [
+          {
+            name: "stop",
+            onBeforeCommandExecution: async ({ halt }) => {
+              return halt();
+            },
+            onAfterCommandExecution: onAfter,
+          },
+        ],
+        command: defineCommand({
+          name: "__root__",
+          handler,
+        }),
+      }),
+    );
+
+    await executeCommand({ command: cli.command!, args: [], cli });
+
+    expect(handler).not.toHaveBeenCalled();
+    expect(onAfter).toHaveBeenCalledOnce();
   });
 
   it("chains multiple plugins: each execute continues with merged ctx", async () => {
@@ -72,13 +100,13 @@ describe("onBeforeCommandExecution execute()", () => {
           {
             name: "p1",
             onBeforeCommandExecution: async ({ execute }) => {
-              await execute({ ctx: { a: 1 } });
+              return await execute({ ctx: { a: 1 } });
             },
           },
           {
             name: "p2",
             onBeforeCommandExecution: async ({ execute }) => {
-              await execute({ ctx: { b: 2 } });
+              return await execute({ ctx: { b: 2 } });
             },
           },
         ],
@@ -98,7 +126,7 @@ describe("onBeforeCommandExecution execute()", () => {
     );
   });
 
-  it("passes data to onAfterCommandExecution with merged options over ctx", async () => {
+  it("passes ctx to onAfterCommandExecution with merged options over command ctx", async () => {
     const onAfter = vi.fn();
     const cli = await createCli(
       defineCli({
@@ -107,7 +135,7 @@ describe("onBeforeCommandExecution execute()", () => {
           {
             name: "inject",
             onBeforeCommandExecution: async ({ execute }) => {
-              await execute({ ctx: { marker: "pre" } });
+              return await execute({ ctx: { marker: "pre" } });
             },
             onAfterCommandExecution: onAfter,
           },
@@ -128,7 +156,7 @@ describe("onBeforeCommandExecution execute()", () => {
 
     expect(onAfter).toHaveBeenCalledOnce();
     const params = onAfter.mock.calls[0]![0];
-    expect(params.data).toMatchObject({ marker: "pre", flag: true });
+    expect(params.ctx).toMatchObject({ marker: "pre", flag: true });
   });
 
   it("throws if execute is called more than once", async () => {
@@ -140,7 +168,7 @@ describe("onBeforeCommandExecution execute()", () => {
             name: "bad",
             onBeforeCommandExecution: async ({ execute }) => {
               await execute();
-              await execute();
+              return execute();
             },
           },
         ],

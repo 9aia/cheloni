@@ -212,7 +212,10 @@ describe("executeCommand", () => {
         plugins: [
           {
             name: "test-plugin",
-            onBeforeCommandExecution: onBefore,
+            onBeforeCommandExecution: async (params) => {
+              onBefore(params);
+              return params.execute();
+            },
           },
         ],
         command: defineCommand({
@@ -277,7 +280,10 @@ describe("executeCommand", () => {
         plugins: [
           {
             name: "global-plugin",
-            onBeforeCommandExecution: globalHook,
+            onBeforeCommandExecution: async (params) => {
+              globalHook(params);
+              return params.execute();
+            },
           },
         ],
         command: defineCommand({
@@ -285,7 +291,10 @@ describe("executeCommand", () => {
           plugins: [
             {
               name: "command-plugin",
-              onBeforeCommandExecution: commandHook,
+              onBeforeCommandExecution: async (params) => {
+                commandHook(params);
+                return params.execute();
+              },
             },
           ],
           handler: async () => {},

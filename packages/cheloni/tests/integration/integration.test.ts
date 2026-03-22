@@ -98,8 +98,9 @@ describe("Integration Tests", () => {
             onInit: async () => {
               lifecycle.push("onInit");
             },
-            onBeforeCommandExecution: async () => {
+            onBeforeCommandExecution: async ({ execute }) => {
               lifecycle.push("onBeforeCommand");
+              return execute();
             },
             onAfterCommandExecution: async () => {
               lifecycle.push("onAfterCommand");
@@ -271,7 +272,10 @@ describe("Integration Tests", () => {
         plugins: [
           {
             name: "global",
-            onBeforeCommandExecution: globalHook,
+            onBeforeCommandExecution: async (params) => {
+              globalHook(params);
+              return params.execute();
+            },
           },
         ],
         command: defineCommand({
@@ -283,7 +287,10 @@ describe("Integration Tests", () => {
               plugins: [
                 {
                   name: "command",
-                  onBeforeCommandExecution: commandHook,
+                  onBeforeCommandExecution: async (params) => {
+                    commandHook(params);
+                    return params.execute();
+                  },
                 },
               ],
               handler,
