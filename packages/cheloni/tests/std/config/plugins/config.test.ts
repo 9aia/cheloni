@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { defineCli, defineCommand, createCli, executeCli } from "~/core";
+import { defineCli, defineCommand, createCli, executeCli, defineCommandHandler } from "~/core";
 import { configPlugin } from "~/std/config";
 import z from "zod";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { defineCommandHandler } from "src/core/definition/command/command-handler";
 
 describe("configPlugin", () => {
   let tempDir: string;
