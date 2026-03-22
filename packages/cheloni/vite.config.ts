@@ -10,6 +10,9 @@ export default defineConfig({
       "~": resolve(__dirname, "src"),
     },
   },
+  test: {
+    typecheck: { enabled: true },
+  },
   pack: {
     entry: {
       "core/index": "./src/core/index.ts",
