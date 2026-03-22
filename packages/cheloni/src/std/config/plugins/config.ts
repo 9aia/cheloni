@@ -3,6 +3,7 @@ import path from "node:path";
 import z from "zod";
 import { createCommand } from "~/core";
 import type { PluginCommandExecutionHook, PluginHook } from "~/core/creation/plugin/hook";
+import type { AnyMiddleware } from "~/core/definition/command/middleware";
 import type { PluginDefinition } from "~/core/definition/plugin";
 import { definePlugin } from "~/core/definition/plugin";
 import rootCommand from "~/std/core/commands/root";
@@ -63,9 +64,10 @@ function configPluginFactory<T extends Record<string, any> = Record<string, any>
       const validatedConfig = validateConfig(config, pluginConfig.schema);
 
       if (cli.command) {
-        const existing = cli.command.definition.middleware;
+        const def = cli.command.definition as { middleware?: AnyMiddleware[] };
+        const existing = def.middleware;
         const middleware = configMiddleware({ config: validatedConfig, configFile });
-        cli.command.definition.middleware = [middleware, ...(existing || [])];
+        def.middleware = [middleware, ...(existing ?? [])];
       }
 
       return await execute();

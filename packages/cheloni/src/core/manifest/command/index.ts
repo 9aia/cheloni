@@ -1,4 +1,7 @@
+import type { UnknownRecord } from "type-fest";
 import type { CommandDefinition, RootCommandDefinition } from "~/core/definition/command";
+import type { OptionsSchema } from "~/core/definition/command/option";
+import type { PositionalDefinition } from "~/core/definition/command/positional";
 import { getOptionsManifest, type OptionManifest } from "~/core/manifest/command/option";
 import { getPositionalManifest, type PositionalManifest } from "~/core/manifest/command/positional";
 import { getPluginsManifest, type PluginManifest } from "~/core/manifest/plugin";
@@ -16,7 +19,9 @@ export interface CommandManifest extends Manifest {
   details?: string;
 }
 
-function defaultPathsForCommand(definition: CommandDefinition): string[] {
+function defaultPathsForCommand(
+  definition: CommandDefinition<PositionalDefinition, OptionsSchema, UnknownRecord, any>,
+): string[] {
   if (definition.paths !== undefined && definition.paths !== null) {
     return definition.paths;
   }
@@ -27,7 +32,9 @@ function defaultPathsForCommand(definition: CommandDefinition): string[] {
   return [definition.name];
 }
 
-export function getCommandManifest(definition: CommandDefinition): CommandManifest {
+export function getCommandManifest(
+  definition: CommandDefinition<PositionalDefinition, OptionsSchema, UnknownRecord, any>,
+): CommandManifest {
   return {
     name: definition.name,
     paths: defaultPathsForCommand(definition),

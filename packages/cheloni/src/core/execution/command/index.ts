@@ -3,7 +3,7 @@ import type { UnknownRecord } from "type-fest";
 import z from "zod";
 import type { Cli } from "~/core/creation/cli";
 import type { Command, CommandHandlerParams } from "~/core/creation/command";
-import type { AnyMiddleware } from "~/core/creation/command/middleware";
+import type { AnyMiddleware } from "~/core/definition/command/middleware";
 import { createPlugin } from "~/core/creation/plugin";
 import { runCommandExecutionChain } from "~/core/execution/plugin/command-hooks";
 import { buildAliasMap } from "~/utils/execution/alias";
@@ -103,7 +103,7 @@ export async function executeCommand(options: ExecuteCommandOptions): Promise<vo
       plugins: allPlugins,
       cli,
       commandDefinition: def,
-      commandInstance: command,
+      command,
       parsedOptions: rawOptions,
       parsedPositionals: positionalArgs,
       runAfterHooks: async (pluginCtx) => {

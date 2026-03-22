@@ -2,7 +2,7 @@ import { defu } from "defu";
 import type { UnknownRecord } from "type-fest";
 import type { Cli } from "~/core/creation/cli";
 import type { Command } from "~/core/creation/command";
-import type { NextFunction, MiddlewareResult } from "~/core/creation/command/middleware";
+import type { NextFunction, MiddlewareResult } from "~/core/definition/command/middleware";
 import type { Option, OptionHandler } from "~/core/creation/command/option";
 import { halt } from "./halt";
 

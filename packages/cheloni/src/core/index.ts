@@ -1,5 +1,6 @@
 // Definition
 export * from "./definition/cli";
+export * from "./definition/command/command-handler";
 export * from "./definition/command/index";
 export * from "./definition/command/middleware";
 export * from "./definition/command/option";

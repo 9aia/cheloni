@@ -2,15 +2,12 @@ import type { UnknownRecord } from "type-fest";
 import type { ExtrageousOptionsBehavior } from "~/core/creation/command/option";
 import type { CommandHandler } from "~/core/definition/command/command-handler";
 import type {
-  AnyMiddleware,
   InferMiddlewareArrayContext,
+  MiddlewareArray,
 } from "~/core/definition/command/middleware";
 import type { OptionDefinition, OptionsSchema } from "~/core/definition/command/option";
 import type { PositionalDefinition } from "~/core/definition/command/positional";
 import type { PluginDefinition } from "~/core/definition/plugin";
-
-type CommandHandlerCtx<TMiddleware extends readonly AnyMiddleware[]> =
-  InferMiddlewareArrayContext<TMiddleware>;
 
 /**
  * A command definition.
@@ -18,7 +15,8 @@ type CommandHandlerCtx<TMiddleware extends readonly AnyMiddleware[]> =
 export interface CommandDefinition<
   TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TMiddleware extends readonly AnyMiddleware[] = [],
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
 > {
   name: string;
   paths?: string[];
@@ -26,12 +24,17 @@ export interface CommandDefinition<
   description?: string;
   positional?: TPositionalDefinition;
   options?: TOptionsDefinition;
-  middleware?: [...TMiddleware];
+  middleware?: TMiddlewareArray;
   examples?: string[];
   details?: string;
   throwOnExtrageousOptions?: ExtrageousOptionsBehavior;
   plugins?: PluginDefinition[];
-  commands?: CommandDefinition[];
+  commands?: CommandDefinition<
+    PositionalDefinition,
+    OptionsSchema,
+    UnknownRecord,
+    []
+  >[];
   /**
    * Options that are inherited by subcommands.
    * @default []
@@ -40,7 +43,7 @@ export interface CommandDefinition<
   handler?: CommandHandler<
     TPositionalDefinition,
     TOptionsDefinition,
-    CommandHandlerCtx<TMiddleware>
+    InferMiddlewareArrayContext<TMiddlewareArray>
   >;
 }
 
@@ -50,8 +53,9 @@ export interface CommandDefinition<
 export type RootCommandDefinition<
   TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
-  TMiddleware extends readonly AnyMiddleware[] = [],
-> = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>, "name">;
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
+> = Omit<CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>, "name">;
 
 /**
  * Defines a command.
@@ -59,10 +63,11 @@ export type RootCommandDefinition<
 export function defineCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,
-  TMiddleware extends readonly AnyMiddleware[] = [],
+  TCtx extends UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
 >(
-  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
-): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware> {
+  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray> {
   return definition;
 }
 
@@ -72,10 +77,11 @@ export function defineCommand<
 export function defineRootCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,
-  TMiddleware extends readonly AnyMiddleware[] = [],
+  TCtx extends UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
 >(
-  definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware>,
-): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TMiddleware> {
+  definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+): CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray> {
   return {
     ...definition,
     name: "__root__",

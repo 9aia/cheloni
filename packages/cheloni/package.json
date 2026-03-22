@@ -25,7 +25,6 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./dist/core/index.mjs",
     "./core": "./dist/core/index.mjs",
     "./plugin-kits": "./dist/plugin-kits/index.mjs",
     "./std/config": "./dist/std/config/index.mjs",
@@ -75,5 +74,8 @@
     "typescript": "^5",
     "yaml": "^2.8.2",
     "zod": "^4.0.0"
+  },
+  "inlinedDependencies": {
+    "type-fest": "5.5.0"
   }
 }

@@ -1,4 +1,5 @@
-import type { Promisable, UnknownRecord } from "type-fest";
+import type { MiddlewareArray } from "src/core/definition/command/middleware";
+import type { UnknownRecord } from "type-fest";
 import type { Cli } from "~/core/creation/cli";
 import type { InferOptionsType, Option } from "~/core/creation/command/option";
 import { createOption } from "~/core/creation/command/option";
@@ -27,7 +28,9 @@ export interface Command<
 export type RootCommand<
   TPositionalDefinition extends PositionalDefinition = PositionalDefinition,
   TOptionsDefinition extends OptionsSchema = OptionsSchema,
-> = Command<TPositionalDefinition, TOptionsDefinition>;
+  TCtx extends UnknownRecord = UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx> = [],
+> = Command<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>;
 
 export interface CommandHandlerParams<
   TPositionalDefinition extends PositionalDefinition | undefined,
@@ -44,8 +47,10 @@ export interface CommandHandlerParams<
 export function createCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,
+  TCtx extends UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
 >(
-  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition>,
+  definition: CommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
   inheritedBequeathOptions: Option[] = [],
 ): Command<TPositionalDefinition, TOptionsDefinition> {
   // Collect bequeathOptions from this command definition
@@ -90,9 +95,11 @@ export function createCommand<
 export function createRootCommand<
   TPositionalDefinition extends PositionalDefinition,
   TOptionsDefinition extends OptionsSchema,
+  TCtx extends UnknownRecord,
+  TMiddlewareArray extends MiddlewareArray<TCtx>,
 >(
-  definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition>,
-): RootCommand<TPositionalDefinition, TOptionsDefinition> {
+  definition: RootCommandDefinition<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray>,
+): RootCommand<TPositionalDefinition, TOptionsDefinition, TCtx, TMiddlewareArray> {
   return createCommand({
     ...definition,
     name: "__root__",
