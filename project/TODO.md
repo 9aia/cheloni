@@ -1,14 +1,19 @@
 # TODO
 
 - Fix type inference on build
+- Plugins should be able to extend definition types? Like adding a hook to command definition (this abstraction would help the core to be really minimal and more extensible)
 - Add dynamic arg metadata (useful here: `$ my-cli <command> --help`).
 - Improve help generation with chalk and chalk-template
   - Turn help plugin into a plugin factory and add optional help footer config
 - Rename option to named
 - Add type-safety to config
+- Allow grouped arguments (flags) automatically from args
+- Add basic-args plugin
+  - Add grouping support to inline flags or basic-args plugin config
+    - can disable via config `disableGroupFlags: true`
+  - Add polarity support to inline flags or basic-args plugin config
 - Improve CLI developer-facing error handling design
 - Add shell completion plugin that will add a `completion` command to the CLI, add `complete` to option/positional definition
-- Plugins should be able to extend definition types? Like adding a hook to command definition (this abstraction would help the core to be really minimal and more extensible)
 - Rename `throwOnExtrageousOptions` to `unknownOptionsBehavior`
 - Change positional to be `positional: ZodArraySchema<T>`, e.g. `positional: z.array(z.string()).meta({ name: "files" })` but also compatible with `positional: ZodSchema<T>[]` e.g `positional: [z.string().meta({ name: "input" }), z.string().meta({ name: "output" })]`
 - Ensure error handling by throwing errors instead of `process.exit(1)`
